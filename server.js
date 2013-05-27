@@ -47,7 +47,7 @@ server.ext('onPreResponse', function (request, next) {
     next();
 });
 
-server.pack.require('good', {
+server.pack.require('./node_modules/good', {
     subscribers: {
       console: ['ops', 'request', 'log']
     },
