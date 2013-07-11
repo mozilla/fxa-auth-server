@@ -172,7 +172,7 @@ The request must include a Hawk header that authenticates the request (including
 ### Request
 ```sh
 curl -v \
--X POST \
+-X GET \
 -H "Host: idp.profileinthecloud.net" \
 -H "Content-Type: application/json" \
 -H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
