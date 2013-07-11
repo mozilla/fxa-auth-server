@@ -157,7 +157,7 @@ http://idp.profileinthecloud.net/session/auth/finish \
 See [decrypting the bundle](https://wiki.mozilla.org/Identity/AttachedServices/KeyServerProtocol#Decrypting_the_getToken2_Response)
 for info on how to retrieve `sessionToken|keyFetchToken` from the bundle.
 
-## POST /session/status
+## GET /session/status
 
 Check whether a session is still valid.
 
