@@ -7,7 +7,7 @@ Our [SRP](http://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol)
 protocol order is slightly different from the sample on wikipedia, but the variables
 are the same.
 
-[Hawk](https://github.com/hueniverse/hawk) is used to authenticate many requests.
+[Hawk](https://github.com/hueniverse/hawk) is used to authenticate requests marked 🔒.
 
 # Request Format
 
@@ -34,6 +34,31 @@ For example:
 ```
 
 # Endpoints
+
+* Account
+    * [/account/create](#post-accountcreate)
+    * [/account/devices 🔒](#get-accountdevices-)
+    * [/account/keys](#get-accountkeys)
+    * [/account/recovery_methods 🔒](#get-accountrecovery_methods-)
+    * [/account/recovery_methods/send_code 🔒](#post-accountrecovery_methodssend_code-)
+    * [/account/recovery_methods/verify_code 🔒](#post-accountrecovery_methodsverify_code-)
+    * [/account/reset 🔒](#post-accountreset-)
+
+* [/certificate/sign 🔒](#post-certificatesign-)
+
+* [/get_random_bytes](#post-get_random_bytes)
+
+* Password
+    * [/password/change/auth/start 🔒](#post-passwordchangeauthstart-)
+    * [/password/change/auth/finish](#post-passwordchangeauthfinish)
+    * [/password/forgot/send_code](#post-passwordforgotsend_code)
+    * [/password/forgot/verify_code](#post-passwordforgotverify_code)
+
+* Session
+    * [/session/auth/start](#post-sessionauthstart)
+    * [/session/auth/finish](#post-sessionauthfinish)
+    * [/session/status 🔒](#get-sessionstatus-)
+    * [/session/destroy 🔒](#post-sessiondestroy-)
 
 A development server is available at http://idp.profileinthecloud.net for testing.
 All data stored there will be deleted periodically, and new code will be deployed
@@ -161,7 +186,7 @@ http://idp.profileinthecloud.net/session/auth/finish \
 See [decrypting the bundle](https://wiki.mozilla.org/Identity/AttachedServices/KeyServerProtocol#Decrypting_the_getToken2_Response)
 for info on how to retrieve `sessionToken|keyFetchToken` from the bundle.
 
-## GET /session/status
+## GET /session/status 🔒
 
 Check whether a session is still valid.
 
@@ -169,7 +194,7 @@ ___Parameters___
 
 none
 
-___Headers___ 
+___Headers___
 
 The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
 
@@ -189,7 +214,7 @@ http://idp.profileinthecloud.net/session/status \
 {}
 ```
 
-## POST /session/destroy
+## POST /session/destroy 🔒
 
 Destroys a currently active session.
 
@@ -197,7 +222,7 @@ ___Parameters___
 
 none
 
-___Headers___ 
+___Headers___
 
 The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
 
@@ -217,7 +242,7 @@ http://idp.profileinthecloud.net/session/destroy \
 {}
 ```
 
-## POST /certificate/sign
+## POST /certificate/sign 🔒
 
 Sign a public key
 
@@ -281,7 +306,7 @@ curl -X POST -v http://idp.profileinthecloud.net/get_random_bytes
 }
 ```
 
-## POST /password/change/auth/start
+## POST /password/change/auth/start 🔒
 
 Begin the "change password" process
 
@@ -411,7 +436,7 @@ http://idp.profileinthecloud.net/password/forgot/verify_code \
 }
 ```
 
-## POST /account/reset
+## POST /account/reset 🔒
 
 See [resetting the account](https://wiki.mozilla.org/Identity/AttachedServices/KeyServerProtocol#Resetting_the_Account)
 
@@ -443,7 +468,7 @@ http://idp.profileinthecloud.net/account/reset \
 {}
 ```
 
-## GET /account/recovery_methods
+## GET /account/recovery_methods 🔒
 
 Gets a list of methods for recovery the user's password for the account (e.g., a list of email addresses).
 
@@ -474,7 +499,7 @@ http://idp.profileinthecloud.net/account/recovery_methods \
 }
 ```
 
-## POST /account/recovery_methods/send_code
+## POST /account/recovery_methods/send_code 🔒
 
 Sends a verification code to the specified recovery method (e.g., email). Providing this code will mark the recovery method as "verified".
 
@@ -506,7 +531,7 @@ http://idp.profileinthecloud.net/account/recovery_methods/send_code \
 {}
 ```
 
-## POST /account/recovery_methods/verify_code
+## POST /account/recovery_methods/verify_code 🔒
 
 Verifies a verification code that was sent to a user's recovery method (e.g., email). Providing this code will mark the recovery method as "verified".
 
@@ -534,7 +559,7 @@ http://idp.profileinthecloud.net/account/recovery_methods/verify_code \
 {}
 ```
 
-## GET /account/keys
+## GET /account/keys 🔒
 
 Get a base16 bundle of encrypted `kA|wrapKb`.
 
@@ -568,7 +593,7 @@ http://idp.profileinthecloud.net/account/keys \
 See [decrypting the bundle](https://wiki.mozilla.org/Identity/AttachedServices/KeyServerProtocol#Decrypting_the_getToken2_Response)
 for info on how to retrieve `kA|wrapKb` from the bundle.
 
-## GET /account/devices
+## GET /account/devices 🔒
 
 Gets a list of devices currently authenticated and syncing for the user.
 
