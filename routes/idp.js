@@ -90,22 +90,22 @@ var routes = [
     }
   },
   {
-    method: 'GET',
-    path: '/entropy',
+    method: 'POST',
+    path: '/get_random_bytes',
     config: {
-      handler: getEntropy
+      handler: getRandomBytes
     }
   },
   {
     method: 'POST',
-    path: '/create',
+    path: '/account/create',
     config: {
       description:
         "Creates an account associated with an email address, " +
         "passing along SRP information (salt and verifier) " +
         "and a wrapped key (used for class B data storage).",
       tags: ["srp", "account"],
-      handler: create,
+      handler: accountCreate,
       validate: {
         payload: {
           email: T.String().email().required(),
@@ -119,9 +119,9 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/sign',
+    path: '/certificate/sign',
     config: {
-      handler: sign,
+      handler: certificateSign,
       auth: {
         strategy: 'hawk',
         payload: 'required'
@@ -145,33 +145,33 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/startLogin',
-    handler: startLogin,
+    path: '/session/auth/start',
+    handler: sessionAuthStart,
     config: getToken1Config
   },
   {
     method: 'POST',
-    path: '/startResetToken',
-    handler: startResetToken,
+    path: '/password/change/auth/start',
+    handler: passwordChangeAuthStart,
     config: getToken1Config
   },
   {
     method: 'POST',
-    path: '/finishLogin',
-    handler: finishLogin,
+    path: '/session/auth/finish',
+    handler: sessionAuthFinish,
     config: getToken2Config
   },
   {
     method: 'POST',
-    path: '/finishResetToken',
-    handler: finishResetToken,
+    path: '/password/change/auth/finish',
+    handler: passwordChangeAuthFinish,
     config: getToken2Config
   },
   {
     method: 'POST',
-    path: '/resetAccount',
+    path: '/account/reset',
     config: {
-      handler: resetAccount,
+      handler: accountReset,
       auth: {
         strategy: 'hawk',
         payload: 'required'
@@ -186,8 +186,6 @@ var routes = [
   },
 ];
 
-
-
 function wellKnown(request) {
   request.reply({
     'public-key': fs.readFileSync(config.publicKeyFile),
@@ -196,7 +194,7 @@ function wellKnown(request) {
   });
 }
 
-function create(request) {
+function accountCreate(request) {
   account.create(
     request.payload,
     function (err) {
@@ -211,7 +209,7 @@ function create(request) {
   );
 }
 
-function sign(request) {
+function certificateSign(request) {
   cc.enqueue(
     {
       email: account.principle(request.auth.credentials.uid),
@@ -246,8 +244,8 @@ function getToken1(request) {
 
 }
 
-function startLogin(request) { return getToken1(request); }
-function startResetToken(request) { return getToken1(request); }
+function sessionAuthStart(request) { return getToken1(request); }
+function passwordChangeAuthStart(request) { return getToken1(request); }
 
 
 function getToken2(type, request) {
@@ -267,11 +265,11 @@ function getToken2(type, request) {
   );
 }
 
-function finishLogin(request) { return getToken2('sign', request); }
-function finishResetToken(request) { return getToken2('reset', request); }
+function sessionAuthFinish(request) { return getToken2('sign', request); }
+function passwordChangeAuthFinish(request) { return getToken2('reset', request); }
 
 
-function resetAccount(request) {
+function accountReset(request) {
   account.resetAccount(
     request.auth.credentials.token,
     request.payload.bundle,
@@ -286,7 +284,7 @@ function resetAccount(request) {
   );
 }
 
-function getEntropy(request) {
+function getRandomBytes(request) {
   crypto.randomBytes(32, function(err, buf) {
     request.reply(err || { data: buf.toString('hex') });
   });

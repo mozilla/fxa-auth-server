@@ -24,13 +24,13 @@ const nullLog = {
 
 const tokenTypes = {
   sign: {
-    startPath: '/startLogin',
-    finishPath: '/finishLogin',
+    startPath: '/session/auth/start',
+    finishPath: '/session/auth/finish',
     context: 'getSignToken'
   },
   reset: {
-    startPath: '/startResetToken',
-    finishPath: '/finishResetToken',
+    startPath: '/password/change/auth/start',
+    finishPath: '/password/change/auth/finish',
     context: 'getResetToken'
   }
 };
@@ -153,7 +153,7 @@ TestClient.prototype.createSRP = function (email, password, kB, cb) {
 
   this.makeRequest(
     'POST',
-    '/create',
+    '/account/create',
     {
       payload: {
         email: email,
@@ -305,11 +305,11 @@ TestClient.prototype.sign = function (publicKey, duration, signToken, hashPayloa
       if (hashPayload) {
         verify.payload = JSON.stringify(payload);
       }
-      var header = hawk.client.header('http://localhost/sign', 'POST', verify);
+      var header = hawk.client.header('http://localhost/certificate/sign', 'POST', verify);
 
       this.makeRequest(
         'POST',
-        '/sign',
+        '/certificate/sign',
         {
           headers: {
             Authorization: header.field,
@@ -355,11 +355,11 @@ TestClient.prototype.resetAccount = function (resetToken, email, password, kB, c
         contentType: 'application/json',
         payload: JSON.stringify(payload)
       };
-      var header = hawk.client.header('http://localhost/resetAccount', 'POST', verify);
+      var header = hawk.client.header('http://localhost/account/reset', 'POST', verify);
 
       this.makeRequest(
         'POST',
-        '/resetAccount',
+        '/account/reset',
         {
           headers: {
             Authorization: header.field,
