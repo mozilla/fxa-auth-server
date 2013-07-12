@@ -91,13 +91,6 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/get_random_bytes',
-    config: {
-      handler: getRandomBytes
-    }
-  },
-  {
-    method: 'POST',
     path: '/account/create',
     config: {
       description:
@@ -113,6 +106,123 @@ var routes = [
           salt: T.String().regex(HEX_STRING).required(),
           params: T.Object(), // TODO: what are these?
           wrapKb: T.String().regex(HEX_STRING) // TODO: required?
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/account/devices',
+    config: {
+      description:
+        "get the collection of devices currently authenticated and syncing",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            devices: T.Object()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/account/keys',
+    config: {
+      description:
+        "Get the base16 bundle of encrypted kA|wrapKb",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            bundle: T.String().regex(HEX_STRING)
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/account/recovery_methods',
+    config: {
+      description:
+        "Gets the set of methods for recovery the account's password",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            recoveryMethods: T.Object()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/recovery_methods/send_code',
+    config: {
+      description:
+        "Sends a verification code to the specified recovery method. " +
+        "Providing this code will mark the recovery method as verified",
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          email: T.String().email().required()
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/recovery_methods/verify_code',
+    config: {
+      description:
+        "Sends a verification code to the specified recovery method. " +
+        "Providing this code will mark the recovery method as verified",
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          code: T.String().required()
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/reset',
+    config: {
+      handler: accountReset,
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account"],
+      validate: {
+        payload: {
+          bundle: Hapi.types.String().required()
         }
       }
     }
@@ -145,9 +255,10 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/session/auth/start',
-    handler: sessionAuthStart,
-    config: getToken1Config
+    path: '/get_random_bytes',
+    config: {
+      handler: getRandomBytes
+    }
   },
   {
     method: 'POST',
@@ -157,33 +268,87 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/session/auth/finish',
-    handler: sessionAuthFinish,
-    config: getToken2Config
-  },
-  {
-    method: 'POST',
     path: '/password/change/auth/finish',
     handler: passwordChangeAuthFinish,
     config: getToken2Config
   },
   {
     method: 'POST',
-    path: '/account/reset',
+    path: '/password/forgot/send_code',
     config: {
-      handler: accountReset,
-      auth: {
-        strategy: 'hawk',
-        payload: 'required'
-      },
-      tags: ["account"],
+      description:
+        "Request that 'reset password' code be sent to one of the user's recovery methods",
+      tags: ["password"],
+      handler: notImplemented,
       validate: {
         payload: {
-          bundle: Hapi.types.String().required()
+          email: T.String().email().required()
+        },
+        response: {
+          schema: {
+            forgotPasswordToken: T.String()
+          }
         }
       }
     }
   },
+  {
+    method: 'POST',
+    path: '/password/forgot/verify_code',
+    config: {
+      description:
+        "Verify a 'reset password' code",
+      tags: ["password"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          code: T.String().required(),
+          forgotPasswordToken: T.String().required()
+        },
+        response: {
+          schema: {
+            accountResetToken: T.String()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/session/auth/start',
+    handler: sessionAuthStart,
+    config: getToken1Config
+  },
+  {
+    method: 'POST',
+    path: '/session/auth/finish',
+    handler: sessionAuthFinish,
+    config: getToken2Config
+  },
+  {
+    method: 'GET',
+    path: '/session/status',
+    config: {
+      description: "Check whether a session is still valid.",
+      tags: ["session"],
+      auth: {
+        strategy: 'hawk'
+      },
+      handler: notImplemented
+    }
+  },
+  {
+    method: 'POST',
+    path: '/session/destroy',
+    config: {
+      description: "Destroys this session.",
+      tags: ["session"],
+      auth: {
+        strategy: 'hawk'
+      },
+      handler: notImplemented
+    }
+  }
 ];
 
 function wellKnown(request) {
@@ -293,3 +458,7 @@ function getRandomBytes(request) {
 module.exports = {
   routes: routes
 };
+
+function notImplemented(request) {
+  request.reply(Hapi.error.internal('Not implemented yet'));
+}

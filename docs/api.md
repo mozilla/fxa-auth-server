@@ -38,7 +38,7 @@ For example:
 * Account
     * [/account/create](#post-accountcreate)
     * [/account/devices 🔒](#get-accountdevices-)
-    * [/account/keys](#get-accountkeys)
+    * [/account/keys 🔒](#get-accountkeys-)
     * [/account/recovery_methods 🔒](#get-accountrecovery_methods-)
     * [/account/recovery_methods/send_code 🔒](#post-accountrecovery_methodssend_code-)
     * [/account/recovery_methods/verify_code 🔒](#post-accountrecovery_methodsverify_code-)
@@ -190,13 +190,9 @@ for info on how to retrieve `sessionToken|keyFetchToken` from the bundle.
 
 Check whether a session is still valid.
 
-___Parameters___
-
-none
-
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `sessionToken` received from `/session/auth/finish`.
 
 ### Request
 ```sh
@@ -216,15 +212,11 @@ http://idp.profileinthecloud.net/session/status \
 
 ## POST /session/destroy 🔒
 
-Destroys a currently active session.
-
-___Parameters___
-
-none
+Destroys this session.
 
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `sessionToken` received from `/session/auth/finish`.
 
 ### Request
 ```sh
@@ -284,7 +276,6 @@ http://idp.profileinthecloud.net/certificate/sign \
 
 ```json
 {
-  "err": null,
   "cert": "eyJhbGciOiJEUzI1NiJ9.eyJwdWJsaWMta2V5Ijp7ImFsZ29yaXRobSI6IlJTIiwibiI6IjU3NjE1NTUwOTM3NjU1NDk2MDk4MjAyMjM2MDYyOTA3Mzg5ODMyMzI0MjUyMDY2Mzc4OTA0ODUyNDgyMjUzODg1MTA3MzQzMTY5MzI2OTEyNDkxNjY5NjQxNTQ3NzQ1OTM3NzAxNzYzMTk1NzQ3NDI1NTEyNjU5NjM2MDgwMzYzNjE3MTc1MzMzNjY5MzEyNTA2OTk1MzMyNDMiLCJlIjoiNjU1MzcifSwicHJpbmNpcGFsIjp7ImVtYWlsIjoiZm9vQGV4YW1wbGUuY29tIn0sImlhdCI6MTM3MzM5MjE4OTA5MywiZXhwIjoxMzczMzkyMjM5MDkzLCJpc3MiOiIxMjcuMC4wLjE6OTAwMCJ9.l5I6WSjsDIwCKIz_9d3juwHGlzVcvI90T2lv2maDlr8bvtMglUKFFWlN_JEzNyPBcMDrvNmu5hnhyN7vtwLu3Q"
 }
 ```
@@ -310,13 +301,9 @@ curl -X POST -v http://idp.profileinthecloud.net/get_random_bytes
 
 Begin the "change password" process
 
-___Parameters___
-
-none
-
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `sessionToken` received from `/session/auth/finish`.
 
 ### Request
 ```sh
@@ -470,17 +457,13 @@ http://idp.profileinthecloud.net/account/reset \
 
 ## GET /account/recovery_methods 🔒
 
-Gets a list of methods for recovery the user's password for the account (e.g., a list of email addresses).
+Gets the set of methods for recovery the user's password for the account (e.g., a set of email addresses).
 
 ### Request
 
-___Parameters___
-
-none
-
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `sessionToken` received from `/session/auth/finish`.
 
 ```sh
 curl -v \
@@ -495,7 +478,13 @@ http://idp.profileinthecloud.net/account/recovery_methods \
 
 ```json
 {
-  "recoveryMethods": [ { "email": "me@example.com", "verified": true, "primary": true } ]
+  "recoveryMethods": [
+    {
+      "email": "me@example.com",
+      "verified": true,
+      "primary": true
+    }
+  ]
 }
 ```
 
@@ -561,17 +550,13 @@ http://idp.profileinthecloud.net/account/recovery_methods/verify_code \
 
 ## GET /account/keys 🔒
 
-Get a base16 bundle of encrypted `kA|wrapKb`.
+Get the base16 bundle of encrypted `kA|wrapKb`.
 
 ### Request
 
-___Parameters___
-
-none
-
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `keyFetchToken` received from `/session/auth/finish` or `/password/change/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `keyFetchToken` received from `/session/auth/finish` or `/password/change/auth/finish`.
 
 ```sh
 curl -v \
@@ -595,15 +580,11 @@ for info on how to retrieve `kA|wrapKb` from the bundle.
 
 ## GET /account/devices 🔒
 
-Gets a list of devices currently authenticated and syncing for the user.
-
-___Paramters___
-
-none
+Gets the collection of devices currently authenticated and syncing for the user.
 
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/session/auth/finish`.
+The request must include a Hawk header that authenticates the request using a `sessionToken` received from `/session/auth/finish`.
 
 ### Request
 
@@ -620,7 +601,13 @@ http://idp.profileinthecloud.net/account/devices \
 
 ```json
 {
-  "devices": [ { "id": "4c352927-cd4f-4a4a-a03d-7d1893d950b8", "type": "computer", "name": "Foxy's Macbook" } ]
+  "devices": [
+    {
+      "id": "4c352927-cd4f-4a4a-a03d-7d1893d950b8",
+      "type": "computer",
+      "name": "Foxy's Macbook"
+    }
+  ]
 }
 ```
 
