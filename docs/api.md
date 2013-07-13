@@ -77,9 +77,7 @@ http://idp.profileinthecloud.net/account/create \
 ### Response
 
 ```json
-{
-  "created": true
-}
+{}
 ```
 
 ## POST /session/auth/start
@@ -182,9 +180,7 @@ http://idp.profileinthecloud.net/session/status \
 ### Response
 
 ```json
-{
-  "valid": true
-}
+{}
 ```
 
 ## POST /session/destroy
@@ -212,9 +208,7 @@ http://idp.profileinthecloud.net/session/destroy \
 ### Response
 
 ```json
-{
-  "destroyed": true
-}
+{}
 ```
 
 ## POST /certificate/sign
@@ -440,9 +434,7 @@ http://idp.profileinthecloud.net/account/reset \
 ### Response
 
 ```json
-{
-  "reset": true
-}
+{}
 ```
 
 ## GET /account/recovery_methods
@@ -505,9 +497,7 @@ http://idp.profileinthecloud.net/account/recovery_methods/send_code \
 ### Response
 
 ```json
-{
-  "sent": true
-}
+{}
 ```
 
 ## POST /account/recovery_methods/verify_code
@@ -535,9 +525,7 @@ http://idp.profileinthecloud.net/account/recovery_methods/verify_code \
 ### Response
 
 ```json
-{
-  "valid": true
-}
+{}
 ```
 
 ## GET /account/keys
