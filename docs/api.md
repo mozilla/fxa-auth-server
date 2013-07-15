@@ -21,9 +21,15 @@ For example:
 
 ```json
 {
-  "code": 400,
-  "error": "Bad Request",
-  "message": "the value of salt is not allowed to be undefined"
+  status: 400,  // matches the HTTP status code
+  errors: [
+    {
+      code: 1234,  // stable application level code
+      message: "The value of salt is not allowed to be undefined", // dev message
+      info: "https://dev.picl.org/errors/1234" // link to more info on the error
+      // additional error specific properties allowed
+    }
+  ]
 }
 ```
 
