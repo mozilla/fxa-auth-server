@@ -49,7 +49,7 @@ describe('user', function() {
 
 
   it('should fail to login with an unknown email', function(done) {
-    testClient.makeRequest('POST', '/startLogin', {
+    testClient.makeRequest('POST', '/session/auth/start', {
       payload: { email: 'bad@emai.l' }
     }, function(res) {
       try {
@@ -63,7 +63,7 @@ describe('user', function() {
   });
 
   it('should return SRP parameters on startlogin', function(done) {
-    testClient.makeRequest('POST', '/startLogin', {
+    testClient.makeRequest('POST', '/session/auth/start', {
       payload: { email: TEST_EMAIL }
     }, function(res) {
       session = res.result;
@@ -83,7 +83,7 @@ describe('user', function() {
   });
 
   it('should fail to login with a bad SRP', function(done) {
-    testClient.makeRequest('POST', '/finishLogin', {
+    testClient.makeRequest('POST', '/session/auth/finish', {
       payload: {
         sessionId: session.sessionId,
         A: 'bad1',
@@ -113,7 +113,7 @@ describe('user', function() {
   });
 
   it('should fail to login with an old sessionId', function(done) {
-    testClient.makeRequest('POST', '/finishLogin', {
+    testClient.makeRequest('POST', '/session/auth/finish', {
       payload: {
         sessionId: session.sessionId,
         A: 'bad1',
@@ -131,7 +131,7 @@ describe('user', function() {
   });
 
   it('should fail to login with an unknown sessionId', function(done) {
-    testClient.makeRequest('POST', '/finishLogin', {
+    testClient.makeRequest('POST', '/session/auth/finish', {
       payload: {
         sessionId: 'bad sessionid',
         A: 'bad1',
@@ -196,7 +196,7 @@ describe('user', function() {
   describe('account reset', function() {
 
     it('should fail to get token with an unknown email', function(done) {
-      testClient.makeRequest('POST', '/startResetToken', {
+      testClient.makeRequest('POST', '/password/change/auth/start', {
         payload: { email: 'bad@emai.l' }
       }, function(res) {
         try {
@@ -209,8 +209,8 @@ describe('user', function() {
       });
     });
 
-    it('should return SRP parameters on startResetToken', function(done) {
-      testClient.makeRequest('POST', '/startResetToken', {
+    it('should return SRP parameters on password/change/auth/start', function(done) {
+      testClient.makeRequest('POST', '/password/change/auth/start', {
         payload: { email: TEST_EMAIL }
       }, function(res) {
         session = res.result;
@@ -230,7 +230,7 @@ describe('user', function() {
     });
 
     it('should fail to get a reset token with a bad SRP', function(done) {
-      testClient.makeRequest('POST', '/finishResetToken', {
+      testClient.makeRequest('POST', '/password/change/auth/finish', {
         payload: {
           sessionId: session.sessionId,
           A: 'bad1',
@@ -261,7 +261,7 @@ describe('user', function() {
     });
 
     it('should fail to get reset tokoen with an old sessionId', function(done) {
-      testClient.makeRequest('POST', '/finishResetToken', {
+      testClient.makeRequest('POST', '/password/change/auth/finish', {
         payload: {
           sessionId: session.sessionId,
           A: 'bad1',
@@ -279,7 +279,7 @@ describe('user', function() {
     });
 
     it('should fail to get reset token with an unknown sessionId', function(done) {
-      testClient.makeRequest('POST', '/finishResetToken', {
+      testClient.makeRequest('POST', '/password/change/auth/finish', {
         payload: {
           sessionId: 'bad sessionid',
           A: 'bad1',
@@ -355,7 +355,7 @@ describe('user', function() {
   });
 
   it('should generate 32 bytes of random crypto entropy', function(done) {
-    testClient.makeRequest('GET', '/entropy', function(res) {
+    testClient.makeRequest('POST', '/get_random_bytes', function(res) {
       var entropy;
       try {
         entropy = res.result;

@@ -90,22 +90,15 @@ var routes = [
     }
   },
   {
-    method: 'GET',
-    path: '/entropy',
-    config: {
-      handler: getEntropy
-    }
-  },
-  {
     method: 'POST',
-    path: '/create',
+    path: '/account/create',
     config: {
       description:
         "Creates an account associated with an email address, " +
         "passing along SRP information (salt and verifier) " +
         "and a wrapped key (used for class B data storage).",
       tags: ["srp", "account"],
-      handler: create,
+      handler: accountCreate,
       validate: {
         payload: {
           email: T.String().email().required(),
@@ -118,10 +111,127 @@ var routes = [
     }
   },
   {
-    method: 'POST',
-    path: '/sign',
+    method: 'GET',
+    path: '/account/devices',
     config: {
-      handler: sign,
+      description:
+        "get the collection of devices currently authenticated and syncing",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            devices: T.Object()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/account/keys',
+    config: {
+      description:
+        "Get the base16 bundle of encrypted kA|wrapKb",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            bundle: T.String().regex(HEX_STRING)
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/account/recovery_methods',
+    config: {
+      description:
+        "Gets the set of methods for recovery the account's password",
+      auth: {
+        strategy: 'hawk'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        response: {
+          schema: {
+            recoveryMethods: T.Object()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/recovery_methods/send_code',
+    config: {
+      description:
+        "Sends a verification code to the specified recovery method. " +
+        "Providing this code will mark the recovery method as verified",
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          email: T.String().email().required()
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/recovery_methods/verify_code',
+    config: {
+      description:
+        "Sends a verification code to the specified recovery method. " +
+        "Providing this code will mark the recovery method as verified",
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account", "recovery"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          code: T.String().required()
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/account/reset',
+    config: {
+      handler: accountReset,
+      auth: {
+        strategy: 'hawk',
+        payload: 'required'
+      },
+      tags: ["account"],
+      validate: {
+        payload: {
+          bundle: Hapi.types.String().required()
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/certificate/sign',
+    config: {
+      handler: certificateSign,
       auth: {
         strategy: 'hawk',
         payload: 'required'
@@ -145,48 +255,101 @@ var routes = [
   },
   {
     method: 'POST',
-    path: '/startLogin',
-    handler: startLogin,
-    config: getToken1Config
-  },
-  {
-    method: 'POST',
-    path: '/startResetToken',
-    handler: startResetToken,
-    config: getToken1Config
-  },
-  {
-    method: 'POST',
-    path: '/finishLogin',
-    handler: finishLogin,
-    config: getToken2Config
-  },
-  {
-    method: 'POST',
-    path: '/finishResetToken',
-    handler: finishResetToken,
-    config: getToken2Config
-  },
-  {
-    method: 'POST',
-    path: '/resetAccount',
+    path: '/get_random_bytes',
     config: {
-      handler: resetAccount,
-      auth: {
-        strategy: 'hawk',
-        payload: 'required'
-      },
-      tags: ["account"],
+      handler: getRandomBytes
+    }
+  },
+  {
+    method: 'POST',
+    path: '/password/change/auth/start',
+    handler: passwordChangeAuthStart,
+    config: getToken1Config
+  },
+  {
+    method: 'POST',
+    path: '/password/change/auth/finish',
+    handler: passwordChangeAuthFinish,
+    config: getToken2Config
+  },
+  {
+    method: 'POST',
+    path: '/password/forgot/send_code',
+    config: {
+      description:
+        "Request that 'reset password' code be sent to one of the user's recovery methods",
+      tags: ["password"],
+      handler: notImplemented,
       validate: {
         payload: {
-          bundle: Hapi.types.String().required()
+          email: T.String().email().required()
+        },
+        response: {
+          schema: {
+            forgotPasswordToken: T.String()
+          }
         }
       }
     }
   },
+  {
+    method: 'POST',
+    path: '/password/forgot/verify_code',
+    config: {
+      description:
+        "Verify a 'reset password' code",
+      tags: ["password"],
+      handler: notImplemented,
+      validate: {
+        payload: {
+          code: T.String().required(),
+          forgotPasswordToken: T.String().required()
+        },
+        response: {
+          schema: {
+            accountResetToken: T.String()
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/session/auth/start',
+    handler: sessionAuthStart,
+    config: getToken1Config
+  },
+  {
+    method: 'POST',
+    path: '/session/auth/finish',
+    handler: sessionAuthFinish,
+    config: getToken2Config
+  },
+  {
+    method: 'GET',
+    path: '/session/status',
+    config: {
+      description: "Check whether a session is still valid.",
+      tags: ["session"],
+      auth: {
+        strategy: 'hawk'
+      },
+      handler: notImplemented
+    }
+  },
+  {
+    method: 'POST',
+    path: '/session/destroy',
+    config: {
+      description: "Destroys this session.",
+      tags: ["session"],
+      auth: {
+        strategy: 'hawk'
+      },
+      handler: notImplemented
+    }
+  }
 ];
-
-
 
 function wellKnown(request) {
   request.reply({
@@ -196,7 +359,7 @@ function wellKnown(request) {
   });
 }
 
-function create(request) {
+function accountCreate(request) {
   account.create(
     request.payload,
     function (err) {
@@ -211,7 +374,7 @@ function create(request) {
   );
 }
 
-function sign(request) {
+function certificateSign(request) {
   cc.enqueue(
     {
       email: account.principle(request.auth.credentials.uid),
@@ -246,8 +409,8 @@ function getToken1(request) {
 
 }
 
-function startLogin(request) { return getToken1(request); }
-function startResetToken(request) { return getToken1(request); }
+function sessionAuthStart(request) { return getToken1(request); }
+function passwordChangeAuthStart(request) { return getToken1(request); }
 
 
 function getToken2(type, request) {
@@ -267,11 +430,11 @@ function getToken2(type, request) {
   );
 }
 
-function finishLogin(request) { return getToken2('sign', request); }
-function finishResetToken(request) { return getToken2('reset', request); }
+function sessionAuthFinish(request) { return getToken2('sign', request); }
+function passwordChangeAuthFinish(request) { return getToken2('reset', request); }
 
 
-function resetAccount(request) {
+function accountReset(request) {
   account.resetAccount(
     request.auth.credentials.token,
     request.payload.bundle,
@@ -286,7 +449,7 @@ function resetAccount(request) {
   );
 }
 
-function getEntropy(request) {
+function getRandomBytes(request) {
   crypto.randomBytes(32, function(err, buf) {
     request.reply(err || { data: buf.toString('hex') });
   });
@@ -295,3 +458,7 @@ function getEntropy(request) {
 module.exports = {
   routes: routes
 };
+
+function notImplemented(request) {
+  request.reply(Hapi.error.internal('Not implemented yet'));
+}
