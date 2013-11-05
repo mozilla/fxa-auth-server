@@ -30,7 +30,11 @@ exports.createClient = function(options) {
     realClient: null,
     _resetConnection: function() {
       if (this.realClient) this.realClient.destroy();
-      this.realClient = mysql.createClient(options);
+      // Note : this might be dangerous.
+      // See  : https://github.com/felixge/node-mysql/#connection-options
+      options.multipleStatements = true;
+      this.realClient = mysql.createConnection(options);
+      this.realClient.connect();
       this.realClient.on('error', function(e) {
         console.log("database connection down: " + e.toString());
       });
@@ -151,7 +155,7 @@ exports.createClient = function(options) {
       this.realClient.on(ev, cb);
     },
     useDatabase: function(db, cb) {
-      this.realClient.useDatabase(db, cb);
+      this.realClient.query('USE ' + db, cb);
     }
   };
   client._resetConnection();
