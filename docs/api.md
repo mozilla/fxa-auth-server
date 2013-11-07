@@ -62,6 +62,7 @@ The currently-defined error responses are:
 * status code 400, errno 106:  request body was not valid json
 * status code 400, errno 107:  request body contains invalid parameters
 * status code 400, errno 108:  request body missing required parameters
+* status code 403, errno 115:  attempt to create too many sessions
 * status code 401, errno 109:  invalid request signature
 * status code 401, errno 110:  invalid authentication token
 * status code 401, errno 111:  invalid authentication timestamp
@@ -617,6 +618,7 @@ Failing requests may be due to the following errors:
 * status code 400, errno 106:  request body was not valid json
 * status code 400, errno 107:  request body contains invalid parameters
 * status code 400, errno 108:  request body missing required parameters
+* status code 403, errno 115:  attempt to create too many sessions
 * status code 411, errno 112:  content-length header was not provided
 * status code 413, errno 113:  request body too large
 
@@ -626,6 +628,8 @@ Failing requests may be due to the following errors:
 :lock: HAWK-authenticated with the authToken.
 
 This is used when adding a new device, or when creating a new account (and then adding the first device). It consumes a single-use authToken, and returns a long-lived `sessionToken` and a single-use `keyFetchToken`.
+
+The server may limit the number of devices that can be simultaneously connected to an account.
 
 ### Request
 

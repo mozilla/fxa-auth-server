@@ -200,4 +200,12 @@ Boom.serviceUnavailable = function () {
   })
 }
 
+Boom.tooManySessions = function () {
+  return Boom.wrap({
+    code: 400,
+    errno: 115,
+    message: 'Too many sessions connected to this accounte'
+  })
+}
+
 module.exports = Boom
