@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-module.exports = function (log, isA, error, db) {
+module.exports = function (log, isA, error, db, config) {
 
   const HEX_STRING = /^(?:[a-fA-F0-9]{2})+$/
 
@@ -20,20 +20,29 @@ module.exports = function (log, isA, error, db) {
           log.begin('Session.create', request)
           var reply = request.reply.bind(request)
           var authToken = request.auth.credentials
-          db.createSession(authToken)
+          db.accountNumDevices(authToken.uid)
             .then(
-              function (tokens) {
-                return authToken.bundleSession(
-                  tokens.keyFetchToken.data,
-                  tokens.sessionToken.data
-                )
-              }
-            )
-            .then(
-              function (bundle) {
-                return {
-                  bundle: bundle
+              function (numDevices) {
+                if (numDevices >= config.limits.max_devices_per_account) {
+                  log.error("too many devices", authToken.uid)
+                  throw error.tooManySessions()
                 }
+                return db.createSession(authToken)
+                  .then(
+                    function (tokens) {
+                      return authToken.bundleSession(
+                        tokens.keyFetchToken.data,
+                        tokens.sessionToken.data
+                      )
+                    }
+                  )
+                  .then(
+                    function (bundle) {
+                      return {
+                        bundle: bundle
+                      }
+                    }
+                  )
               }
             )
             .done(reply, reply)

@@ -4,8 +4,11 @@
 
 var test = require('tap').test
 var cp = require('child_process')
+var path = require('path')
 var crypto = require('crypto');
 var Client = require('../../client')
+
+process.env.CONFIG_FILES = path.join(__dirname, '../config/integration.json')
 var config = require('../../config').root()
 
 process.env.DEV_VERIFIED = 'true'
@@ -29,6 +32,7 @@ function main() {
   var email5 = uniqueID() + "@example.com"
   var email6 = uniqueID() + "@example.com"
   var email7 = uniqueID() + "@example.com"
+  var email8 = uniqueID() + "@example.com"
 
   test(
     'Create account flow',
@@ -482,6 +486,53 @@ function main() {
           },
           function (err) {
             t.fail(err)
+            t.end()
+          }
+        )
+    }
+  )
+
+  test(
+    'cannot create too many sessions',
+    function (t) {
+      var email = email8
+      var password = 'foobar'
+      var client = null
+      Client.create(config.public_url, email, password)
+        .then(
+          function (x) {
+            client = x
+            return client.devices()
+          }
+        )
+        .then(
+          function (devices) {
+            t.equal(devices.length, 1)
+            client.sessionToken = null
+            return client.devices()
+          }
+        )
+        .then(
+          function (devices) {
+            t.equal(devices.length, 2)
+            client.sessionToken = null
+            return client.devices()
+          }
+        )
+        .then(
+          function (devices) {
+            t.equal(devices.length, 3)
+            client.sessionToken = null
+            return client.devices()
+          }
+        )
+        .done(
+          function () {
+            t.fail('was able to create too many sessions')
+            t.end()
+          },
+          function (err) {
+            t.equal(err.errno, 115, 'was prevented from creating too many sessions')
             t.end()
           }
         )
