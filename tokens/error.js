@@ -49,13 +49,6 @@ function invalidToken() {
   })
 }
 
-function tooManySessions() {
-  return error({
-    errno: 115,
-    message: 'Too many sessions connected to this accounte'
-  })
-}
-
 module.exports = {
   error: error,
   accountExists: accountExists,

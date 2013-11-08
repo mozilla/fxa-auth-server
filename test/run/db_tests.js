@@ -491,6 +491,10 @@ DB.connect()
             return db.createSessionToken(sessionToken)
           })
           .then(function(sessionToken) {
+            return db.accountNumDevices(ACCOUNT.uid)
+          })
+          .then(function(numDevices) {
+            t.equal(numDevices, 2)
             return db.accountDevices(ACCOUNT.uid)
           })
           .then(function(devices) {
@@ -501,6 +505,10 @@ DB.connect()
             return db.deleteSessionToken(sessionToken)
           })
           .then(function(sessionToken) {
+            return db.accountNumDevices(ACCOUNT.uid)
+          })
+          .then(function(numDevices) {
+            t.equal(numDevices, 1)
             return db.accountDevices(ACCOUNT.uid)
           })
           .then(function(devices) {

@@ -202,9 +202,9 @@ Boom.serviceUnavailable = function () {
 
 Boom.tooManySessions = function () {
   return Boom.wrap({
-    code: 400,
+    code: 403,
     errno: 115,
-    message: 'Too many sessions connected to this accounte'
+    message: 'Too many sessions connected to this account'
   })
 }
 

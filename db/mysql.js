@@ -280,6 +280,22 @@ module.exports = function (
     return d.promise
   }
 
+  MySql.prototype.accountNumDevices = function (uid) {
+    var d = P.defer()
+    log.trace({ op: 'MySql.accountNumDevices', uid: uid })
+    var sql = 'SELECT COUNT(tokenid) AS numDevices ' +
+              ' FROM sessionTokens WHERE uid = ?'
+    this.client.query(
+      sql,
+      [uid],
+      function (err, results) {
+        if (err) return d.reject(err)
+        d.resolve(results[0].numDevices)
+      }
+    )
+    return d.promise
+  }
+
   MySql.prototype.sessionToken = function (id) {
     var d = P.defer()
     log.trace({ op: 'MySql.sessionToken', id: id })

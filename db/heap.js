@@ -151,6 +151,16 @@ module.exports = function (
       )
   }
 
+  Heap.prototype.accountNumDevices = function (uid) {
+    log.trace({ op: 'Heap.accountNumDevices', uid: uid })
+    return this.account(uid)
+      .then(
+        function (account) {
+          return Object.keys(account.devices).length
+        }
+      )
+  }
+
   Heap.prototype.sessionToken = function (id) {
     log.trace({ op: 'Heap.sessionToken', id: id })
     var sessionToken = this.sessionTokens[id]

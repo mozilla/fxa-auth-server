@@ -196,6 +196,12 @@ module.exports = function (fs, path, url, convict) {
         default: false,
         env: 'DEV_VERIFIED'
       }
+    },
+    limits: {
+      max_devices_per_account: {
+        doc: 'maximum number of devices that can be connected to an account',
+        default: 100
+      }
     }
   })
 

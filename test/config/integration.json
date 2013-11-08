@@ -1,0 +1,6 @@
+{
+  "env": "local",
+  "limits": {
+    "max_devices_per_account": 3
+  }
+}
