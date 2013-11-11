@@ -30,9 +30,6 @@ exports.createClient = function(options) {
     realClient: null,
     _resetConnection: function() {
       if (this.realClient) this.realClient.destroy();
-      // Note : this might be dangerous.
-      // See  : https://github.com/felixge/node-mysql/#connection-options
-      options.multipleStatements = true;
       this.realClient = mysql.createConnection(options);
       this.realClient.connect();
       this.realClient.on('error', function(e) {

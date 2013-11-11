@@ -27,6 +27,7 @@ module.exports = function (
     var d = P.defer()
     var dbname = options.database
     delete options.database
+    options.multipleStatements = true;
     var client = mysql.createClient(options)
     client.query(
       'CREATE DATABASE IF NOT EXISTS ' + dbname,
@@ -48,6 +49,7 @@ module.exports = function (
                   }
                 )
                 options.database = dbname
+                options.multipleStatements = false;
                 return d.resolve(new MySql(options))
               }
             )
