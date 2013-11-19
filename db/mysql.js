@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var P = require('p-promise')
+var q = require('q')
 var mysql = require('mysql');
 var schema = require('fs').readFileSync(__dirname + '/schema.sql', { encoding: 'utf8'})
 
+// MySql constructor
 module.exports = function (
   config,
   log,
@@ -510,30 +512,23 @@ module.exports = function (
   // DELETE
 
   MySql.prototype.deleteAccount = function (authToken) {
-    var d = P.defer()
-    d.resolve(true)
-    d = d.promise
     log.trace({ op: 'MySql.deleteAccount', uid: authToken && authToken.uid })
-    // TODO: transactions not working with our mysql driver.
-    // For now we just delete in a safe, sensible order.
+
+    var p = beginTransaction(this.client)
+
     var tables = ['sessionTokens', 'keyfetchTokens', 'authTokens', 'srpTokens',
                   'resetTokens', 'forgotpwdTokens', 'accounts']
     tables.forEach(function(table) {
-      var sql = 'DELETE FROM ' + table + ' WHERE uid = ?'
-      d = d.then(function() {
-        var d2 = P.defer()
-        this.client.query(
-          sql,
-          [authToken.uid],
-          function (err) {
-            if (err) return d2.reject(err)
-            d2.resolve(true)
-          }
-        )
-        return d2.promise
+      p = p.then(function() {
+        deleteFromTableUsingUid(this.client, table, authToken.uid)
       }.bind(this))
     }.bind(this))
-    return d
+
+    p = p.then(function() {
+      commitTransaction(this.client)
+    }.bind(this))
+
+    return p
   }
 
   MySql.prototype.deleteSessionToken = function (sessionToken) {
@@ -871,5 +866,41 @@ module.exports = function (
     return d.promise
   }
 
+  // helper functions
+  function beginTransaction(client) {
+    var d = q.defer()
+    client.query('BEGIN', d.makeNodeResolver())
+    return d.promise
+  }
+
+  function commitTransaction(client) {
+    var d = q.defer()
+    client.query('COMMIT', function(err) {
+      if (err) {
+        client.query('ROLLBACK', function() {
+          d.reject(err)
+        })
+        return
+      }
+      d.resolve()
+    })
+
+    return d.promise
+  }
+
+  function deleteFromTableUsingUid(client, table, uid) {
+    var d = q.defer()
+
+    var sql = 'DELETE FROM ' + table + ' WHERE uid = ?'
+    client.query(
+      sql,
+      [uid],
+      d.makeNodeResolver()
+    )
+
+    return d.promise
+  }
+
+  // finally, return the constructor
   return MySql
 }
