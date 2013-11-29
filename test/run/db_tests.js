@@ -45,13 +45,13 @@ DB.connect()
         function (t) {
           db.createAccount(ACCOUNT)
           .then(function(account) {
-            t.equal(account.uid, ACCOUNT.uid)
+            t.equal(account.uid, ACCOUNT.uid, 'account.uid is the same as the input ACCOUNT.uid')
           })
           .then(function() {
             return db.accountExists(ACCOUNT.email)
           })
           .then(function(exists) {
-            t.ok(exists)
+            t.ok(exists, 'account exists for this email address')
           })
           .then(function() {
             return db.account(ACCOUNT.uid)
@@ -86,13 +86,14 @@ DB.connect()
             return db.createSrpToken(emailRecord)
           })
           .then(function(srpToken) {
-            t.equal(srpToken.uid, ACCOUNT.uid)
+            t.equal(srpToken.uid, ACCOUNT.uid, 'srpToken.uid is the same as the ACCOUNT.uid')
             t.equal(srpToken.v.toString('hex'), ACCOUNT.srp.verifier)
-            t.equal(srpToken.s, ACCOUNT.srp.salt)
-            t.ok(srpToken.b)
+            t.equal(srpToken.s, ACCOUNT.srp.salt, 'srpToken.s == ACCOUNT.srp.salt')
+            t.ok(srpToken.b, 'srpToken.b is true')
             return srpToken
           })
           .then(function(srpToken) {
+              console.log('a')
             return db.srpToken(srpToken.id)
           })
           .then(function(srpToken) {
@@ -394,6 +395,7 @@ DB.connect()
           })
           .done(
             function () {
+              t.pass('End of db.createSession')
               t.end()
             },
             function (err) {
@@ -416,8 +418,8 @@ DB.connect()
             return db.createPasswordChange(authToken)
           })
           .then(function(tokens) {
-            t.equal(tokens.keyFetchToken.uid, ACCOUNT.uid)
-            t.equal(tokens.accountResetToken.uid, ACCOUNT.uid)
+            t.equal(tokens.keyFetchToken.uid, ACCOUNT.uid, 'keyFetchToken.uid is the same as the original ACCOUNT.uid')
+            t.equal(tokens.accountResetToken.uid, ACCOUNT.uid, 'accountResetToken.uid is the same as the original ACCOUNT.uid')
             tokens1 = tokens
           })
           .then(function() {
@@ -588,5 +590,6 @@ DB.connect()
           })
         }
       )
+
     }
   )
