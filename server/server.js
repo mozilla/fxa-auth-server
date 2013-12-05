@@ -150,6 +150,15 @@ module.exports = function (path, url, Hapi, toobusy, error) {
             payload: request.payload
           }
         )
+        if (request.payload && request.payload.metrics) {
+          log.info(
+            {
+              op: 'metrics',
+              metrics: request.payload.metrics
+              // TODO: locale once rfkelly's localization lands
+            }
+          )
+        }
         next()
       }
     )
