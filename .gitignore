@@ -13,3 +13,5 @@ secret*
 *~
 *.pyc
 /.vagrant
+/vm/*.box
+/vm/packer_cache
