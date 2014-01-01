@@ -1,0 +1,72 @@
+{
+	"builders": [
+		{
+			"vm_name": "sl64",
+			"type": "vmware",
+			"guest_os_type": "centos-64",
+			"http_directory": "http",
+			"iso_urls": [
+				"http://mirrors.200p-sf.sonic.net/scientific/6.4/x86_64/iso/SL-64-x86_64-2013-03-18-Install-DVD.iso",
+				"http://ftp.scientificlinux.org/linux/scientific/6.4/i386/iso/SL-64-i386-2013-03-18-Install-DVD.iso"
+			],
+			"iso_checksum": "99f2b481aaad90dfc3712e8d886cd0791626936e",
+			"iso_checksum_type": "sha1",
+			"disk_size": "20000",
+			"ssh_username": "root",
+			"ssh_password": "vagrant",
+			"tools_upload_flavor": "linux",
+			"boot_wait": "5s",
+			"boot_command": [
+				"<esc>",
+				"<wait>",
+				"linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/dev.cfg",
+				"<enter>"
+			],
+			"shutdown_command": "init 0",
+			"headless": true
+		},
+		{
+			"vm_name": "sl64",
+			"type": "virtualbox",
+			"guest_os_type": "RedHat_64",
+			"http_directory": "http",
+			"iso_urls": [
+				"http://mirrors.200p-sf.sonic.net/scientific/6.4/x86_64/iso/SL-64-x86_64-2013-03-18-Install-DVD.iso",
+				"http://ftp.scientificlinux.org/linux/scientific/6.4/i386/iso/SL-64-i386-2013-03-18-Install-DVD.iso"
+			],
+			"iso_checksum": "99f2b481aaad90dfc3712e8d886cd0791626936e",
+			"iso_checksum_type": "sha1",
+			"disk_size": "20000",
+			"guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+			"virtualbox_version_file": ".vbox_version",
+			"ssh_username": "root",
+			"ssh_password": "vagrant",
+			"boot_wait": "5s",
+			"boot_command": [
+				"<esc>",
+				"<wait>",
+				"linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/dev.cfg",
+				"<enter>"
+			],
+			"shutdown_command": "init 0",
+			"headless": true
+		}
+	],
+	"provisioners": [
+		{
+			"type": "shell",
+			"scripts": [
+				"script/auth_server.sh",
+				"script/update.sh",
+				"script/vagrant.sh",
+				"script/cleanup.sh"
+			]
+		}
+	],
+	"post-processors": [
+		{
+			"type": "vagrant",
+			"output": "sl64_{{ .Provider }}.box"
+		}
+	]
+}

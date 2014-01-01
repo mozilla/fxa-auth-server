@@ -48,6 +48,8 @@
   "devDependencies": {
     "awsbox": "0.6.x",
     "awsboxen": "0.5.x",
+    "binary-split": "*",
+    "through": "*",
     "lazysmtp": "git://github.com/dannycoates/node-lazysmtp.git#9bb3712992",
     "mailparser": "0.3.6",
     "tap": "0.4.6",
