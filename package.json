@@ -59,6 +59,7 @@
     "request": "2.31.0",
     "binary-split": "0.1.1",
     "through": "2.3.4",
-    "grunt-copyright": "~0.1.0"
+    "grunt-copyright": "~0.1.0",
+    "grunt-jscs-checker": "~0.3.2"
   }
 }
