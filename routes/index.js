@@ -9,6 +9,12 @@ var uuid = require('uuid')
 var Hapi = require('hapi')
 var isA = Hapi.types
 
+function addMetrics(route) {
+  if (route.method === 'POST' && route.validate && route.validate.payload) {
+    route.validate.payload.metrics = isA.Object()
+  }
+}
+
 module.exports = function (
   log,
   error,
@@ -65,6 +71,8 @@ module.exports = function (
   })
 
   var routes = defaults.concat(idp, v1Routes)
+
+  routes.forEach(addMetrics)
 
   return routes
 }
