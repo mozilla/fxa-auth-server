@@ -915,6 +915,67 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
       })
   }
 
+  // expire tokens
+
+  var DELETE_EXPIRED_ACCOUNT_RESET_TOKENS   = 'DELETE FROM accountResetTokens WHERE createdAt < ?'
+  var DELETE_EXPIRED_PASSWORD_CHANGE_TOKENS = 'DELETE FROM passwordChangeTokens WHERE createdAt < ?'
+  var DELETE_EXPIRED_PASSWORD_FORGOT_TOKENS = 'DELETE FROM passwordForgotTokens WHERE createdAt < ?'
+
+  // olderThan is in milliseconds
+  MySql.prototype.expireAccountResetTokens = function (olderThan) {
+    log.trace({ op: 'MySql.expireAccountResetTokens', olderThan: olderThan })
+    return this.getMasterConnection()
+      .then(function(con) {
+        var d = P.defer()
+        con.query(
+          DELETE_EXPIRED_ACCOUNT_RESET_TOKENS,
+          [Date.now() - olderThan],
+          function (err) {
+            con.release()
+            if (err) return d.reject(err)
+            d.resolve()
+          }
+        )
+        return d.promise
+      })
+  }
+
+  MySql.prototype.expirePasswordChangeTokens = function (olderThan) {
+    log.trace({ op: 'MySql.expirePasswordChangeTokens', olderThan: olderThan })
+    return this.getMasterConnection()
+      .then(function(con) {
+        var d = P.defer()
+        con.query(
+          DELETE_EXPIRED_PASSWORD_CHANGE_TOKENS,
+          [Date.now() - olderThan],
+          function (err) {
+            con.release()
+            if (err) return d.reject(err)
+            d.resolve()
+          }
+        )
+        return d.promise
+      })
+  }
+
+  MySql.prototype.expirePasswordForgotTokens = function (olderThan) {
+    log.trace({ op: 'MySql.expirePasswordForgotTokens', olderThan: olderThan })
+    return this.getMasterConnection()
+      .then(function(con) {
+        var d = P.defer()
+        con.query(
+          DELETE_EXPIRED_PASSWORD_FORGOT_TOKENS,
+          [Date.now() - olderThan],
+          function (err) {
+            con.release()
+            if (err) return d.reject(err)
+            d.resolve()
+          }
+        )
+        return d.promise
+      })
+  }
+
   // helper functions
   MySql.prototype.getMasterConnection = function() {
     var d = P.defer()
