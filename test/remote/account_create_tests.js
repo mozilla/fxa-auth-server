@@ -92,16 +92,6 @@ TestServer.start(config)
             return client.keys()
           }
         )
-        .then(
-          function () {
-            return server.assertLogs(t, {
-              'account-create-success': 1,
-              'account-verify-request': 1,
-              'account-verify-success': 1,
-              'account-verify-failure': 0
-            })
-          }
-        )
     }
   )
 
@@ -150,16 +140,6 @@ TestServer.start(config)
         .then(
           function (emailData) {
             t.equal(emailData.headers['x-service-id'], undefined)
-          }
-        )
-        .then(
-          function () {
-            return server.assertLogs(t, {
-              'account-create-success': 1,
-              'account-verify-request': 2,
-              'account-verify-success': 0,
-              'account-verify-failure': 0
-            })
           }
         )
     }

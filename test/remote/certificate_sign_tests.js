@@ -38,14 +38,6 @@ TestServer.start(config)
             t.ok(payload['fxa-generation'] > 0, 'cert has non-zero generation number')
           }
         )
-        .then(
-          function () {
-            return server.assertLogs(t, {
-              'account-create-success': 1,
-              'login-success': 1
-            })
-          }
-        )
     }
   )
 
