@@ -36,7 +36,7 @@ var ACCOUNT = {
 }
 
 
-DB.connect(config[config.db.backend])
+DB.connect(config)
   .then(
     function (db) {
 

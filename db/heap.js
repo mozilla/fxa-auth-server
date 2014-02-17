@@ -13,7 +13,8 @@ module.exports = function (
   PasswordChangeToken
   ) {
 
-  function Heap() {
+  function Heap(config) {
+    this.config = config
     this.sessionTokens = {}
     this.keyFetchTokens = {}
     this.accountResetTokens = {}
@@ -40,8 +41,8 @@ module.exports = function (
     }
   }
 
-  Heap.connect = function () {
-    return P(new Heap())
+  Heap.connect = function (config) {
+    return P(new Heap(config))
   }
 
   Heap.prototype.close = function () {

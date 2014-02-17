@@ -20,7 +20,8 @@ module.exports = function (
   var LOCK_ERRNOS = [ 1205, 1206, 1213, 1689 ]
 
   // make a pool of connections that we can draw from
-  function MySql(options) {
+  function MySql(config) {
+    var options = config[config.db.backend]
 
     // poolCluster will remove the pool after `removeNodeErrorCount` errors.
     // We don't ever want to remove a pool because we only have one pool
@@ -74,7 +75,7 @@ module.exports = function (
   // this will connect to mysql, create the database
   // then create the schema, prior to returning an
   // instance of MySql
-  function createSchema(options) {
+  function createSchema(config) {
     log.trace( { op: 'MySql.createSchema' } )
 
     var d = P.defer()
@@ -82,6 +83,7 @@ module.exports = function (
     // To create the schema we need to switch multipleStatements on
     // as well as connecting without a database name, but switching to it
     // once it has been created.
+    var options = config[config.db.backend]
     options.master.multipleStatements = true
     var database = options.master.database
     delete options.master.database
@@ -128,7 +130,7 @@ module.exports = function (
                     delete options.master.multipleStatements
 
                     // create the mysql class
-                    d.resolve(new MySql(options))
+                    d.resolve(new MySql(config))
                   }
                 )
               }
@@ -141,11 +143,12 @@ module.exports = function (
   }
 
   // this will be called from outside this file
-  MySql.connect = function(options) {
+  MySql.connect = function(config) {
+    var options = config[config.db.backend]
     if (options.createSchema) {
-      return createSchema(options)
+      return createSchema(config)
     }
-    return P(new MySql(options))
+    return P(new MySql(config))
   }
 
   MySql.prototype.close = function () {
