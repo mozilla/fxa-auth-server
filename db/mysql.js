@@ -21,6 +21,7 @@ module.exports = function (
 
   // make a pool of connections that we can draw from
   function MySql(config) {
+    this.config = config
     var options = config[config.db.backend]
 
     // poolCluster will remove the pool after `removeNodeErrorCount` errors.
@@ -756,6 +757,20 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
             }
           )
       }
+    )
+  }
+
+  var PRUNE = "CALL prune(?, ?)"
+
+  MySql.prototype.pruneTokens = function () {
+    log.trace({  op : 'MySql.pruneTokens' })
+
+    var now = Date.now()
+    var pruneBefore = now - this.config.tokenLifetimes.pruneEvery
+
+    return this.write(
+      PRUNE,
+      [pruneBefore, now]
     )
   }
 

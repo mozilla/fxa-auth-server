@@ -54,3 +54,28 @@ CREATE TABLE IF NOT EXISTS passwordChangeTokens (
   createdAt BIGINT UNSIGNED NOT NULL,
   INDEX session_uid (uid)
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS property (
+  name VARCHAR(255) NOT NULL PRIMARY KEY,
+  value VARCHAR(255) NOT NULL,
+  INDEX property_key (name)
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO property SET name = 'pruneLastRan', value = '0';
+
+DROP PROCEDURE IF EXISTS `prune`;
+
+CREATE PROCEDURE `prune` (IN pruneBefore BIGINT UNSIGNED, IN now BIGINT UNSIGNED)
+BEGIN
+    SELECT @lastRan:=CONVERT(value, UNSIGNED) AS lastRan FROM property WHERE `name` = 'pruneLastRan';
+
+    IF @lastRan < pruneBefore THEN
+        DELETE FROM accountResetTokens WHERE createdAt < pruneBefore;
+        DELETE FROM passwordForgotTokens WHERE createdAt < pruneBefore;
+        DELETE FROM passwordChangeTokens WHERE createdAt < pruneBefore;
+
+        -- save the time this last ran at (ie. now)
+        UPDATE property SET value = CONVERT(now, CHAR) WHERE name = 'pruneLastRan';
+    END IF;
+
+END;

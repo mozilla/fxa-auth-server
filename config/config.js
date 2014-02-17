@@ -269,6 +269,11 @@ module.exports = function (fs, path, url, convict) {
       }
     },
     tokenLifetimes: {
+      pruneEvery : {
+        doc: 'Prunes tokens approximately this often (± random 50%)',
+        default: 1000 * 60 * 60,
+        format: 'nat',
+      },
       accountResetToken: {
         default: 1000 * 60 * 15
       },

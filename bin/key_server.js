@@ -75,13 +75,27 @@ function main() {
                   log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
                 }
               )
+
+              // reap DB tokens every so often
+              function prune() {
+                db.pruneTokens().done(
+                  function() {
+                    log.info({ op: 'db.pruneTokens' })
+                  },
+                  function(err) {
+                      log.error({ op: 'db.pruneTokens', err: err })
+                  }
+                )
+                setTimeout(prune, config.tokenLifetimes.pruneEvery/2 + Math.floor(Math.random() * config.tokenLifetimes.pruneEvery));
+              }
+              // start the pruning off
+              prune()
             },
             function (err) {
               log.error({ op: 'DB.connect', err: err.message })
               process.exit(1)
             }
           )
-
       }
     )
 
