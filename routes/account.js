@@ -87,7 +87,6 @@ module.exports = function (
                       )
                       .then(
                         function (sessionToken) {
-                          log.security({ event: 'session-create' })
                           if (request.query.keys !== 'true') {
                             return P({
                               account: account,
@@ -144,7 +143,6 @@ module.exports = function (
           .done(
             function (response) {
               var account = response.account
-              log.security({ event: 'account-create-success', uid: account.uid })
               reply(
                 {
                   uid: account.uid.toString('hex'),
@@ -155,10 +153,7 @@ module.exports = function (
                 }
               )
             },
-            function (err) {
-              log.security({ event: 'account-create-failure', err: err })
-              reply(err)
-            }
+            reply
           )
       }
     },
@@ -208,17 +203,6 @@ module.exports = function (
                       verifierSetAt: emailRecord.verifierSetAt
                     }
                   )
-                }
-              )
-              .then(
-                function (sessionToken) {
-                  log.security({ event: 'login-success', uid: sessionToken.uid })
-                  log.security({ event: 'session-create' })
-                  return sessionToken
-                },
-                function (err) {
-                  log.security({ event: 'login-failure', err: err, email: form.email })
-                  throw err
                 }
               )
               .then(
@@ -374,7 +358,6 @@ module.exports = function (
       },
       handler: function (request, reply) {
         log.begin('Account.RecoveryEmailResend', request)
-        log.security({ event: 'account-verify-request' })
         var sessionToken = request.auth.credentials
         mailer.sendVerifyCode(sessionToken, sessionToken.emailCode, {
           service: request.payload.service,
@@ -409,15 +392,6 @@ module.exports = function (
                 throw error.invalidVerificationCode()
               }
               return db.verifyEmail(account)
-            }
-          )
-          .then(
-            function () {
-              log.security({ event: 'account-verify-success' })
-            },
-            function (err) {
-              log.security({ event: 'account-verify-failure', err: err })
-              throw err
             }
           )
           .done(
@@ -463,12 +437,7 @@ module.exports = function (
           )
           .then(
             function () {
-              log.security({ event: 'pwd-reset-success' })
               return {}
-            },
-            function (err) {
-              log.security({ event: 'pwd-reset-failure', err: err })
-              throw err
             }
           )
           .done(reply, reply)
@@ -511,7 +480,6 @@ module.exports = function (
           )
           .then(
             function () {
-              log.security({ event: 'account-destroy' })
               return {}
             }
           )
