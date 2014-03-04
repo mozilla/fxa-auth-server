@@ -4,7 +4,7 @@
 
 module.exports = function (grunt) {
 
-  require('load-grunt-tasks')(grunt);
+  require("load-grunt-tasks")(grunt);
 
   grunt.initConfig({
     copyright: {
@@ -17,6 +17,18 @@ module.exports = function (grunt) {
         pattern: "This Source Code Form is subject to the terms of the Mozilla Public"
       }
     },
+
+    jscs: {
+        src: [
+          "**/*.js",
+          "!node_modules/**",
+          "!test/**"
+        ],
+        options: {
+            config: ".jscs.json"
+        }
+    },
+
     jshint: {
       files: [
         "**/*.js",
@@ -31,5 +43,5 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.registerTask('default', ['jshint', 'copyright']);
+  grunt.registerTask("default", ["jshint", "jscs", "copyright"]);
 };
