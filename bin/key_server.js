@@ -88,8 +88,10 @@ function main() {
                 )
                 setTimeout(prune, config.tokenLifetimes.pruneEvery/2 + Math.floor(Math.random() * config.tokenLifetimes.pruneEvery));
               }
-              // start the pruning off
-              prune()
+              // start the pruning off, but only if enabled in config
+              if ( config.tokenLifetimes.enablePruning ) {
+                prune()
+              }
             },
             function (err) {
               log.error({ op: 'DB.connect', err: err.message })

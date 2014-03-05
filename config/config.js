@@ -269,6 +269,11 @@ module.exports = function (fs, path, url, convict) {
       }
     },
     tokenLifetimes: {
+      enablePruning : {
+        doc: 'Turns on/off token pruning',
+        default: true,
+        format: Boolean,
+      },
       pruneEvery : {
         doc: 'Prunes tokens approximately this often (± random 50%)',
         default: 1000 * 60 * 60,
