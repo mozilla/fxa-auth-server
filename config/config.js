@@ -275,17 +275,20 @@ module.exports = function (fs, path, url, convict) {
         format: Boolean,
       },
       pruneEvery : {
-        doc: 'Prunes tokens approximately this often (± random 50%)',
+        doc: 'Prunes tokens approximately this often (± random 50%) in ms',
         default: 1000 * 60 * 60,
         format: 'nat',
       },
       accountResetToken: {
+        doc: 'Lifetime (in ms) of the accountResetToken(s)',
         default: 1000 * 60 * 15
       },
       passwordForgotToken: {
+        doc: 'Lifetime (in ms) of the passwordForgotToken(s)',
         default: 1000 * 60 * 15
       },
       passwordChangeToken: {
+        doc: 'Lifetime (in ms) of the passwordChangeToken(s)',
         default: 1000 * 60 * 15
       }
     },
