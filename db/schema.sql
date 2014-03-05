@@ -57,8 +57,7 @@ CREATE TABLE IF NOT EXISTS passwordChangeTokens (
 
 CREATE TABLE IF NOT EXISTS property (
   name VARCHAR(255) NOT NULL PRIMARY KEY,
-  value VARCHAR(255) NOT NULL,
-  INDEX property_key (name)
+  value VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
 INSERT IGNORE INTO property SET name = 'pruneLastRan', value = '0';
@@ -79,3 +78,18 @@ BEGIN
     END IF;
 
 END;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'accountResetTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `accountResetTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'passwordForgotTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `passwordForgotTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'passwordChangeTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `passwordChangeTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
