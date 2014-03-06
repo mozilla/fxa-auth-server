@@ -140,14 +140,14 @@ DB.connect(config)
               .then(function(con) {
                 var d = P.defer()
                 con.query(
-                  "UPDATE property SET value = '0' WHERE name = 'pruneLastRan'",
+                  "UPDATE dbMetadata SET value = '0' WHERE name = 'pruneLastRan'",
                   function (err) {
                     con.release()
                     if (err) {
                       t.fail(err)
                       return d.reject(err)
                     }
-                    t.pass('Updating property for last run was ok')
+                    t.pass('Updating dbMetadata for last run was ok')
                     d.resolve()
                   }
                 )
