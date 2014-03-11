@@ -46,6 +46,26 @@ module.exports = function (
       options.statInterval || 15000
     )
     this.statInterval.unref()
+
+    // prune tokens every so often
+    function prune() {
+      this.pruneTokens().done(
+        function() {
+          log.trace({ op: 'db.pruneTokens', msg: 'Finished' })
+        },
+        function(err) {
+          log.error({ op: 'db.pruneTokens', err: err })
+        }
+      )
+
+      var pruneIn = options.pruneEvery/2 + Math.floor(Math.random() * options.pruneEvery)
+      setTimeout(prune.bind(this), pruneIn).unref();
+    }
+    // start the pruning off, but only if enabled in config
+    if ( options.enablePruning ) {
+      prune.bind(this)()
+    }
+
   }
 
   function reportStats() {
@@ -766,7 +786,7 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
     log.trace({  op : 'MySql.pruneTokens' })
 
     var now = Date.now()
-    var pruneBefore = now - this.config.tokenLifetimes.pruneEvery
+    var pruneBefore = now - this.config.mysql.pruneEvery
 
     return this.write(
       PRUNE,

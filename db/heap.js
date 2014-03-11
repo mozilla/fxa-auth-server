@@ -41,18 +41,6 @@ module.exports = function (
     }
   }
 
-  // will delete tokens which expired half of their life ago
-  function pruneTokens(collection, ttl) {
-    var now = Date.now()
-    var expired = now - 2 * ttl
-    var keys = Object.keys(collection)
-    for (var i = 0; i < keys.length; i++) {
-      if (collection[keys[i]].createdAt < expired ) {
-        delete collection[keys[i]]
-      }
-    }
-  }
-
   Heap.connect = function (config) {
     return P(new Heap(config))
   }
@@ -346,9 +334,7 @@ module.exports = function (
 
   Heap.prototype.pruneTokens = function () {
     log.trace({  op : 'Heap.pruneTokens' })
-    pruneTokens(this.accountResetTokens, this.config.tokenLifetimes.accountResetToken)
-    pruneTokens(this.passwordForgotTokens, this.config.tokenLifetimes.passwordForgotToken)
-    pruneTokens(this.passwordChangeTokens, this.config.tokenLifetimes.passwordChangeToken)
+    // not implemented, since not needed in this db driver
     return P()
   }
 

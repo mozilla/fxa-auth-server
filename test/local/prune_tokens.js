@@ -77,7 +77,6 @@ DB.connect(config)
             return db.createAccountResetToken(emailRecord)
           })
           .then(function(newAccountResetToken) {
-              console.log('newAccountResetToken:', newAccountResetToken)
             accountResetToken = newAccountResetToken  
             return db.createAccountResetToken(accountResetToken)
           })
@@ -156,59 +155,38 @@ DB.connect(config)
           })
           .then(function() {
             // prune older tokens
-            return db.getConnection('MASTER')
-              .then(function(con) {
-                var now = Date.now()
-                var halfDayAgo = now - ( 12 * 60 * 60 * 1000 )
-                var d = P.defer()
-                con.query("CALL prune(?, ?)", [ halfDayAgo, now ], function(err, res) {
-                  con.release()
-                  if (err) {
-                    t.fail(err)
-                    return d.reject(err)
-                  }
-                  t.pass('Calling prune() was ok')
-                  d.resolve()
-                })
-                return d.promise
-              })
+            return db.pruneTokens()
           })
           // now check that all tokens for this uid have been deleted
           .then(function() {
-            var d = P.defer()
-            var todo = 2;
 
-            function check() {
-              if ( todo === 0 ) {
-                d.resolve()
-              }
+            var d = P.defer()
+
+            function checkAccountResetToken() {
+              return db.accountResetToken(accountResetToken.tokenId)
+                .then(function(accountResetToken) {
+                  t.fail('The above accountResetToken() call should fail, since the accountResetToken has been deleted')
+                }, function(err) {
+                  t.equal(err.errno, 110, 'accountResetToken() fails with the correct error code')
+                  var msg = 'Error: Invalid authentication token in request signature'
+                  t.equal(msg, '' + err, 'accountResetToken() fails with the correct message')
+                })
             }
 
-            db.accountResetToken(accountResetToken.tokenId)
-              .then(function(accountResetToken) {
-                t.fail('The above accountResetToken() call should fail, since the accountResetToken has been deleted')
-              }, function(err) {
-                t.equal(err.errno, 110, 'accountResetToken() fails with the correct error code')
-                var msg = 'Error: Invalid authentication token in request signature'
-                t.equal(msg, '' + err, 'accountResetToken() fails with the correct message')
-              })
-              .done(function() {
-                todo--
-                check()
-              })
+            function checkPasswordForgotToken() {
+              return db.passwordForgotToken(passwordForgotToken.tokenId)
+                .then(function(passwordForgotToken) {
+                  t.fail('The above passwordForgotToken() call should fail, since the passwordForgotToken has been pruned')
+                }, function(err) {
+                  t.equal(err.errno, 110, 'passwordForgotToken() fails with the correct error code')
+                  var msg = 'Error: Invalid authentication token in request signature'
+                  t.equal(msg, '' + err, 'passwordForgotToken() fails with the correct message')
+                })
+            }
 
-            db.passwordForgotToken(passwordForgotToken.tokenId)
-              .then(function(passwordForgotToken) {
-                console.log(passwordForgotToken)
-                t.fail('The above passwordForgotToken() call should fail, since the passwordForgotToken has been pruned')
-              }, function(err) {
-                t.equal(err.errno, 110, 'passwordForgotToken() fails with the correct error code')
-                var msg = 'Error: Invalid authentication token in request signature'
-                t.equal(msg, '' + err, 'passwordForgotToken() fails with the correct message')
-              })
+            P.all([checkAccountResetToken(), checkPasswordForgotToken()])
               .done(function() {
-                todo--
-                check()
+                d.resolve()
               })
 
             return d.promise

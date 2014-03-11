@@ -66,15 +66,27 @@ DROP PROCEDURE IF EXISTS `prune`;
 
 CREATE PROCEDURE `prune` (IN pruneBefore BIGINT UNSIGNED, IN now BIGINT UNSIGNED)
 BEGIN
-    SELECT @lastRan:=CONVERT(value, UNSIGNED) AS lastRan FROM dbMetadata WHERE `name` = 'pruneLastRan';
+    -- try and obtain the prune lock
+    SELECT @lockAcquired:=GET_LOCK('fxa-auth-server.prune-lock', 3);
 
-    IF @lastRan < pruneBefore THEN
-        DELETE FROM accountResetTokens WHERE createdAt < pruneBefore;
-        DELETE FROM passwordForgotTokens WHERE createdAt < pruneBefore;
-        DELETE FROM passwordChangeTokens WHERE createdAt < pruneBefore;
+    IF @lockAcquired THEN
 
-        -- save the time this last ran at (ie. now)
-        UPDATE dbMetadata SET value = CONVERT(now, CHAR) WHERE name = 'pruneLastRan';
+        SELECT @lastRan:=CONVERT(value, UNSIGNED) AS lastRan FROM dbMetadata WHERE `name` = 'pruneLastRan';
+
+        IF @lastRan < pruneBefore THEN
+
+            DELETE FROM accountResetTokens WHERE createdAt < pruneBefore;
+            DELETE FROM passwordForgotTokens WHERE createdAt < pruneBefore;
+            DELETE FROM passwordChangeTokens WHERE createdAt < pruneBefore;
+
+            -- save the time this last ran at (ie. now)
+            UPDATE dbMetadata SET value = CONVERT(now, CHAR) WHERE name = 'pruneLastRan';
+
+        END IF;
+
+        -- release the lock
+        SELECT RELEASE_LOCK('fxa-auth-server.prune-lock');
+
     END IF;
 
 END;
