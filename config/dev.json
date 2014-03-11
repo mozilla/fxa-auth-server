@@ -17,5 +17,8 @@
   "log": {
     "level": "info"
   },
+  "tokenLifetimes": {
+    "enablePruning" : true
+  },
   "verifierVersion": 0
 }

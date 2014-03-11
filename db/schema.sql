@@ -54,3 +54,54 @@ CREATE TABLE IF NOT EXISTS passwordChangeTokens (
   createdAt BIGINT UNSIGNED NOT NULL,
   INDEX session_uid (uid)
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS dbMetadata (
+  name VARCHAR(255) NOT NULL PRIMARY KEY,
+  value VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO dbMetadata SET name = 'pruneLastRan', value = '0';
+
+DROP PROCEDURE IF EXISTS `prune`;
+
+CREATE PROCEDURE `prune` (IN pruneBefore BIGINT UNSIGNED, IN now BIGINT UNSIGNED)
+BEGIN
+    -- try and obtain the prune lock
+    SELECT @lockAcquired:=GET_LOCK('fxa-auth-server.prune-lock', 3);
+
+    IF @lockAcquired THEN
+
+        SELECT @lastRan:=CONVERT(value, UNSIGNED) AS lastRan FROM dbMetadata WHERE `name` = 'pruneLastRan';
+
+        IF @lastRan < pruneBefore THEN
+
+            DELETE FROM accountResetTokens WHERE createdAt < pruneBefore;
+            DELETE FROM passwordForgotTokens WHERE createdAt < pruneBefore;
+            DELETE FROM passwordChangeTokens WHERE createdAt < pruneBefore;
+
+            -- save the time this last ran at (ie. now)
+            UPDATE dbMetadata SET value = CONVERT(now, CHAR) WHERE name = 'pruneLastRan';
+
+        END IF;
+
+        -- release the lock
+        SELECT RELEASE_LOCK('fxa-auth-server.prune-lock');
+
+    END IF;
+
+END;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'accountResetTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `accountResetTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'passwordForgotTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `passwordForgotTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
+
+set @exist := ( SELECT count(*) FROM information_schema.statistics WHERE table_name = 'passwordChangeTokens' AND index_name = 'createdAt' );
+set @sqlstmt := if( @exist > 0, 'SELECT ''INFO: Index already exists.''', 'ALTER TABLE `passwordChangeTokens` ADD INDEX `createdAt` (`createdAt`)');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
