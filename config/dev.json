@@ -17,5 +17,8 @@
   "log": {
     "level": "info"
   },
+  "mysql": {
+    "enablePruning" : true
+  },
   "verifierVersion": 0
 }
