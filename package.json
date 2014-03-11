@@ -15,7 +15,8 @@
     "test-all": "npm run test-quick && npm run test-mysql && grunt",
     "test-quick": "npm run tq",
     "tq": "tap test/local && scripts/test-remote-quick.js",
-    "test-remote": "MAILER_HOST=restmail.net MAILER_PORT=80 tap --timeout=300 --tap test/remote"
+    "test-remote": "MAILER_HOST=restmail.net MAILER_PORT=80 tap --timeout=300 --tap test/remote",
+    "contributors": "git shortlog -s -n | cut -c8- > CONTRIBUTORS.md"
   },
   "repository": {
     "type": "git",
