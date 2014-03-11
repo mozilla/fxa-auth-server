@@ -45,7 +45,7 @@ return TestServer.start(config)
 )
 .then(
   function () {
-    return DB.connect(config[config.db.backend])
+    return DB.connect(config)
       .then(
         function (db) {
           return db.account(uid)
@@ -86,7 +86,7 @@ return TestServer.start(config)
 )
 .then(
   function () {
-    return DB.connect(config[config.db.backend])
+    return DB.connect(config)
       .then(
         function (db) {
           return db.account(uid)

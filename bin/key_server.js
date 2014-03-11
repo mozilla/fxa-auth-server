@@ -64,7 +64,7 @@ function main() {
           Token.PasswordChangeToken
         )
 
-        DB.connect(config[config.db.backend])
+        DB.connect(config)
           .done(
             function (db) {
               var routes = require('../routes')(log, error, serverPublicKey, signer, db, mailer, config)
@@ -81,7 +81,6 @@ function main() {
               process.exit(1)
             }
           )
-
       }
     )
 

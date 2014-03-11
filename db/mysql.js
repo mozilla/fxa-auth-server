@@ -21,7 +21,9 @@ module.exports = function (
   var LOCK_ERRNOS = [ 1205, 1206, 1213, 1689 ]
 
   // make a pool of connections that we can draw from
-  function MySql(options) {
+  function MySql(config) {
+    this.config = config
+    var options = config[config.db.backend]
 
     // poolCluster will remove the pool after `removeNodeErrorCount` errors.
     // We don't ever want to remove a pool because we only have one pool
@@ -45,6 +47,26 @@ module.exports = function (
       options.statInterval || 15000
     )
     this.statInterval.unref()
+
+    // prune tokens every so often
+    function prune() {
+      this.pruneTokens().done(
+        function() {
+          log.trace({ op: 'db.pruneTokens', msg: 'Finished' })
+        },
+        function(err) {
+          log.error({ op: 'db.pruneTokens', err: err })
+        }
+      )
+
+      var pruneIn = options.pruneEvery/2 + Math.floor(Math.random() * options.pruneEvery)
+      setTimeout(prune.bind(this), pruneIn).unref();
+    }
+    // start the pruning off, but only if enabled in config
+    if ( options.enablePruning ) {
+      prune.bind(this)()
+    }
+
   }
 
   function reportStats() {
@@ -78,18 +100,20 @@ module.exports = function (
     var mysql = new MySql(options)
 
     var d = P.defer()
-    mysql.read("SELECT value FROM dbMetadata WHERE name = ?", options.patchKey)
+    mysql.read("SELECT value FROM dbMetadata WHERE name = ?", options.mysql.patchKey)
       .then(
         function (results) {
-          if (!results.length) { throw error.dbIncorrectPatchLevel() }
+          if (!results.length) {
+            throw error.dbIncorrectPatchLevel()
+          }
           var patchLevel = +results[0].value
-          if ( patchLevel !== options.patchLevel && patchLevel !== options.patchLevel + 1 ) {
-            return d.reject(error.dbIncorrectPatchLevel(patchLevel, options.patchLevel))
+          if ( patchLevel !== options.mysql.patchLevel && patchLevel !== options.mysql.patchLevel + 1 ) {
+            return d.reject(error.dbIncorrectPatchLevel(patchLevel, options.mysql.patchLevel))
           }
           log.trace({
             op: 'MySql.connect',
             patchLevel: patchLevel,
-            patchLevelRequired: options.patchLevel
+            patchLevelRequired: options.mysql.patchLevel
           })
           d.resolve(mysql)
         },
@@ -711,6 +735,20 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
             }
           )
       }
+    )
+  }
+
+  var PRUNE = "CALL prune(?, ?)"
+
+  MySql.prototype.pruneTokens = function () {
+    log.trace({  op : 'MySql.pruneTokens' })
+
+    var now = Date.now()
+    var pruneBefore = now - this.config.mysql.pruneEvery
+
+    return this.write(
+      PRUNE,
+      [pruneBefore, now]
     )
   }
 

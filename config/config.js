@@ -52,7 +52,7 @@ module.exports = function (fs, path, url, convict) {
       },
       patchLevel : {
         doc: 'The patch level the database should be set to for this release',
-        default: 2,
+        default: 3,
         format: 'nat'
       },
       master: {
@@ -134,7 +134,17 @@ module.exports = function (fs, path, url, convict) {
           format: 'nat',
           env: 'SLAVE_QUEUE_LIMIT'
         }
-      }
+      },
+      enablePruning : {
+        doc: 'Turns on/off token pruning',
+        default: true,
+        format: Boolean,
+      },
+      pruneEvery : {
+        doc: 'Prunes tokens approximately this often (± random 50%) in ms',
+        default: 1000 * 60,
+        format: 'nat',
+      },
     },
     listen: {
       host: {
@@ -244,12 +254,15 @@ module.exports = function (fs, path, url, convict) {
     },
     tokenLifetimes: {
       accountResetToken: {
+        doc: 'Lifetime (in ms) of the accountResetToken(s)',
         default: 1000 * 60 * 15
       },
       passwordForgotToken: {
+        doc: 'Lifetime (in ms) of the passwordForgotToken(s)',
         default: 1000 * 60 * 15
       },
       passwordChangeToken: {
+        doc: 'Lifetime (in ms) of the passwordChangeToken(s)',
         default: 1000 * 60 * 15
       }
     },
