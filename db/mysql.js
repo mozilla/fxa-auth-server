@@ -20,7 +20,9 @@ module.exports = function (
   var LOCK_ERRNOS = [ 1205, 1206, 1213, 1689 ]
 
   // make a pool of connections that we can draw from
-  function MySql(options) {
+  function MySql(config) {
+    this.config = config
+    var options = config[config.db.backend]
 
     // poolCluster will remove the pool after `removeNodeErrorCount` errors.
     // We don't ever want to remove a pool because we only have one pool
@@ -44,6 +46,26 @@ module.exports = function (
       options.statInterval || 15000
     )
     this.statInterval.unref()
+
+    // prune tokens every so often
+    function prune() {
+      this.pruneTokens().done(
+        function() {
+          log.trace({ op: 'db.pruneTokens', msg: 'Finished' })
+        },
+        function(err) {
+          log.error({ op: 'db.pruneTokens', err: err })
+        }
+      )
+
+      var pruneIn = options.pruneEvery/2 + Math.floor(Math.random() * options.pruneEvery)
+      setTimeout(prune.bind(this), pruneIn).unref();
+    }
+    // start the pruning off, but only if enabled in config
+    if ( options.enablePruning ) {
+      prune.bind(this)()
+    }
+
   }
 
   function reportStats() {
@@ -74,7 +96,7 @@ module.exports = function (
   // this will connect to mysql, create the database
   // then create the schema, prior to returning an
   // instance of MySql
-  function createSchema(options) {
+  function createSchema(config) {
     log.trace( { op: 'MySql.createSchema' } )
 
     var d = P.defer()
@@ -82,6 +104,7 @@ module.exports = function (
     // To create the schema we need to switch multipleStatements on
     // as well as connecting without a database name, but switching to it
     // once it has been created.
+    var options = config[config.db.backend]
     options.master.multipleStatements = true
     var database = options.master.database
     delete options.master.database
@@ -128,7 +151,7 @@ module.exports = function (
                     delete options.master.multipleStatements
 
                     // create the mysql class
-                    d.resolve(new MySql(options))
+                    d.resolve(new MySql(config))
                   }
                 )
               }
@@ -141,11 +164,12 @@ module.exports = function (
   }
 
   // this will be called from outside this file
-  MySql.connect = function(options) {
+  MySql.connect = function(config) {
+    var options = config[config.db.backend]
     if (options.createSchema) {
-      return createSchema(options)
+      return createSchema(config)
     }
-    return P(new MySql(options))
+    return P(new MySql(config))
   }
 
   MySql.prototype.close = function () {
@@ -760,6 +784,20 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
             }
           )
       }
+    )
+  }
+
+  var PRUNE = "CALL prune(?, ?)"
+
+  MySql.prototype.pruneTokens = function () {
+    log.trace({  op : 'MySql.pruneTokens' })
+
+    var now = Date.now()
+    var pruneBefore = now - this.config.mysql.pruneEvery
+
+    return this.write(
+      PRUNE,
+      [pruneBefore, now]
     )
   }
 
