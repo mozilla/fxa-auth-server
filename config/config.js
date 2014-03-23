@@ -45,6 +45,16 @@ module.exports = function (fs, path, url, convict) {
         default: true,
         env: 'CREATE_MYSQL_SCHEMA'
       },
+      patchKey : {
+        doc: 'The name of the row in the dbMetadata table which stores the patch level',
+        default: 'schema-patch-level',
+        format: String
+      },
+      patchLevel : {
+        doc: 'The patch level the database should be set to for this release',
+        default: 3,
+        format: 'nat'
+      },
       master: {
         user: {
           default: 'root',
@@ -124,7 +134,17 @@ module.exports = function (fs, path, url, convict) {
           format: 'nat',
           env: 'SLAVE_QUEUE_LIMIT'
         }
-      }
+      },
+      enablePruning : {
+        doc: 'Turns on/off token pruning',
+        default: true,
+        format: Boolean,
+      },
+      pruneEvery : {
+        doc: 'Prunes tokens approximately this often (± random 50%) in ms',
+        default: 1000 * 60,
+        format: 'nat',
+      },
     },
     listen: {
       host: {
@@ -234,12 +254,15 @@ module.exports = function (fs, path, url, convict) {
     },
     tokenLifetimes: {
       accountResetToken: {
+        doc: 'Lifetime (in ms) of the accountResetToken(s)',
         default: 1000 * 60 * 15
       },
       passwordForgotToken: {
+        doc: 'Lifetime (in ms) of the passwordForgotToken(s)',
         default: 1000 * 60 * 15
       },
       passwordChangeToken: {
+        doc: 'Lifetime (in ms) of the passwordChangeToken(s)',
         default: 1000 * 60 * 15
       }
     },
