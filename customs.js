@@ -62,5 +62,26 @@
     )
   }
 
+  Customs.prototype.passwordReset = function (email) {
+    log.trace({ op: 'customs.passwordReset', email: email })
+    if (this.url === 'none') { return P() }
+    return request(
+      {
+        method: 'POST',
+        url: this.url + '/passwordReset',
+        json: {
+          email: email
+        },
+        timeout: 1000
+      }
+    )
+    .then(
+      function () {},
+      function (err) {
+        log.error({ op: 'customs.passwordReset.1', email: email, err: err })
+      }
+    )
+  }
+
   return Customs
 }

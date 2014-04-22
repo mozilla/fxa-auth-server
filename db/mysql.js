@@ -379,7 +379,7 @@ var KEY_FETCH_TOKEN = 'SELECT t.authKey, t.uid, t.keyBundle, t.createdAt,' +
   }
 
   var ACCOUNT_RESET_TOKEN = 'SELECT t.uid, t.tokenData, t.createdAt,' +
-    ' a.verifierSetAt' +
+    ' a.verifierSetAt, a.email' +
     ' FROM accountResetTokens t, accounts a' +
     ' WHERE t.tokenId = ? AND t.uid = a.uid'
 

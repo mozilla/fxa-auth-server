@@ -1,6 +1,6 @@
 {
   "name": "fxa-auth-server",
-  "version": "0.10.3",
+  "version": "0.11.2",
   "dependencies": {
     "aws-sdk": {
       "version": "2.0.0-rc11",
@@ -741,9 +741,9 @@
       "from": "uuid@1.4.1"
     },
     "fxa-customs-server": {
-      "version": "0.0.0",
-      "from": "fxa-customs-server@git://github.com/dannycoates/fxa-customs-server.git#74d7b8d6",
-      "resolved": "git://github.com/dannycoates/fxa-customs-server.git#74d7b8d6dc239335178cef287794af7a1c028114",
+      "version": "0.0.1",
+      "from": "fxa-customs-server@git://github.com/dannycoates/fxa-customs-server.git#9c10eb00",
+      "resolved": "git://github.com/dannycoates/fxa-customs-server.git#9c10eb0033cff98987d581abd3001301cd8b1f97",
       "dependencies": {
         "rc": {
           "version": "0.3.4",
@@ -885,8 +885,7 @@
             },
             "spdy": {
               "version": "1.19.3",
-              "from": "spdy@1.19.3",
-              "resolved": "https://registry.npmjs.org/spdy/-/spdy-1.19.3.tgz"
+              "from": "spdy@1.19.3"
             },
             "tunnel-agent": {
               "version": "0.4.0",
@@ -895,7 +894,6 @@
             "verror": {
               "version": "1.3.7",
               "from": "verror@1.3.7",
-              "resolved": "https://registry.npmjs.org/verror/-/verror-1.3.7.tgz",
               "dependencies": {
                 "extsprintf": {
                   "version": "1.0.2",
