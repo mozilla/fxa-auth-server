@@ -505,6 +505,7 @@ module.exports = function (
           )
           .then(
             function () {
+              customs.passwordReset(accountResetToken.email)
               return {}
             }
           )

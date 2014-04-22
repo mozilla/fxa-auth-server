@@ -97,6 +97,7 @@ module.exports = function (
           var account = this.accounts[accountResetToken.uid.toString('hex')]
           if (!account) { return P.reject(error.unknownAccount()) }
           account.accountResetToken = accountResetToken.id
+          accountResetToken.email = account.email
           return accountResetToken
         }.bind(this)
       )
