@@ -694,6 +694,7 @@ ___Parameters___
     * q - DS only
     * g - DS only
 * duration - time interval from now when the certificate will expire, in seconds, up to a maximum of 24 hours.
+* sub - optional subject of the certificate; this must be either the account email or the Firefox Account identifier.
 
 ___Headers___
 

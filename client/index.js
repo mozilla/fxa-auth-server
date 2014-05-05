@@ -193,11 +193,11 @@ Client.prototype.requestVerifyEmail = function () {
   )
 }
 
-Client.prototype.sign = function (publicKey, duration) {
+Client.prototype.sign = function (publicKey, duration, sub) {
   var o = this.sessionToken ? P(null) : this.login()
   return o.then(
       function () {
-        return this.api.certificateSign(this.sessionToken, publicKey, duration)
+        return this.api.certificateSign(this.sessionToken, publicKey, duration, sub)
       }.bind(this)
     )
     .then(

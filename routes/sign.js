@@ -27,7 +27,8 @@ module.exports = function (log, isA, error, signer, domain) {
               g: isA.string(),
               version: isA.string()
             }).required(),
-            duration: isA.number().integer().min(0).max(24 * HOUR).required()
+            duration: isA.number().integer().min(0).max(24 * HOUR).required(),
+            sub: isA.string().max(255).optional()
           }
         }
       },
@@ -36,9 +37,19 @@ module.exports = function (log, isA, error, signer, domain) {
         var sessionToken = request.auth.credentials
         var publicKey = request.payload.publicKey
         var duration = request.payload.duration
+        var email = request.payload.sub
 
         if (!sessionToken.emailVerified) {
           return reply(error.unverifiedAccount())
+        }
+
+        var defaultEmail = sessionToken.uid.toString('hex') + '@' + domain
+        if (!email) {
+          email = defaultEmail
+        } else {
+          if (email !== sessionToken.email && email !== defaultEmail) {
+            return reply(error.unverifiedAccount())
+          }
         }
 
         if (publicKey.algorithm === 'RS') {
@@ -66,7 +77,7 @@ module.exports = function (log, isA, error, signer, domain) {
 
         signer.enqueue(
           {
-            email: sessionToken.uid.toString('hex') + '@' + domain,
+            email: email,
             publicKey: publicKey,
             duration: duration,
             generation: sessionToken.verifierSetAt,

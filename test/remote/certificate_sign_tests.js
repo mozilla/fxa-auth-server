@@ -49,6 +49,44 @@ TestServer.start(config)
   )
 
   test(
+    'certificate sign as secondary authority',
+    function (t) {
+      var email = server.uniqueEmail()
+      var password = 'allyourbasearebelongtous'
+      var client = null
+      var duration = 1000 * 60 * 60 * 24
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+        .then(
+          function (c) {
+            client = c
+            return client.sign(publicKey, duration, email)
+          }
+        )
+        .then(
+          function (cert) {
+            t.equal(typeof(cert), 'string', 'cert exists')
+            var payload = jwcrypto.extractComponents(cert).payload
+            t.equal(payload.principal.email, email, 'cert has correct subject')
+            t.ok(payload['fxa-generation'] > 0, 'cert has non-zero generation number')
+            t.ok(new Date() - new Date(payload['fxa-lastAuthAt'] * 1000) < 1000 * 60 * 60, 'lastAuthAt is plausible')
+            t.equal(payload['fxa-verifiedEmail'], email, 'verifiedEmail is correct')
+          }
+        )
+        .then(
+          function () {
+            return client.sign(publicKey, duration, server.uniqueEmail())
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'invalid subject')
+          }
+        )
+    }
+  )
+
+  test(
     'certificate sign requires a verified account',
     function (t) {
       var email = server.uniqueEmail()
