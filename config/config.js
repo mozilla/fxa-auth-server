@@ -294,7 +294,19 @@ module.exports = function (fs, path, url, convict) {
         format: String,
         default: '',
       }
-    }
+    },
+    use_https: {
+      doc: "set to true to serve directly over https",
+      default: false
+    },
+    key_path: {
+      doc: "path to SSL key in PEM format if serving over https",
+      default: path.resolve(__dirname, '../key.pem')
+    },
+    cert_path: {
+      doc: "path to SSL certificate in PEM format if serving over https",
+      default: path.resolve(__dirname, '../cert.pem')
+    },
   })
 
   // handle configuration files.  you can specify a CSV list of configuration
