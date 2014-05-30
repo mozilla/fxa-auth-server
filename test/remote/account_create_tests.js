@@ -4,12 +4,10 @@
 
 var test = require('../ptaptest')
 var TestServer = require('../test_server')
-var path = require('path')
 var crypto = require('crypto')
-var Client = require('../../client')
+var Client = require('../client')
 var P = require('../../promise')
 
-process.env.CONFIG_FILES = path.join(__dirname, '../config/account_tests.json')
 var config = require('../../config').root()
 
 TestServer.start(config)
@@ -134,54 +132,6 @@ TestServer.start(config)
     }
   )
 /*/
-  test(
-    'create account allows localization of emails',
-    function (t) {
-      var email = server.uniqueEmail()
-      var password = 'allyourbasearebelongtous'
-      var client = null
-      return Client.create(config.publicUrl, email, password)
-        .then(
-          function (x) {
-            client = x
-          }
-        )
-        .then(
-          function () {
-            return server.mailbox.waitForEmail(email)
-          }
-        )
-        .then(
-          function (emailData) {
-            t.assert(emailData.text.indexOf('Verify') !== -1, 'is en-US')
-            t.assert(emailData.text.indexOf('ʎɟıɹǝɅ') === -1, 'not it-CH')
-            return client.destroyAccount()
-          }
-        )
-        .then(
-          function () {
-            return Client.create(config.publicUrl, email, password, { lang: 'it-CH' })
-          }
-        )
-        .then(
-          function (x) {
-            client = x
-          }
-        )
-        .then(
-          function () {
-            return server.mailbox.waitForEmail(email)
-          }
-        )
-        .then(
-          function (emailData) {
-            t.assert(emailData.text.indexOf('Verify') === -1, 'not en-US')
-            t.assert(emailData.text.indexOf('ʎɟıɹǝɅ') !== -1, 'is it-CH')
-            return client.destroyAccount()
-          }
-        )
-    }
-  )
 
   test(
     'Unknown account should not exist',

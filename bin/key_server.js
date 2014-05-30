@@ -47,7 +47,7 @@ function main() {
 
   // TODO: send to the SMTP server directly. In the future this may change
   // to another process that we send an http request to.
-  require('../mailer')(config.smtp, config.i18n.defaultLanguage, config.templateServer, log)
+  require('../mailer')(config.mailerUrl, log)
     .done(
       function(m) {
         mailer = m
@@ -109,7 +109,6 @@ function main() {
 
   function shutdown() {
     memoryMonitor.stop()
-    mailer.stop()
     server.stop(
       function () {
         process.exit()
