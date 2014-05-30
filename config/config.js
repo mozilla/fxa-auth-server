@@ -162,6 +162,11 @@ module.exports = function (fs, path, url, convict) {
       default: 'http://127.0.0.1:7000',
       env: 'CUSTOMS_SERVER_URL'
     },
+    mailerUrl: {
+      doc: "mail sender url (fxa-auth-mailer)",
+      default: 'http://127.0.0.1:1810',
+      env: 'MAILER_URL'
+    },
     contentServer: {
       url: {
         doc: "The url of the corresponding fxa-content-server instance",
@@ -169,71 +174,18 @@ module.exports = function (fs, path, url, convict) {
         env: 'CONTENT_SERVER_URL'
       }
     },
-    templateServer: {
-      url: {
-        doc: "The url of the corresponding template server instance (currently the same as the fxa-content-server)",
-        default: 'http://127.0.0.1:3030',
-        env: 'TEMPLATE_SERVER_URL'
-      }
-    },
     smtp: {
       api: {
         host: {
-          doc: 'host for bin/mail_helper.js',
+          doc: 'host for mail_helper.js',
           default: '127.0.0.1',
           env: 'MAILER_HOST'
         },
         port: {
-          doc: 'port for bin/mail_helper.js',
-          default: 9001,
+          doc: 'port for mail_helper.js',
+          default: 1810,
           env: 'MAILER_PORT'
         }
-      },
-      host: {
-        doc: 'SMTP host for sending email',
-        default: 'localhost',
-        env: 'SMTP_HOST'
-      },
-      port: {
-        doc: 'SMTP port',
-        default: 25,
-        env: 'SMTP_PORT'
-      },
-      secure: {
-        doc: 'Connect to SMTP host securely',
-        default: false,
-        env: 'SMTP_SECURE'
-      },
-      user: {
-        doc: 'SMTP username',
-        format: String,
-        default: undefined,
-        env: 'SMTP_USER'
-      },
-      password: {
-        doc: 'SMTP password',
-        format: String,
-        default: undefined,
-        env: 'SMTP_PASS'
-      },
-      sender: {
-        doc: 'email address of the sender',
-        default: 'Firefox Accounts <no-reply@lcip.org>',
-        env: 'SMTP_SENDER'
-      },
-      verificationUrl: {
-        doc: 'Deprecated. uses contentServer.url',
-        format: String,
-        default: undefined,
-        env: 'VERIFY_URL',
-        arg: 'verify-url'
-      },
-      passwordResetUrl: {
-        doc: 'Deprecated. uses contentServer.url',
-        format: String,
-        default: undefined,
-        env: 'RESET_URL',
-        arg: 'reset-url'
       },
       redirectDomain: {
         doc: 'Domain that mail urls are allowed to redirect to',
@@ -250,12 +202,6 @@ module.exports = function (fs, path, url, convict) {
         doc: "Max event-loop lag before toobusy reports failure",
         default: 70,
         env: 'TOOBUSY_MAX_LAG'
-      }
-    },
-    i18n: {
-      defaultLanguage: {
-        format: String,
-        default: "en-US"
       }
     },
     tokenLifetimes: {
@@ -320,10 +266,6 @@ module.exports = function (fs, path, url, convict) {
 
   // set the public url as the issuer domain for assertions
   conf.set('domain', url.parse(conf.get('publicUrl')).host)
-
-  // deprecated smtp urls
-  conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/v1/verify_email')
-  conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/v1/complete_reset_password')
 
   conf.validate()
 

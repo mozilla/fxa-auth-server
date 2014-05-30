@@ -2,14 +2,7 @@
   "contentServer": {
     "url": "http://127.0.0.1:3030"
   },
-  "templateServer": {
-    "url": "http://127.0.0.1:9001"
-  },
   "smtp": {
-    "host": "127.0.0.1",
-    "port": 9999,
-    "secure": false,
-    "sender": "no-reply@example.com",
     "resendBlackoutPeriod": 0
   },
   "toobusy": {
