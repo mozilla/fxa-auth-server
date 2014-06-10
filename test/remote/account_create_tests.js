@@ -154,7 +154,7 @@ TestServer.start(config)
         .then(
           function (emailData) {
             t.assert(emailData.text.indexOf('Verify') !== -1, 'is en-US')
-            t.assert(emailData.text.indexOf('Verificar') === -1, 'not pt-BR')
+            t.assert(emailData.text.indexOf('Verificar') === -1, 'not pt-br')
             return client.destroyAccount()
           }
         )
