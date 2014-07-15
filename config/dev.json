@@ -19,5 +19,5 @@
   "bounces": {
     "region": "us-east-1"
   },
-  "customsUrl": "none"
+  "customsUrl": "http://127.0.0.1:7000"
 }
