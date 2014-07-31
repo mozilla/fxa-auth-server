@@ -23,5 +23,6 @@ before_install:
   - sudo apt-get install libgmp3-dev
 
 script:
+  - npm config set spin false
   - npm test
   - grunt validate-shrinkwrap
