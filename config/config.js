@@ -205,6 +205,10 @@ module.exports = function (fs, path, url, convict) {
       doc: "path to SSL certificate in PEM format if serving over https",
       default: path.resolve(__dirname, '../cert.pem')
     },
+    payloadMaxBytes: {
+      doc: "Hapi option: limits the size of incoming payloads to the specified byte count",
+      default: 16384
+    }
   })
 
   // handle configuration files.  you can specify a CSV list of configuration
