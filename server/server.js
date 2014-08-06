@@ -77,7 +77,7 @@ module.exports = function (path, url, Hapi) {
         }
       },
       payload: {
-        maxBytes: 16384
+        maxBytes: config.payloadMaxBytes
       }
     }
 
