@@ -17,10 +17,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mozilla/fxa-auth-server.git"
+    "url": "git://github.com/johngruen/fxa-auth-server.git"
   },
-  "bugs": "https://github.com/mozilla/fxa-auth-server/issues/",
-  "homepage": "https://github.com/mozilla/fxa-auth-server/",
+  "bugs": "https://github.com/mozilla/johngruen/issues/",
+  "homepage": "https://github.com/johngruen/fxa-auth-server/",
   "license": "MPL 2.0",
   "author": "Mozilla (https://mozilla.org/)",
   "readmeFilename": "README.md",
@@ -33,7 +33,7 @@
     "bunyan": "1.0.0",
     "compute-cluster": "0.0.9",
     "convict": "0.4.2",
-    "fxa-auth-mailer": "0.0.5",
+    "fxa-auth-mailer": "https://github.com/johngruen/fxa-auth-mailer.git",
     "hapi": "6.4.0",
     "hapi-auth-hawk": "1.1.1",
     "hkdf": "0.0.2",
