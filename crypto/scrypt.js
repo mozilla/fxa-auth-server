@@ -7,7 +7,7 @@ var scrypt = require('scrypt-hash')
  
 // The maximum numer of hash operations allowed concurrently.
 // This can be customized by setting module.exports.MAX_PENDING
-const DEFAULT_MAX_PENDING = 100
+const DEFAULT_MAX_PENDING = 1000
 
 // The current number of hash operations in progress.
 var num_pending = 0
