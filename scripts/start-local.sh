@@ -5,7 +5,7 @@ MH=$!
 node ./node_modules/fxa-auth-db-mem &
 DB=$!
 
-node ./bin/key_server.js | node ./bin/notifier.js >/dev/null
+node ./bin/key_server.js
 
 kill $MH
 kill $DB
