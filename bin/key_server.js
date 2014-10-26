@@ -6,7 +6,7 @@ var fs = require('fs')
 var config = require('../config').root()
 
 function main() {
-  var log = require('../log')(config.log.level)
+  var log = require('../log')(config.log.level, 'fxa-auth-server', config.snsTopicArn)
 
   function logStatInfo() {
     log.stat(server.stat())

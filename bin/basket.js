@@ -12,9 +12,9 @@ to the [basket API](https://github.com/mozilla/basket) for user engagement.
 var request = require('request')
 var config = require('../config').root()
 var log = require('../log')(config.log.level, 'basket')
-var SQSReceiver = require('../sqs')(log)
+var Sink = require('fxa-notifier-aws').Sink
 
-var basketQueue = new SQSReceiver(config.basket.region, [config.basket.queueUrl])
+var basketQueue = new Sink(config.basket.region, config.basket.queueUrl)
 basketQueue.on(
   'data',
   function basketRequest(message) {
@@ -48,4 +48,5 @@ basketQueue.on(
     }
   }
 )
-basketQueue.start()
+basketQueue.on('error', function (err) { log.error({ op: 'queueError', err: err })})
+basketQueue.fetch()

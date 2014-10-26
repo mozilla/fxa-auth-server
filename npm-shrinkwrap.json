@@ -174,30 +174,6 @@
         }
       }
     },
-    "aws-sdk": {
-      "version": "2.0.21",
-      "from": "aws-sdk@2.0.21",
-      "resolved": "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.0.21.tgz",
-      "dependencies": {
-        "xml2js": {
-          "version": "0.2.6",
-          "from": "xml2js@0.2.6",
-          "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.2.6.tgz",
-          "dependencies": {
-            "sax": {
-              "version": "0.4.2",
-              "from": "sax@0.4.2",
-              "resolved": "https://registry.npmjs.org/sax/-/sax-0.4.2.tgz"
-            }
-          }
-        },
-        "xmlbuilder": {
-          "version": "0.4.2",
-          "from": "xmlbuilder@0.4.2",
-          "resolved": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-0.4.2.tgz"
-        }
-      }
-    },
     "bigint": {
       "version": "0.4.2",
       "from": "bigint@0.4.2",
@@ -1326,6 +1302,37 @@
               "version": "0.2.8",
               "from": "dtrace-provider@>=0.2.8 <0.3.0",
               "resolved": "https://registry.npmjs.org/dtrace-provider/-/dtrace-provider-0.2.8.tgz"
+            }
+          }
+        }
+      }
+    },
+    "fxa-notifier-aws": {
+      "version": "1.0.0",
+      "from": "fxa-notifier-aws@1.0.0",
+      "resolved": "https://registry.npmjs.org/fxa-notifier-aws/-/fxa-notifier-aws-1.0.0.tgz",
+      "dependencies": {
+        "aws-sdk": {
+          "version": "2.0.23",
+          "from": "aws-sdk@2.0.23",
+          "resolved": "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.0.23.tgz",
+          "dependencies": {
+            "xml2js": {
+              "version": "0.2.6",
+              "from": "xml2js@0.2.6",
+              "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.2.6.tgz",
+              "dependencies": {
+                "sax": {
+                  "version": "0.4.2",
+                  "from": "sax@0.4.2",
+                  "resolved": "https://registry.npmjs.org/sax/-/sax-0.4.2.tgz"
+                }
+              }
+            },
+            "xmlbuilder": {
+              "version": "0.4.2",
+              "from": "xmlbuilder@0.4.2",
+              "resolved": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-0.4.2.tgz"
             }
           }
         }

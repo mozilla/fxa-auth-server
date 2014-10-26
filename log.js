@@ -5,6 +5,7 @@
 var Domain = require('domain')
 var util = require('util')
 var Logger = require('bunyan')
+var Notifier = require('fxa-notifier-aws').Source
 
 function Overdrive(options) {
   Logger.call(this, options)
@@ -47,13 +48,7 @@ Overdrive.prototype.trace = function () {
   return Logger.prototype.trace.apply(this, arguments)
 }
 
-Overdrive.prototype.event = function (name, data) {
-  var e = {
-    event: name,
-    data: unbuffer(data)
-  }
-  process.stdout.write(JSON.stringify(e) + '\n')
-}
+Overdrive.prototype.event = function (name, data) {}
 
 Overdrive.prototype.stat = function (stats) {
   stats.op = 'stat'
@@ -94,16 +89,26 @@ Overdrive.prototype.summary = function (request, response) {
   }
 }
 
-module.exports = function (level, name) {
+module.exports = function (level, name, topic) {
   var logStreams = [{ stream: process.stderr, level: level }]
-  name = name || 'fxa-auth-server'
 
   var log = new Overdrive(
     {
-      name: name,
+      name: name || 'fxa-auth-server',
       streams: logStreams
     }
   )
+  if (topic) {
+    var notifier = new Notifier(topic)
+    notifier.on('error', function (err) { log.error({ op: 'notifier', err: err })})
+    log.event = function (name, data) {
+      var e = {
+        name: name,
+        data: unbuffer(data)
+      }
+      notifier.send(e)
+    }
+  }
 
   process.stdout.on(
     'error',

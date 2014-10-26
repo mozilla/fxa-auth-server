@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-module.exports = function (log) {
+var Sink = require('fxa-notifier-aws').Sink
 
-  var SQSReceiver = require('./sqs')(log)
+module.exports = function (log) {
 
   return function start(config, db) {
 
@@ -46,9 +46,18 @@ module.exports = function (log) {
       message.del()
     }
 
-    var bounceQueue = new SQSReceiver(config.region, [config.bounceQueueUrl, config.complaintQueueUrl])
+    function queueError(err) {
+      log.error({ op: 'queueError', err: err })
+    }
+
+    var bounceQueue = new Sink(config.region, config.bounceQueueUrl)
     bounceQueue.on('data', handleBounce)
-    bounceQueue.start()
-    return bounceQueue
+    bounceQueue.on('error', queueError)
+    bounceQueue.fetch()
+
+    var complaintQueue = new Sink(config.region, config.complaintQueueUrl)
+    complaintQueue.on('data', handleBounce)
+    complaintQueue.on('error', queueError)
+    complaintQueue.fetch()
   }
 }

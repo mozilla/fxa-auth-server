@@ -28,13 +28,12 @@
     "node": "0.10.x"
   },
   "dependencies": {
-    "aws-sdk": "2.0.21",
     "bigint": "0.4.2",
-    "binary-split": "0.1.2",
     "bunyan": "1.2.0",
     "compute-cluster": "0.0.9",
     "convict": "0.5.0",
     "fxa-auth-mailer": "1.0.6",
+    "fxa-notifier-aws": "1.0.0",
     "hapi": "7.0.0",
     "hapi-auth-hawk": "1.1.1",
     "hkdf": "0.0.2",
@@ -45,11 +44,11 @@
     "poolee": "0.4.15",
     "request": "2.45.0",
     "scrypt-hash": "1.1.8",
-    "through": "2.3.6",
     "uuid": "1.4.1"
   },
   "devDependencies": {
     "ass": "0.0.4",
+    "binary-split": "0.1.2",
     "fxa-auth-db-mem": "0.18.2",
     "grunt": "0.4.5",
     "grunt-cli": "0.1.13",
@@ -62,6 +61,7 @@
     "nock": "0.48.1",
     "simplesmtp": "0.3.33",
     "sjcl": "1.0.1",
+    "through": "2.3.6",
     "tap": "0.4.13"
   }
 }
