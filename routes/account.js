@@ -220,7 +220,12 @@ module.exports = function (
                 emailRecord.authSalt,
                 emailRecord.verifierVersion
               )
-              return password.matches(emailRecord.verifyHash)
+              return password.verifyHash()
+              .then(
+                function (verifyHash) {
+                  return db.checkPassword(emailRecord.uid, emailRecord.email, verifyHash)
+                }
+              )
               .then(
                 function (match) {
                   if (!match) {
@@ -572,7 +577,12 @@ module.exports = function (
                 emailRecord.verifierVersion
               )
 
-              return password.matches(emailRecord.verifyHash)
+              return password.verifyHash()
+                .then(
+                  function (verifyHash) {
+                    return db.checkPassword(emailRecord.uid, emailRecord.email, verifyHash)
+                  }
+                )
                 .then(
                   function (match) {
                     if (!match) {

@@ -78,6 +78,23 @@ module.exports = function (
     )
   }
 
+  DB.prototype.checkPassword = function (uid, email, verifyHash) {
+    verifyHash = Buffer(verifyHash).toString('hex')
+    log.trace({ op: 'DB.checkPassword', uid: uid, verifyHash: verifyHash })
+    return this.pool.post('/account/' + uid.toString('hex') + '/checkPassword',
+      {
+        'verifyHash': verifyHash
+      })
+      .then(
+        function (body) {
+          return uid.toString('hex') === body.uid
+        },
+        function (err) {
+          return false
+        }
+      )
+  }
+
   DB.prototype.createSessionToken = function (authToken) {
     log.trace({ op: 'DB.createSessionToken', uid: authToken && authToken.uid })
     return SessionToken.create(authToken)
