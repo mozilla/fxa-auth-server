@@ -54,7 +54,7 @@ module.exports = function (
               return password.verifyHash()
               .then(
                 function (verifyHash) {
-                  return db.checkPassword(emailRecord.uid, emailRecord.email, verifyHash)
+                  return db.checkPassword(emailRecord.uid, verifyHash)
                 }
               )
               .then(

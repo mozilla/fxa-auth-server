@@ -78,7 +78,7 @@ module.exports = function (
     )
   }
 
-  DB.prototype.checkPassword = function (uid, email, verifyHash) {
+  DB.prototype.checkPassword = function (uid, verifyHash) {
     verifyHash = Buffer(verifyHash).toString('hex')
     log.trace({ op: 'DB.checkPassword', uid: uid, verifyHash: verifyHash })
     return this.pool.post('/account/' + uid.toString('hex') + '/checkPassword',
