@@ -158,6 +158,8 @@ ___Parameters___
 * redirectTo - (optional) a URL that the client should be redirected to after handling the request
 * resume - (optional) opaque url-encoded string that will be included in the verification link as a querystring parameter, useful for continuing an OAuth flow for example.
 * preVerifyToken - (optional) see below
+* deviceName - (optional) opaque string name used by the connecting client to describe itself to the user
+* sessionLifetime - (optional) time in seconds before the `sessionToken` should expire; if missing or null then the session is valid until destroyed
 
 ### Request
 
@@ -273,6 +275,10 @@ ___Parameters___
 
 * email - the primary email for this account
 * authPW - the PBKDF2/HKDF stretched password as a hex string
+* service - (optional) opaque alphanumeric token to be included in verification links
+* reason - (optional) alphanumeric string indicating the reason for establishing a new session; may be "login" (the default) or "reconnect"
+* deviceName - (optional) opaque string name used by the connecting client to describe itself to the user
+* sessionLifetime - (optional) time in seconds before the `sessionToken` should expire; if missing or null then the session is valid until destroyed
 
 ### Request
 
@@ -379,7 +385,7 @@ This request will fail unless the account's email address has been verified.
 
 ___Headers___
 
-The request must include a HAWK header that authenticates the request using a `keyFetchToken` received from `/session/create`.
+The request must include a HAWK header that authenticates the request using a `keyFetchToken` received from `/v1/account/create` or `/v1/account/login`.
 
 ```sh
 curl -v \
@@ -667,11 +673,12 @@ https://api-accounts.dev.lcip.org/v1/session/status \
 
 ### Response
 
-Successful requests will produce a "200 OK" response with the account uid in the JSON body object:
+Successful requests will produce a "200 OK" response with the account uid and session ttl in the JSON body object:
 
 ```json
 {
-  "uid": "80dc2f2e373b4b3bb992468e6d578cd2"
+  "uid": "80dc2f2e373b4b3bb992468e6d578cd2",
+  "ttl": null
 }
 ```
 
@@ -784,7 +791,7 @@ ___Parameters___
 
 ___Headers___
 
-The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/v1/session/create`.
+The request must include a Hawk header that authenticates the request (including payload) using a `sessionToken` received from `/v1/account/login`.
 
 ```sh
 curl -v \

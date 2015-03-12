@@ -36,7 +36,10 @@ module.exports = function (log, isA, error, db) {
       handler: function (request, reply) {
         log.begin('Session.status', request)
         var sessionToken = request.auth.credentials
-        reply({ uid: sessionToken.uid.toString('hex') })
+        reply({
+          uid: sessionToken.uid.toString('hex'),
+          ttl: sessionToken.ttl()
+        })
       }
     }
   ]
