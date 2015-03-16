@@ -31,6 +31,7 @@
     "aws-sdk": "2.0.21",
     "bigint": "0.4.2",
     "binary-split": "0.1.2",
+    "boom": "2.6.1",
     "browserid-crypto": "0.7.0",
     "bunyan": "1.2.0",
     "compute-cluster": "0.0.9",

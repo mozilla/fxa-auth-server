@@ -144,6 +144,14 @@ module.exports = function (path, url, Hapi) {
       )
     })
 
+    server.register(require('./hawt-auth')(error, config), function (err) {
+      server.auth.strategy(
+        'serviceToken',
+        'hawt',
+        {}
+      )
+    })
+
     server.route(routes)
 
     server.app.log = log
