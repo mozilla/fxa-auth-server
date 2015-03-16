@@ -38,6 +38,7 @@
     "fxa-auth-mailer": "git+https://github.com/mozilla/fxa-auth-mailer.git#master",
     "hapi": "8.2.0",
     "hapi-auth-hawk": "2.0.0",
+    "hapi-fxa-oauth": "2.0.1",
     "hkdf": "0.0.2",
     "joi": "6.0.0",
     "jws": "0.2.6",

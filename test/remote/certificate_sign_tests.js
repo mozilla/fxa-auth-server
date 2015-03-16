@@ -239,7 +239,6 @@ TestServer.start(config)
         .then(
           t.fail,
           function (err) {
-            console.log(err)
             t.equal(err.errno, 109, 'Missing payload authentication')
           }
         )
