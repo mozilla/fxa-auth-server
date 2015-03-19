@@ -4,6 +4,7 @@ train-33
   * Allow sns notifier to be disabled in config - # 892
   * Log locked-account uid as a hex string, not a buffer literal - # 894
   * Add grunt task for tagging a new version - # 895
+  * train-33.1 - adjust shrinkwrap to pick up latest mailer l10n - #897
 
 train-32
   * Add ability to put an account in "lockout" state after many auth failures - #867
