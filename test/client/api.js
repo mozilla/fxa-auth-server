@@ -17,6 +17,7 @@ function ClientApi(origin) {
   this.origin = origin
   this.baseURL = origin + "/v1"
   this.timeOffset = 0;
+  this.headers = {};
 }
 
 ClientApi.prototype.Token = tokens
@@ -39,6 +40,11 @@ ClientApi.prototype.doRequest = function (method, url, token, payload, headers) 
   var d = P.defer()
   if (typeof headers === 'undefined') {
     headers = {}
+  }
+  for (var k in this.headers) {
+    if (!headers.hasOwnProperty(k)) {
+      headers[k] = this.headers[k];
+    }
   }
   if (token && !headers.Authorization) {
     headers.Authorization = hawkHeader(token, method, url, payload, this.timeOffset)

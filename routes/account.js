@@ -336,7 +336,7 @@ module.exports = function (
       config: {
         auth: {
           mode: 'optional',
-          strategy: 'sessionToken'
+          strategies: ['sessionToken', 'serviceToken']
         },
         validate: {
           query: {
@@ -345,16 +345,28 @@ module.exports = function (
         }
       },
       handler: function (request, reply) {
-        var sessionToken = request.auth.credentials
-        if (sessionToken) {
-          reply({ exists: true, locale: sessionToken.locale })
+        var auth = request.auth
+        // Authenticated users can view their own data.
+        if (auth.isAuthenticated && auth.strategy === 'sessionToken') {
+          var sessionToken = auth.credentials
+          reply({
+            exists: true,
+            email: sessionToken.email,
+            locale: sessionToken.locale
+          })
         }
         else if (request.query.uid) {
           var uid = Buffer(request.query.uid, 'hex')
           db.account(uid)
             .done(
               function (account) {
-                reply({ exists: true })
+                var resp = { exists: true }
+                // Authenticated backend services can view account data.
+                if (auth.isAuthenticated && auth.strategy === 'serviceToken') {
+                  resp.email = account.email
+                  resp.locale = account.locale
+                }
+                reply(resp)
               },
               function (err) {
                 if (err.errno === 102) {
