@@ -1,9 +1,13 @@
+train-34.1
+  * include the commits from #904 in this train (oops, #905)
+  * fix(travis): set --force flag on validate-shrinkwrap
+  
 train-34
   * fix(httpdb): Set verifierSetAt for resetAccount() - #903
   * test(email): script to check delivery and content for all production - #900
   * chore(versions): update fxa-auth-mailer and fxa-auth-db-mem to master - #904
   * chore(shrinkwrap): update versions in shrinkwrap - #904
-  
+
 train-33
   * Update to hapi 8.2.0 - #886
   * Enable build on ARM platforms (including Raspberry Pi) - #887
