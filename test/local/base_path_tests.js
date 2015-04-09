@@ -51,7 +51,7 @@ TestServer.start(config)
           if (err) { d.reject(err) }
           t.equal(res.statusCode, 200)
           var json = JSON.parse(body)
-          t.deepEqual(Object.keys(json), ['version', 'commit'])
+          t.deepEqual(Object.keys(json), ['version', 'commit', 'dbVer'])
           d.resolve(json)
         }
       )
