@@ -28,14 +28,14 @@ TestServer.start(config)
   test(
     '/ returns version and git hash',
     function (t) {
-        request(config.publicUrl + '/', function (err, res, body) {
+      request(config.publicUrl + '/', function (err, res, body) {
         t.ok(!err, 'No error fetching /')
 
         var json = JSON.parse(body)
         t.equal(json.version, require('../../package.json').version, 'package version')
 
         // check that the db version returns something like a semver
-        t.ok(json.dbVer.match(/^[0-9]+\.[0-9]+\.[0-9]+$/), 'The dbVer exists and looks like a semver')
+        t.ok(json.dbVersion.match(/^[0-9]+\.[0-9]+\.[0-9]+$/), 'The dbVer exists and looks like a semver')
 
         // check that the git hash just looks like a hash
         t.ok(json.commit.match(/^[0-9a-f]{40}$/), 'The git hash actually looks like one')
