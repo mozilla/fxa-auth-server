@@ -336,7 +336,10 @@ module.exports = function (
       config: {
         auth: {
           mode: 'optional',
-          strategy: 'sessionToken'
+          strategies: [
+            'sessionToken',
+            'oauthToken'
+          ]
         },
         validate: {
           query: {
@@ -345,16 +348,35 @@ module.exports = function (
         }
       },
       handler: function (request, reply) {
-        var sessionToken = request.auth.credentials
-        if (sessionToken) {
-          reply({ exists: true, locale: sessionToken.locale })
+        var auth = request.auth
+        // Authenticated users can view their own data.
+        if (auth.isAuthenticated && auth.strategy === 'sessionToken') {
+          var sessionToken = auth.credentials
+          reply({
+            exists: true,
+            email: sessionToken.email,
+            locale: sessionToken.locale
+          })
         }
         else if (request.query.uid) {
           var uid = Buffer(request.query.uid, 'hex')
           db.account(uid)
             .done(
               function (account) {
-                reply({ exists: true })
+                var resp = { exists: true }
+                // Bearers of oauth tokens can view account profile data.
+                if (auth.isAuthenticated && auth.strategy === 'oauthToken') {
+                  var oauthToken = auth.credentials
+                  if (oauthToken.user !== request.query.uid) {
+                    return reply(error.invalidToken())
+                  }
+                  if (oauthToken.scopes.indexOf('profile') === -1) {
+                    return reply(error.invalidToken())
+                  }
+                  resp.email = account.email
+                  resp.locale = account.locale
+                }
+                reply(resp)
               },
               function (err) {
                 if (err.errno === 102) {

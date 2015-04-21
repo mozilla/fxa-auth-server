@@ -1,0 +1,7 @@
+{
+  "oauth": {
+    "host": "localhost",
+    "port": 9010,
+    "insecure": true
+  }
+}

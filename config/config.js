@@ -241,6 +241,23 @@ module.exports = function (fs, path, url, convict) {
       doc: 'Is account lockout enabled',
       format: Boolean,
       default: false
+    },
+    oauth: {
+      host: {
+        doc: 'OAuth host for verifying tokens',
+        default: 'localhost',
+        env: 'OAUTH_HOST'
+      },
+      port: {
+        doc: 'OAuth port for veryfing tokens',
+        default: 9010,
+        env: 'OAUTH_PORT'
+      },
+      insecure: {
+        doc: 'Connect to OAuth server via insecure plain http',
+        default: false,
+        env: 'OAUTH_INSECURE'
+      }
     }
   })
 

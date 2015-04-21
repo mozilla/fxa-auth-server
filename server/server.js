@@ -144,6 +144,23 @@ module.exports = function (path, url, Hapi) {
       )
     })
 
+    server.register(
+      {
+        register: require('hapi-fxa-oauth'),
+        options: config.oauth
+      },
+      function (err) {
+        server.auth.strategy(
+          'oauthToken',
+          'fxa-oauth'
+          // TODO: push scope-checking down into hapi-fxa-oauth?
+          //{
+          //  scope: "profile"
+          //}
+        )
+      }
+    )
+
     server.route(routes)
 
     server.app.log = log
