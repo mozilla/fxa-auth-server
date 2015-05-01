@@ -34,6 +34,9 @@ TestServer.start(config)
         var json = JSON.parse(body)
         t.equal(json.version, require('../../package.json').version, 'package version')
 
+        // check that the db version returns something like a semver
+        t.ok(json.dbVersion.match(/^[0-9]+\.[0-9]+\.[0-9]+$/), 'The dbVer exists and looks like a semver')
+
         // check that the git hash just looks like a hash
         t.ok(json.commit.match(/^[0-9a-f]{40}$/), 'The git hash actually looks like one')
         t.end();
