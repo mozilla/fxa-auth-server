@@ -39,6 +39,8 @@ module.exports = function (
             authPW: isA.string().min(64).max(64).regex(HEX_STRING).required(),
             preVerified: isA.boolean(),
             service: isA.string().max(16).alphanum().optional(),
+            deviceName: isA.string().max(64).alphanum().optional(),
+            sessionLifetime: isA.number().integer().min(0).optional(),
             redirectTo: validators.redirectTo(redirectDomain).optional(),
             resume: isA.string().max(2048).optional(),
             preVerifyToken: isA.string().max(2048).regex(BASE64_JWT).optional()
@@ -117,7 +119,9 @@ module.exports = function (
                           email: account.email,
                           emailCode: account.emailCode,
                           emailVerified: account.emailVerified,
-                          verifierSetAt: account.verifierSetAt
+                          verifierSetAt: account.verifierSetAt,
+                          deviceName: form.deviceName || null,
+                          lifetime: form.sessionLifetime || null
                         }
                       )
                       .then(
@@ -202,6 +206,10 @@ module.exports = function (
           payload: {
             email: validators.email().required(),
             authPW: isA.string().min(64).max(64).regex(HEX_STRING).required()
+            service: isA.string().max(16).alphanum().optional(),
+            reason: isA.string().max(16).optional(),
+            deviceName: isA.string().max(64).alphanum().optional(),
+            sessionLifetime: isA.number().integer().min(0).optional(),
           }
         },
         response: {
@@ -241,7 +249,9 @@ module.exports = function (
                         email: emailRecord.email,
                         emailCode: emailRecord.emailCode,
                         emailVerified: emailRecord.emailVerified,
-                        verifierSetAt: emailRecord.verifierSetAt
+                        verifierSetAt: emailRecord.verifierSetAt,
+                        deviceName: form.deviceName || null,
+                        lifetime: form.sessionLifetime || null
                       }
                     )
                   }
