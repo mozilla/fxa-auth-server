@@ -12,12 +12,12 @@ var config = require('../../config').root()
 
 function fail() { throw new Error() }
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    'token expiry',
-    function (t) {
+test(
+  'token expiry',
+  function (t) {
+    return testServer.then(function(server) {
       // FYI config.tokenLifetimes.passwordChangeToken = -1
       var email = Math.random() + "@example.com"
       var password = 'ok'
@@ -33,14 +33,15 @@ TestServer.start(config)
             t.equal(err.errno, 110, 'invalid token')
           }
         )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)

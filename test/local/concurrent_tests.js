@@ -12,12 +12,12 @@ var P = require('../../lib/promise')
 process.env.CONFIG_FILES = path.join(__dirname, '../config/scrypt.json')
 var config = require('../../config').root()
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    'concurrent create requests',
-    function (t) {
+test(
+  'concurrent create requests',
+  function (t) {
+    return testServer.then(function(server) {
       var email = server.uniqueEmail()
       var password = 'abcdef'
       // Two shall enter, only one shall survive!
@@ -33,14 +33,15 @@ TestServer.start(config)
           t.equal(err.errno, 101, 'account exists')
         }
       )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)

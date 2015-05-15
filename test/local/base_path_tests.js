@@ -12,22 +12,24 @@ var request = require('request')
 process.env.CONFIG_FILES = path.join(__dirname, '../config/base_path.json')
 var config = require('../../config').root()
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    'alternate base path',
-    function (t) {
+test(
+  'alternate base path',
+  function (t) {
+    return testServer.then(function(server) {
       var email = Math.random() + "@example.com"
       var password = 'ok'
       // if this doesn't crash, we're all good
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-    }
-  )
+    })
+  }
+)
 
-  test(
-    '.well-known did not move',
-    function (t) {
+test(
+  '.well-known did not move',
+  function (t) {
+    return testServer.then(function(server) {
       var d = P.defer()
       request('http://127.0.0.1:9000/.well-known/browserid',
         function (err, res, body) {
@@ -39,12 +41,14 @@ TestServer.start(config)
         }
       )
       return d.promise
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'default routes are prefixed',
-    function (t) {
+test(
+  'default routes are prefixed',
+  function (t) {
+    return testServer.then(function(server) {
       var d = P.defer()
       request(config.publicUrl + '/',
         function (err, res, body) {
@@ -56,14 +60,15 @@ TestServer.start(config)
         }
       )
       return d.promise
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)
