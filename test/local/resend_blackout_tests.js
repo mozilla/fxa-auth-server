@@ -11,12 +11,12 @@ var P = require('../../lib/promise')
 process.env.CONFIG_FILES = path.join(__dirname, '../config/resend_blackout.json')
 var config = require('../../config').root()
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    'resend blackout period',
-    function (t) {
+test(
+  'resend blackout period',
+  function (t) {
+    return testServer.then(function(server) {
       // FYI config.tokenLifetimes.passwordChangeToken = -1
       var email = Math.random() + "@example.com"
       var password = 'ok'
@@ -51,14 +51,15 @@ TestServer.start(config)
             return server.mailbox.waitForCode(email)
           }
         )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)

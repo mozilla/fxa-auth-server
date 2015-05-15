@@ -24,12 +24,12 @@ function nowSeconds() {
   return Math.floor(Date.now() / 1000)
 }
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    'a valid preVerifyToken creates a verified account',
-    function (t) {
+test(
+  'a valid preVerifyToken creates a verified account',
+  function (t) {
+    return testServer.then(function(server) {
       var email = server.uniqueEmail()
       var password = 'ok'
       var token = secretKey.signSync(
@@ -51,12 +51,14 @@ TestServer.start(config)
             t.ok(Buffer.isBuffer(keys.wrapKb), 'wrapKb exists')
           }
         )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'an invalid preVerifyToken return an invalid verification code error',
-    function (t) {
+test(
+  'an invalid preVerifyToken return an invalid verification code error',
+  function (t) {
+    return testServer.then(function(server) {
       var email = server.uniqueEmail()
       var password = 'ok'
       var token = secretKey.signSync(
@@ -73,12 +75,14 @@ TestServer.start(config)
             t.equal(err.errno, 105, 'invalid verification code')
           }
         )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    're-signup against an unverified email',
-    function (t) {
+test(
+  're-signup against an unverified email',
+  function (t) {
+    return testServer.then(function(server) {
       var email = server.uniqueEmail()
       var password = 'abcdef'
       return Client.create(config.publicUrl, email, password)
@@ -112,14 +116,15 @@ TestServer.start(config)
             t.ok(Buffer.isBuffer(keys.wrapKb), 'wrapKb exists')
           }
         )
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)

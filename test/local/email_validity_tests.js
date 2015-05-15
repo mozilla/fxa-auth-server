@@ -12,12 +12,12 @@ var P = require('../../lib/promise')
 process.env.CONFIG_FILES = path.join(__dirname, '../config/scrypt.json')
 var config = require('../../config').root()
 
-TestServer.start(config)
-.then(function main(server) {
+var testServer = TestServer.start(config)
 
-  test(
-    '/account/create with a variety of malformed email addresses',
-    function (t) {
+test(
+  '/account/create with a variety of malformed email addresses',
+  function (t) {
+    return testServer.then(function(server) {
       var pwd = '123456'
 
       var emails = [
@@ -42,12 +42,14 @@ TestServer.start(config)
       })
 
       return P.all(emails)
-    }
-  )
+    })
+  }
+)
 
-  test(
-    '/account/create with a variety of unusual but valid email addresses',
-    function (t) {
+test(
+  '/account/create with a variety of unusual but valid email addresses',
+  function (t) {
+    return testServer.then(function(server) {
       var pwd = '123456'
 
       var emails = [
@@ -72,14 +74,15 @@ TestServer.start(config)
       })
 
       return P.all(emails)
-    }
-  )
+    })
+  }
+)
 
-  test(
-    'teardown',
-    function (t) {
-      server.stop()
-      t.end()
-    }
-  )
-})
+test(
+  'teardown',
+  function (t) {
+    return testServer.then(function(server) {
+      return server.stop()
+    })
+  }
+)
