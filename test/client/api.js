@@ -408,6 +408,19 @@ ClientApi.prototype.sessionDestroy = function (sessionTokenHex) {
     )
 }
 
+ClientApi.prototype.sessionRevoke = function (sessionRevokeTokenHex) {
+  return tokens.SessionRevokeToken.fromHex(sessionRevokeTokenHex)
+    .then(
+      function (token) {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/session/revoke',
+          token
+        )
+      }.bind(this)
+    )
+}
+
 ClientApi.prototype.sessionStatus = function (sessionTokenHex) {
   return tokens.SessionToken.fromHex(sessionTokenHex)
     .then(

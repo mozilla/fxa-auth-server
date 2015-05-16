@@ -53,6 +53,7 @@ function main() {
           error,
           Token.SessionToken,
           Token.KeyFetchToken,
+          Token.SessionRevokeToken,
           Token.AccountResetToken,
           Token.PasswordForgotToken,
           Token.PasswordChangeToken

@@ -16,6 +16,7 @@ var DB = require('../../lib/db')(
   Token.error,
   Token.SessionToken,
   Token.KeyFetchToken,
+  Token.SessionRevokeToken,
   Token.AccountResetToken,
   Token.PasswordForgotToken,
   Token.PasswordChangeToken
@@ -168,6 +169,81 @@ test(
         t.equal(err.errno, 110, 'keyFetchToken() fails with the correct error code')
         var msg = 'Error: Invalid authentication token in request signature'
         t.equal(msg, '' + err, 'keyFetchToken() fails with the correct message')
+      })
+    })
+  }
+)
+
+test(
+  'session revocation token without key fetch token',
+  function (t) {
+    return dbConn.then(function(db) {
+      var tokenId
+      return db.emailRecord(ACCOUNT.email)
+      .then(function(emailRecord) {
+        return db.createSessionRevokeToken({
+          uid: emailRecord.uid,
+          sessionData: zeroBuffer32
+        })
+      })
+      .then(function(sessionRevokeToken) {
+        t.deepEqual(sessionRevokeToken.uid, ACCOUNT.uid)
+        tokenId = sessionRevokeToken.tokenId
+        return db.sessionRevokeToken(tokenId)
+      })
+      .then(function(sessionRevokeToken) {
+        t.deepEqual(sessionRevokeToken.tokenId, tokenId, 'token id matches')
+        t.deepEqual(sessionRevokeToken.uid, ACCOUNT.uid, 'uid matches')
+        t.deepEqual(sessionRevokeToken.sessionData, zeroBuffer32, 'session info matches')
+        t.ok(!sessionRevokeToken.keyFetchId, 'key fetch id omitted')
+        return db.deleteSessionRevokeToken(sessionRevokeToken)
+      })
+      .then(function() {
+        return db.sessionRevokeToken(tokenId)
+        .then(function(sessionRevokeToken) {
+          t.fail('should not return deleted revocation token')
+        }, function(err) {
+          t.equal(err.errno, 110)
+          t.equal(err.message, 'Invalid authentication token in request signature')
+        })
+      })
+    })
+  }
+)
+
+test(
+  'session revocation token with key fetch token',
+  function (t) {
+    return dbConn.then(function(db) {
+      var tokenId
+      return db.emailRecord(ACCOUNT.email)
+      .then(function(emailRecord) {
+        return db.createSessionRevokeToken({
+          uid: emailRecord.uid,
+          sessionData: zeroBuffer32,
+          keyFetchId: zeroBuffer32
+        })
+      })
+      .then(function(sessionRevokeToken) {
+        t.deepEqual(sessionRevokeToken.uid, ACCOUNT.uid)
+        tokenId = sessionRevokeToken.tokenId
+        return db.sessionRevokeToken(tokenId)
+      })
+      .then(function(sessionRevokeToken) {
+        t.deepEqual(sessionRevokeToken.tokenId, tokenId, 'token id matches')
+        t.deepEqual(sessionRevokeToken.uid, ACCOUNT.uid, 'uid matches')
+        t.deepEqual(sessionRevokeToken.sessionData, zeroBuffer32, 'session info matches')
+        t.deepEqual(sessionRevokeToken.keyFetchId, zeroBuffer32, 'key fetch id matches')
+        return db.deleteSessionRevokeToken(sessionRevokeToken)
+      })
+      .then(function() {
+        return db.sessionRevokeToken(tokenId)
+        .then(function(sessionRevokeToken) {
+          t.fail('should not return deleted revocation token')
+        }, function(err) {
+          t.equal(err.errno, 110)
+          t.equal(err.message, 'Invalid authentication token in request signature')
+        })
       })
     })
   }

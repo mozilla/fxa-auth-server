@@ -17,6 +17,7 @@ function Client(origin) {
   this.emailVerified = false
   this.authToken = null
   this.sessionToken = null
+  this.sessionRevokeToken = null
   this.accountResetToken = null
   this.keyFetchToken = null
   this.passwordForgotToken = null
@@ -119,6 +120,7 @@ Client.prototype.create = function () {
       this.authAt = a.authAt
       this.sessionToken = a.sessionToken
       this.keyFetchToken = a.keyFetchToken
+      this.sessionRevokeToken = a.sessionRevokeToken
       return this
     }.bind(this)
   )
@@ -127,6 +129,7 @@ Client.prototype.create = function () {
 Client.prototype._clear = function () {
   this.authToken = null
   this.sessionToken = null
+  this.sessionRevokeToken = null
   this.srpSession = null
   this.accountResetToken = null
   this.keyFetchToken = null
@@ -146,6 +149,7 @@ Client.prototype.auth = function (opts) {
         this.uid = data.uid
         this.sessionToken = data.sessionToken
         this.keyFetchToken = data.keyFetchToken || null
+        this.sessionRevokeToken = data.sessionRevokeToken
         this.emailVerified = data.verified
         this.authAt = data.authAt
         return this
@@ -164,6 +168,22 @@ Client.prototype.destroySession = function () {
       .then(
         function () {
           this.sessionToken = null
+          return {}
+        }.bind(this)
+      )
+  }
+  return p
+}
+
+Client.prototype.revokeSession = function () {
+  var p = P(null)
+  if (this.sessionRevokeToken) {
+    p = this.api.sessionRevoke(this.sessionRevokeToken)
+      .then(
+        function () {
+          this.sessionRevokeToken = null
+          this.sessionToken = null
+          this.keyFetchToken = null
           return {}
         }.bind(this)
       )

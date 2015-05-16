@@ -14,6 +14,7 @@ var DB = require('../lib/db')(
   error,
   Token.SessionToken,
   Token.KeyFetchToken,
+  Token.SessionRevokeToken,
   Token.AccountResetToken,
   Token.PasswordForgotToken,
   Token.PasswordChangeToken
