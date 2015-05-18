@@ -120,6 +120,7 @@ Since this is a HTTP-based protocol, clients should be prepared to gracefully ha
 * Session
     * [GET /v1/session/status (:lock: sessionToken)](#get-v1sessionstatus)
     * [POST /v1/session/destroy (:lock: sessionToken)](#post-v1sessiondestroy)
+    * [POST /v1/session/revoke (:lock: sessionRevokeToken)](#post-v1sessionrevoke)
 
 * Recovery Email
     * [GET  /v1/recovery_email/status (:lock: sessionToken)](#get-v1recovery_emailstatus)
@@ -147,7 +148,7 @@ Creates a user account. The client provides the email address with which this ac
 
 This endpoint may send a verification email to the user.  Callers may optionally provide the `service` parameter to indicate what Identity-Attached Service they are acting on behalf of.  This is an opaque alphanumeric token which will be embedded in the verification link as a query parameter.
 
-Creating an account also logs in. The response contains a `sessionToken` and optionally a `keyFetchToken` if the url has a query parameter of `keys=true`.
+Creating an account also logs in. The response contains a `sessionToken`, `sessionRevokeToken`, and optionally a `keyFetchToken` if the url has a query parameter of `keys=true`.
 
 ___Parameters___
 
@@ -180,6 +181,7 @@ Successful requests will produce a "200 OK" response with the account's unique i
   "uid": "4c352927cd4f4a4aa03d7d1893d950b8",
   "sessionToken": "27cd4f4a4aa03d7d186a2ec81cbf19d5c8a604713362df9ee15c4f4a4aa03d7d",
   "keyFetchToken": "7d1893d950b8cd69856a2ec81cbfd7d1893d950b3362df9e56a2ec81cbf19d5c",
+  "sessionRevokeToken": "7f8d71ba8490c283b5ff8873b1abdb79d3fbf8baef984eaf1ae4a32dca2e56b3",
   "authAt": 1392144866
 }
 ```
@@ -266,7 +268,7 @@ Failing requests may be due to the following errors:
 
 ## POST /v1/account/login
 
-Obtain a `sessionToken` and optionally a `keyFetchToken` by adding the query parameter `keys=true`.
+Obtain a `sessionToken`, `sessionRevokeToken`, and optionally a `keyFetchToken` by adding the query parameter `keys=true`.
 
 ___Parameters___
 
@@ -295,6 +297,7 @@ Successful requests will produce a "200 OK" and a json body. `keyFetchToken` wil
   "uid": "4c352927cd4f4a4aa03d7d1893d950b8",
   "sessionToken": "27cd4f4a4aa03d7d186a2ec81cbf19d5c8a604713362df9ee15c4f4a4aa03d7d",
   "keyFetchToken": "7d1893d950b8cd69856a2ec81cbfd7d1893d950b3362df9e56a2ec81cbf19d5c",
+  "sessionRevokeToken": "7f8d71ba8490c283b5ff8873b1abdb79d3fbf8baef984eaf1ae4a32dca2e56b3",
   "verified": true,
   "authAt": 1392144866
 }
@@ -652,6 +655,50 @@ curl -v \
 -H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
 https://api-accounts.dev.lcip.org/v1/session/destroy \
 ```
+
+### Response
+
+Successful requests will produce a "200 OK" response with an empty JSON body:
+
+```json
+{}
+```
+
+Failing requests may be due to the following errors:
+
+* status code 400, errno 106:  request body was not valid json
+* status code 401, errno 109:  invalid request signature
+* status code 401, errno 110:  invalid authentication token
+* status code 401, errno 111:  invalid authentication timestamp
+* status code 411, errno 112:  content-length header was not provided
+* status code 413, errno 113:  request body too large
+* status code 401, errno 115:  invalid authentication nonce
+
+
+## POST /v1/session/revoke
+
+:lock: HAWK-authenticated with the sessionRevokeToken.
+
+Revokes the session and key fetch tokens associated with the current session. This can be used to force a device to sign out remotely, without granting a relying service access to the session token. As with `/v1/session/destroy`, the device must perform the login sequence to obtain new session and key fetch tokens after the session is revoked.
+
+The revocation token is single-use, and consumed after the session and key fetch tokens are deleted.
+
+
+### Request
+
+___Headers___
+
+The request must include a Hawk header that authenticates the request using a `sessionRevokeToken` received from `/v1/account/login` or `/v1/account/create`.
+
+```sh
+curl -v \
+-X POST \
+-H "Host: api-accounts.dev.lcip.org" \
+-H "Content-Type: application/json" \
+-H 'Authorization: Hawk id="7c36e200986b25101002ddb9afece08a53eb88da6e9c87632e9cb6b79b55413b", ts="1431735466", nonce="TyFdws", mac="yEdQlwSVPzJj/cGuZy52fo1cHv8Y9tRbzy2OkAc7H4k="' \
+https://api-accounts.dev.lcip.org/v1/session/revoke \
+```
+
 
 ### Response
 
