@@ -34,6 +34,7 @@
     "fxa-jwtool": "0.7.1",
     "hapi": "8.4.0",
     "hapi-auth-hawk": "2.0.0",
+    "hapi-fxa-oauth": "2.0.1",
     "hkdf": "0.0.2",
     "joi": "6.4.1",
     "mozlog": "2.0.1",
