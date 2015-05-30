@@ -4,6 +4,7 @@
 
 var P = require('../../lib/promise')
 var ClientApi = require('./api')
+var ClientOAuth = require('./oauth')
 var butil = require('../../lib/crypto/butil')
 var pbkdf2 = require('../../lib/crypto/pbkdf2')
 var hkdf = require('../../lib/crypto/hkdf')
@@ -13,6 +14,7 @@ function Client(origin) {
   this.uid = null
   this.authAt = 0
   this.api = new ClientApi(origin)
+  this.oauth = new ClientOAuth(origin)
   this.email = null
   this.emailVerified = false
   this.authToken = null
@@ -26,6 +28,7 @@ function Client(origin) {
 }
 
 Client.Api = ClientApi
+Client.OAuth = ClientOAuth
 
 Client.prototype.setupCredentials = function (email, password) {
   this.email = email
@@ -327,6 +330,32 @@ Client.prototype.resetPassword = function (newPassword) {
           this.accountResetToken,
           this.authPW
         )
+      }.bind(this)
+    )
+}
+
+Client.prototype.revokeSessionToken = function (accessToken) {
+  if (!this.sessionToken) {
+    return P(null)
+  }
+  return this.oauth.revokeSessionToken(accessToken, this.sessionToken)
+    .then(
+      function (result) {
+        this.sessionToken = null
+        return {}
+      }.bind(this)
+    )
+}
+
+Client.prototype.revokeKeyFetchToken = function (accessToken) {
+  if (!this.keyFetchToken) {
+    return P(null)
+  }
+  return this.oauth.revokeKeyFetchToken(accessToken, this.keyFetchToken)
+    .then(
+      function (result) {
+        this.keyFetchToken = null
+        return {}
       }.bind(this)
     )
 }

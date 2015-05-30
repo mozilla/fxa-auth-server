@@ -140,6 +140,9 @@ Since this is a HTTP-based protocol, clients should be prepared to gracefully ha
 * Miscellaneous
     * [POST /v1/get_random_bytes](#post-v1get_random_bytes)
 
+* OAuth
+    * [POST /v1/oauth/sessions/revoke (:lock: accessToken)](#post-v1oauthsessionsrevoke)
+    * [POST /v1/oauth/keys/revoke (:lock: accessToken)](#post-v1oauthkeysrevoke)
 
 ## POST /v1/account/create
 
@@ -1196,6 +1199,85 @@ Successful requests will produce a "200 OK" response with the random bytes as he
 ```
 
 There are no standard failure modes for this endpoint.
+
+
+## POST /v1/oauth/sessions/revoke
+
+:lock: Authenticated using an OAuth bearer token, with the `account` scope.
+
+Revokes a session token for an account. This allows a relying service to destroy a session remotely, without granting the service access to the original session token. As with `/v1/session/destroy`, the device must perform the login sequence to obtain a new session token after the session is revoked.
+
+The client derives the session identifier by generating a set of Hawk credentials, then discarding the authentication and bundle keys. The relying service should store this identifier, and present it to the auth server when the user requests to sign out remotely.
+
+___Parameters___
+
+* id - The session token identifier, derived from the `sessionToken`.
+
+### Request
+
+```sh
+curl -v \
+-X POST \
+-H "Content-Type: application/json" \
+"https://api-accounts.dev.lcip.org/v1/oauth/sessions/revoke" \
+-d '{
+  "id": "14de1fcbb43e81f534c89780768b1a068d0c52f7ae5363abaef26483ff1e1a1c"
+}'
+```
+
+### Response
+
+Successful requests will produce a "200 OK" response with an empty JSON body:
+
+```json
+{}
+```
+
+Failing requests may be due to the following errors:
+
+
+* status code 400, errno 106:  request body was not valid json
+* status code 401, errno 110:  invalid authentication token
+* status code 411, errno 112:  content-length header was not provided
+* status code 413, errno 113:  request body too large
+
+## POST /v1/oauth/keys/revoke
+
+:lock: Authenticated using an OAuth bearer token, with the `account` scope.
+
+Revokes a key fetch token for an account. The client derives the token identifier by generating a set of Hawk credentials, then discarding the authentication and bundle keys. Once the token is revoked, the client will need to perform the login sequence again to obtain a new key fetch token.
+
+___Parameters___
+
+* id - The key fetch token identifier, derived from the `keyFetchToken`.
+
+### Request
+
+```sh
+curl -v \
+-X POST \
+-H "Content-Type: application/json" \
+"https://api-accounts.dev.lcip.org/v1/oauth/keys/revoke" \
+-d '{
+  "id": "f4f23e0f0c41dd126222a798ffe6883dfcb1c055dbc03101c34ca597b3169f0f"
+}'
+```
+
+### Response
+
+Successful requests will produce a "200 OK" response with an empty JSON body:
+
+```json
+{}
+```
+
+Failing requests may be due to the following errors:
+
+
+* status code 400, errno 106:  request body was not valid json
+* status code 401, errno 110:  invalid authentication token
+* status code 411, errno 112:  content-length header was not provided
+* status code 413, errno 113:  request body too large
 
 
 # Example flows
