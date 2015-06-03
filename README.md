@@ -91,14 +91,9 @@ development use:
 
 ### Configuration
 
-To set the url of the [content server](https://github.com/mozilla/fxa-content-server/), edit [`config/index.js`](https://github.com/mozilla/fxa-auth-server/blob/master/config/index.js#L82) on your deployed instance and modify `url`:
+To set the url of the [content server](https://github.com/mozilla/fxa-content-server/), set enviornment variable `CONTENT_SERVER_URL` to your server urls
 
-    contentServer: {
-      url: {
-        doc: "The url of the corresponding fxa-content-server instance",
-        default: 'http://your.content.server.org',
-        env: 'CONTENT_SERVER_URL'
-      }
+    CONTENT_SERVER_URL=http://your.content.server.org
 
 ### Troubleshooting
 
