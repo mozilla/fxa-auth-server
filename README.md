@@ -91,11 +91,9 @@ development use:
 
 ### Configuration
 
-To set the url of the [content server](https://github.com/mozilla/fxa-content-server), edit `config.json` on your deployed instance and add:
+To set the url of the [content server](https://github.com/mozilla/fxa-content-server/), set enviornment variable `CONTENT_SERVER_URL` to your server urls
 
-    "contentServer": {
-      "url": "http://your.content.server.org"
-    }
+    CONTENT_SERVER_URL=http://your.content.server.org
 
 ### Troubleshooting
 
