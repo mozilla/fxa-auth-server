@@ -788,7 +788,7 @@
         "fxa-content-server-l10n": {
           "version": "0.0.0",
           "from": "git://github.com/mozilla/fxa-content-server-l10n.git",
-          "resolved": "git://github.com/mozilla/fxa-content-server-l10n.git#0b14ddf163b06bd82ee53400ac0201c81c250875"
+          "resolved": "git://github.com/mozilla/fxa-content-server-l10n.git#ee79552c1139d1b10b86a4e407bccc520cf90279"
         },
         "handlebars": {
           "version": "1.3.0",
