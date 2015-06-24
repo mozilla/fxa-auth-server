@@ -291,6 +291,23 @@ var conf = convict({
     format: Boolean,
     env: 'LOCKOUT_ENABLED',
     default: false
+  },
+  oauth: {
+    host: {
+      doc: 'Host to which to proxy OAuth requests',
+      default: '127.0.0.1',
+      env: 'OAUTH_HOST'
+    },
+    port: {
+      doc: 'Port to which to proxy OAuth requests',
+      default: 9010,
+      env: 'OAUTH_PORT'
+    },
+    use_insecure_connection: {
+      doc: 'Connect to OAuth server via insecure plain http',
+      default: false,
+      env: 'OAUTH_USE_INSECURE_CONNECTION'
+    }
   }
 })
 
