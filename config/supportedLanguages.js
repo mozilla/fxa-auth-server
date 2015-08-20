@@ -23,6 +23,8 @@ module.exports = [
   'fr',
   'fy',
   'he',
+  'hi',
+  'hi-IN',
   'hsb',
   'hu',
   'id',
