@@ -1,0 +1,13 @@
+.git
+node_modules
+sandbox
+config/*.json
+*.swp
+server.log*
+secret*
+*.gpg
+test/load/bin
+test/load/lib*
+test/load/include
+*.pyc
+.vagrant
