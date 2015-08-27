@@ -2,6 +2,7 @@
 node_modules
 sandbox
 config/*.json
+!config/version.json
 *.swp
 server.log*
 secret*
