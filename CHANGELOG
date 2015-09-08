@@ -9,6 +9,7 @@ train-44
   * fix(notifier): calling undefined "log" throws #1023
   * fix(tests): make smtp.redirectDomain configurable in remote tests #998
   * fix(tests): unset user-agent fields are null #1031
+  * fix(db): decrease session token update frequency. #1042
   * refactor(config): Use human-readable duration values in config #978
   * chore(deps): switch from db-mem to db-mysql #999
   * chore(docs): remove stale db info from the readme #1001
