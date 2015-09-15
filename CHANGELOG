@@ -1,3 +1,7 @@
+train-45.1
+  * fix(email): Backport auth-mailer config changes from master - #1052
+  * chore(shrinkwrap): update shrinkwrap to pickup fxa-auth-mailer.git#df59422ad changes
+
 train-45
   * feat(l10n): add fa as a supported locale. #1026
   * fix(db): decrease session token update frequency #1042
