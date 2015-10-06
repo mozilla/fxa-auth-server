@@ -42,7 +42,7 @@
     "node-statsd": "0.1.1",
     "poolee": "1.0.0",
     "request": "2.55.0",
-    "scrypt-hash": "1.1.12",
+    "scrypt-hash": "1.1.13",
     "through": "2.3.7",
     "ua-parser": "0.3.5",
     "uuid": "1.4.1"
