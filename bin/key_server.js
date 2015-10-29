@@ -88,7 +88,12 @@ function main() {
               server = Server.create(log, error, config, routes, db)
 
               server.start(
-                function () {
+                function (err) {
+                  if (err) {
+                    log.fatal(err)
+                    process.exit(1)
+                  }
+
                   log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
                 }
               )
