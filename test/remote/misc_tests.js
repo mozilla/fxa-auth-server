@@ -23,12 +23,15 @@ TestServer.start(config)
         t.equal(res.headers['access-control-allow-origin'], config.corsOrigin, 'Access-Control-Allow-Origin header was set correctly')
 
         var json = JSON.parse(body)
-        t.deepEqual(Object.keys(json), ['version', 'commit', 'source'])
+        t.deepEqual(Object.keys(json), ['version', 'commit', 'dbVersion', 'source'])
         t.equal(json.version, require('../../package.json').version, 'package version')
         t.ok(json.source && json.source !== 'unknown', 'source repository')
 
         // check that the git hash just looks like a hash
         t.ok(json.commit.match(/^[0-9a-f]{40}$/), 'The git hash actually looks like one')
+
+        // check the dbVersion looks like a semver
+        t.ok(json.dbVersion.match(/^([0-9]+\.|[0-9]+$){3}/), 'The dbVer exists and looks like a semver')
         t.end()
       })
     }
