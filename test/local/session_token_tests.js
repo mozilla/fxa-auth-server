@@ -9,6 +9,9 @@ var log = { trace: function() {}, info: function () {} }
 var tokens = require('../../lib/tokens')(log)
 var SessionToken = tokens.SessionToken
 
+// browsers ask for 6 hour duration on certificate sign
+var TOKEN_FRESHNESS_THRESHOLD = 6 * 60 * 60 * 1000
+
 var ACCOUNT = {
   uid: 'xxx',
   email: Buffer('test@example.com').toString('hex'),
@@ -193,8 +196,8 @@ test(
         uaOS: 'baz',
         uaOSVersion: 'qux',
         uaDeviceType: 'wibble',
-        lastAccessTime: 3600000
-      }), false, 'returns false when lastAccessTime is 3,600,000 milliseconds newer')
+        lastAccessTime: TOKEN_FRESHNESS_THRESHOLD
+      }), false, 'returns false when lastAccessTime is TOKEN_FRESHNESS_THRESHOLD milliseconds newer')
       t.equal(token.isFresh({
         uaBrowser: 'foo',
         uaBrowserVersion: 'bar',
