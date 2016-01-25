@@ -25,6 +25,9 @@ var DB = require('../../lib/db')(
 var zeroBuffer16 = Buffer('00000000000000000000000000000000', 'hex')
 var zeroBuffer32 = Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 
+// browsers ask for 6 hour duration on certificate sign
+var TOKEN_FRESHNESS_THRESHOLD = 6 * 60 * 60 * 1000
+
 var ACCOUNT = {
   uid: uuid.v4('binary'),
   email: 'foo@bar.com',
@@ -154,7 +157,7 @@ test(
         return sessionToken
       })
       .then(function(sessionToken) {
-        sessionToken.lastAccessTime -= 60 * 60 * 1000
+        sessionToken.lastAccessTime -= TOKEN_FRESHNESS_THRESHOLD
         return db.updateSessionToken(sessionToken, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:41.0) Gecko/20100101 Firefox/41.0')
       })
       .then(function() {
