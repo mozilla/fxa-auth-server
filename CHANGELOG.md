@@ -1,3 +1,13 @@
+<a name="1.53.1"></a>
+## [1.53.1](https://github.com/mozilla/fxa-auth-server/compare/v1.53.0...v1.53.1) (2016-01-25)
+
+
+### Bug Fixes
+
+* **tokens:** extend token freshness threshold to 6 hours ([053a002](https://github.com/mozilla/fxa-auth-server/commit/053a002))
+
+
+
 <a name="1.53.0"></a>
 # [1.53.0](https://github.com/mozilla/fxa-auth-server/compare/v1.51.1...v1.53.0) (2016-01-12)
 
