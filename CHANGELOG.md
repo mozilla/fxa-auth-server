@@ -1,3 +1,13 @@
+<a name="1.53.2"></a>
+## [1.53.2](https://github.com/mozilla/fxa-auth-server/compare/v1.53.1...v1.53.2) (2016-01-29)
+
+
+### Bug Fixes
+
+* **sessiontokens:** effectively disable sessionToken updates ([0b85f26](https://github.com/mozilla/fxa-auth-server/commit/0b85f26))
+
+
+
 <a name="1.53.1"></a>
 ## [1.53.1](https://github.com/mozilla/fxa-auth-server/compare/v1.53.0...v1.53.1) (2016-01-25)
 
