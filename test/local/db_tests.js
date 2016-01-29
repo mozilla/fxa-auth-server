@@ -25,8 +25,9 @@ var DB = require('../../lib/db')(
 var zeroBuffer16 = Buffer('00000000000000000000000000000000', 'hex')
 var zeroBuffer32 = Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 
-// browsers ask for 6 hour duration on certificate sign
-var TOKEN_FRESHNESS_THRESHOLD = 6 * 60 * 60 * 1000
+// setting to "forever" to eliminate ~99% of the updates to sessionToken
+// (A small percentage do qualify as "fresh" due to changes in UA).
+var TOKEN_FRESHNESS_THRESHOLD = 50 * 365 * 24 * 60 * 60 * 1000 // 50 years
 
 var ACCOUNT = {
   uid: uuid.v4('binary'),
