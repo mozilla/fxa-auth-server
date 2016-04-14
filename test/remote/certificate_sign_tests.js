@@ -26,7 +26,7 @@ TestServer.start(config)
       var password = 'allyourbasearebelongtous'
       var client = null
       var duration = 1000 * 60 * 60 * 24 // 24 hours
-      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (c) {
             client = c

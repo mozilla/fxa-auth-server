@@ -4,11 +4,11 @@
 
 var test = require('../ptaptest')
 var TestServer = require('../test_server')
-var Client = require('../client')
+var Client = require('../client/index')
 var JWTool = require('fxa-jwtool')
 
 process.env.TRUSTED_JKUS = 'http://127.0.0.1:9000/.well-known/public-keys'
-var config = require('../../config').getProperties()
+var config = require('../../config/index').getProperties()
 var secretKey = JWTool.JWK.fromFile(
   config.secretKeyFile,
   {
@@ -38,7 +38,7 @@ TestServer.start(config)
           sub: email
         }
       )
-      return Client.create(config.publicUrl, email, password, { preVerifyToken: token })
+      return Client.create(config.publicUrl, email, password, { preVerifyToken: token, keys: true })
         .then(
           function (c) {
             return c.keys()
@@ -102,13 +102,6 @@ TestServer.start(config)
         .then(
           function (client) {
             t.ok(client.uid, 'account created')
-            return client.keys()
-          }
-        )
-        .then(
-          function (keys) {
-            t.ok(Buffer.isBuffer(keys.kA), 'kA exists')
-            t.ok(Buffer.isBuffer(keys.wrapKb), 'wrapKb exists')
           }
         )
     }

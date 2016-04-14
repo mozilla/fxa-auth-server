@@ -134,6 +134,7 @@ ClientApi.prototype.accountLogin = function (email, authPW, opts) {
       email: email,
       authPW: authPW.toString('hex'),
       service: opts.service || undefined,
+      resume: opts.resume || undefined,
       reason: opts.reason || undefined,
       device: opts.device || undefined,
       metricsContext: opts.metricsContext || undefined
@@ -363,17 +364,21 @@ ClientApi.prototype.passwordChangeStart = function (email, oldAuthPW, headers) {
   )
 }
 
-ClientApi.prototype.passwordChangeFinish = function (passwordChangeTokenHex, authPW, wrapKb, headers) {
+ClientApi.prototype.passwordChangeFinish = function (passwordChangeTokenHex, authPW, wrapKb, headers, sessionToken) {
+  var options = {
+    keys: true
+  }
   return tokens.PasswordChangeToken.fromHex(passwordChangeTokenHex)
     .then(
       function (token) {
         return this.doRequest(
           'POST',
-          this.baseURL + '/password/change/finish',
+          this.baseURL + '/password/change/finish' + getQueryString(options),
           token,
           {
             authPW: authPW.toString('hex'),
-            wrapKb: wrapKb.toString('hex')
+            wrapKb: wrapKb.toString('hex'),
+            sessionToken: sessionToken
           },
           headers
         )
