@@ -150,6 +150,13 @@ var conf = convict({
       env: 'VERIFY_URL',
       arg: 'verify-url'
     },
+    verificationSigninUrl: {
+      doc: 'Deprecated. uses contentServer.url',
+      format: String,
+      default: undefined,
+      env: 'VERIFYSIGNIN_URL',
+      arg: 'verifysignin-url'
+    },
     passwordResetUrl: {
       doc: 'Deprecated. uses contentServer.url',
       format: String,
@@ -371,6 +378,7 @@ conf.set('domain', url.parse(conf.get('publicUrl')).host)
 // derive fxa-auth-mailer configuration from our content-server url
 conf.set('smtp.signInUrl', conf.get('contentServer.url') + '/signin')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/v1/verify_email')
+conf.set('smtp.verificationSigninUrl', conf.get('contentServer.url') + '/v1/verify_sign_in')
 conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/v1/complete_reset_password')
 conf.set('smtp.accountUnlockUrl', conf.get('contentServer.url') + '/v1/complete_unlock_account')
 conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')
