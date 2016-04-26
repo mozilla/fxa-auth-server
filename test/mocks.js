@@ -15,7 +15,7 @@ var P = require('../lib/promise')
 // if you need to e.g. make assertions about logged values.
 
 var LOG_METHOD_NAMES = ['trace', 'increment', 'info', 'error', 'begin', 'warn',
-                        'activityEvent', 'event']
+                        'activityEvent', 'event', 'timing']
 
 var METRICS_CONTEXT_METHOD_NAMES = ['add', 'validate']
 

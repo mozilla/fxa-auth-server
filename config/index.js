@@ -28,6 +28,19 @@ var conf = convict({
       env: 'LOG_FORMAT'
     }
   },
+  memcache: {
+    address: {
+      doc: 'Hostname/IP:Port of the memcache server',
+      default: '127.0.0.1:11211',
+      env: 'MEMCACHE_ADDRESS'
+    },
+    idle: {
+      doc: 'Idle timeout for memcached connections (milliseconds)',
+      format: Number,
+      default: 30000,
+      env: 'MEMCACHE_IDLE'
+    }
+  },
   publicUrl: {
     format: 'url',
     default: 'http://127.0.0.1:9000',
