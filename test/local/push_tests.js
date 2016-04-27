@@ -320,3 +320,36 @@ test(
   }
 )
 
+test(
+  'notifyNewDevice calls pushToDevices',
+  function (t) {
+    try {
+      var push = require('../../lib/push')(mockLog(), mockDbEmpty)
+      sinon.spy(push, 'pushToDevices')
+      var deviceId = 'gjfkd5434jk5h5fd'
+      var deviceName = 'My phone'
+      var expectedData = new Buffer(JSON.stringify({
+        action: 'fxaccounts:new_device',
+        data: {
+          deviceName: deviceName
+        }
+      }))
+      push.notifyNewDevice(mockUid, deviceName, deviceId).catch(function (err) {
+        t.fail('must not throw')
+        throw err
+      })
+      .then(function() {
+        t.ok(push.pushToDevices.calledOnce, 'pushToDevices was called')
+        t.equal(push.pushToDevices.getCall(0).args[0], mockUid)
+        t.equal(push.pushToDevices.getCall(0).args[1], 'newDevice')
+        t.deepEqual(push.pushToDevices.getCall(0).args[2], expectedData)
+        t.deepEqual(push.pushToDevices.getCall(0).args[3], [deviceId])
+        push.pushToDevices.restore()
+        t.end()
+      })
+    } catch (e) {
+      t.fail('must not throw')
+    }
+  }
+)
+
