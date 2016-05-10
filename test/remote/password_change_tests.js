@@ -17,10 +17,8 @@ TestServer.start(config)
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
       var newPassword = 'foobar'
-      var kB = null
-      var kA = null
-      var client = null
-      var firstAuthPW
+      var kB, kA, client, firstAuthPW, originalSessionTokenId
+
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (x) {
@@ -64,7 +62,7 @@ TestServer.start(config)
         )
         .then(
           function () {
-            return Client.loginAndVerify(config.publicUrl, email, newPassword, server.mailbox)
+            return Client.login(config.publicUrl, email, newPassword, {keys:true})
           }
         )
         .then(

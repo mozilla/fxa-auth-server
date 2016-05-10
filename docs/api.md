@@ -338,7 +338,7 @@ https://api-accounts.dev.lcip.org/v1/account/login?keys=true \
 
 ### Response
 
-Successful requests will produce a "200 OK" and a json body. `keyFetchToken`, `challengeMethod` and `challengeMethod` will only be present if `keys=true` was specified.
+Successful requests will produce a "200 OK" and a json body. `keyFetchToken`, `verificationMethod` and `verificationReason` will only be present if `keys=true` was specified.
 
 ```json
 {
