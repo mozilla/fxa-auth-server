@@ -175,7 +175,8 @@ test(
         }
       },
       payload: {
-        authPW: crypto.randomBytes(32).toString('hex')
+        authPW: crypto.randomBytes(32).toString('hex'),
+        sessionToken: crypto.randomBytes(32).toString('hex')
       }
     }
     var mockDB = {

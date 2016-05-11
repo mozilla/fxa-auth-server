@@ -377,7 +377,7 @@ Client.prototype.destroyAccount = function () {
 }
 
 Client.prototype.forgotPassword = function (lang) {
-  this._clear()
+
   return this.api.passwordForgotSendCode(this.email, this.options, lang)
     .then(
       function (x) {
@@ -422,9 +422,18 @@ Client.prototype.resetPassword = function (newPassword, headers, options) {
         return this.api.accountReset(
           this.accountResetToken,
           this.authPW,
+          this.sessionToken,
           headers,
           options
         )
+          .then(function (response) {
+            // Update to the new verified tokens
+            this.sessionToken = response.sessionToken
+            this.keyFetchToken = response.keyFetchToken
+
+            return response
+          })
+
       }.bind(this)
     )
 }

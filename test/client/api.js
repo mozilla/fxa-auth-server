@@ -243,17 +243,19 @@ ClientApi.prototype.accountStatus = function (uid, sessionTokenHex) {
   }
 }
 
-ClientApi.prototype.accountReset = function (accountResetTokenHex, authPW, headers, options) {
+ClientApi.prototype.accountReset = function (accountResetTokenHex, authPW, sessionToken, headers, options) {
   options = options || {}
+  var qs = getQueryString(options)
   return tokens.AccountResetToken.fromHex(accountResetTokenHex)
     .then(
       function (token) {
         return this.doRequest(
           'POST',
-          this.baseURL + '/account/reset',
+          this.baseURL + '/account/reset' + qs,
           token,
           {
             authPW: authPW.toString('hex'),
+            sessionToken: sessionToken,
             metricsContext: options.metricsContext || undefined
           },
           headers
