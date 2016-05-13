@@ -422,7 +422,6 @@ Client.prototype.resetPassword = function (newPassword, headers, options) {
         return this.api.accountReset(
           this.accountResetToken,
           this.authPW,
-          this.sessionToken,
           headers,
           options
         )

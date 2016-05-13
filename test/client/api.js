@@ -243,7 +243,7 @@ ClientApi.prototype.accountStatus = function (uid, sessionTokenHex) {
   }
 }
 
-ClientApi.prototype.accountReset = function (accountResetTokenHex, authPW, sessionToken, headers, options) {
+ClientApi.prototype.accountReset = function (accountResetTokenHex, authPW, headers, options) {
   options = options || {}
   var qs = getQueryString(options)
   return tokens.AccountResetToken.fromHex(accountResetTokenHex)
@@ -255,7 +255,6 @@ ClientApi.prototype.accountReset = function (accountResetTokenHex, authPW, sessi
           token,
           {
             authPW: authPW.toString('hex'),
-            sessionToken: sessionToken,
             metricsContext: options.metricsContext || undefined
           },
           headers
