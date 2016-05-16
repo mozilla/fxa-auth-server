@@ -55,6 +55,7 @@ TestServer.start(config)
           function (response) {
             t.ok(response.sessionToken, 'session token is in response')
             t.ok(response.keyFetchToken, 'keyFetchToken token is in response')
+            t.ok(response.unwrapBKey, 'unwrapBKey token is in response')
             t.equal(response.verified, true,  'verified is true')
           }
         )
@@ -94,14 +95,14 @@ TestServer.start(config)
   )
 
   test(
-    'accoutn reset wo/keys',
+    'account reset wo/keys',
     function (t) {
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
       var newPassword = 'ez'
       var client
 
-      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
         .then(
           function (x) {
             client = x
@@ -129,6 +130,7 @@ TestServer.start(config)
           function (response) {
             t.ok(response.sessionToken, 'session token is in response')
             t.notOk(response.keyFetchToken, 'keyFetchToken token is not in response')
+            t.notOk(response.unwrapBKey, 'unwrapBKey token is not in response')
             t.equal(response.verified, true,  'verified is true')
           }
         )
