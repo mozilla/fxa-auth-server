@@ -24,16 +24,10 @@ TestServer.start(config)
       var wrapKb = null
       var kA = null
       var client = null
-      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-        .then(
-          function () {
-            return Client.login(config.publicUrl, email, password)
-          }
-        )
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (x) {
             client = x
-            return server.mailbox.waitForEmail(email)
           }
         )
         .then(
@@ -73,6 +67,13 @@ TestServer.start(config)
         )
         .then(
           function () {
+            // make sure we can still login after password reset
+            return Client.loginAndVerify(config.publicUrl, email, newPassword, server.mailbox, {keys:true})
+          }
+        )
+        .then(
+          function (x) {
+            client = x
             return client.keys()
           }
         )
@@ -82,17 +83,6 @@ TestServer.start(config)
             t.notDeepEqual(wrapKb, keys.wrapKb, 'wrapKb was reset')
             t.deepEqual(kA, keys.kA, 'kA was not reset')
             t.equal(client.kB.length, 32, 'kB exists, has the right length')
-          }
-        )
-        .then( // make sure we can still login after password reset
-          function () {
-            return Client.login(config.publicUrl, email, newPassword)
-          }
-        )
-        .then(
-          function () {
-            // clear new-login notification email
-            return server.mailbox.waitForEmail(email)
           }
         )
     }
@@ -129,7 +119,7 @@ TestServer.start(config)
           }
         )
         .then(
-          function (resp) {
+          function () {
             return server.mailbox.waitForCode(email)
           }
         )
@@ -281,13 +271,19 @@ TestServer.start(config)
   )
 
   test(
-    '/password/forgot/verify_code should set an unverified account as verified',
+    '/password/forgot/verify_code should set an unverified account email as verified',
     function (t) {
       var email = server.uniqueEmail()
       var password = 'something'
+      var newPassword = 'somethingnew'
       var client = null
       return Client.create(config.publicUrl, email, password)
         .then(function (c) { client = c })
+        .then(
+          function () {
+            return server.mailbox.waitForCode(email)
+          }
+        )
         .then(
           function () {
             return client.emailStatus()
@@ -296,11 +292,6 @@ TestServer.start(config)
         .then(
           function (status) {
             t.equal(status.verified, false, 'email unverified')
-          }
-        )
-        .then(
-          function () {
-            return server.mailbox.waitForCode(email) // ignore this code
           }
         )
         .then(
@@ -315,17 +306,29 @@ TestServer.start(config)
         )
         .then(
           function (code) {
-            return client.verifyPasswordResetCode(code)
+            t.throws(function() { client.resetPassword(newPassword) })
+            return resetPassword(client, code, newPassword)
           }
         )
+        .then(
+          function () {
+            return server.mailbox.waitForEmail(email)
+          }
+        )
+        .then(
+          function () {
+            return client.login({keys:true})
+          }
+        )
+
         .then(
           function () {
             return client.emailStatus()
           }
         )
         .then(
-          function (status) {
-            t.equal(status.verified, true, 'email verified')
+          function (response) {
+            t.equal(response.emailVerified, true, 'email verified')
           }
         )
     }

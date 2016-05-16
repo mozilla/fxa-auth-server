@@ -39,7 +39,8 @@ var ACCOUNT = {
   verifyHash: zeroBuffer32,
   authSalt: zeroBuffer32,
   kA: zeroBuffer32,
-  wrapWrapKb: zeroBuffer32
+  wrapWrapKb: zeroBuffer32,
+  tokenVerificationId: zeroBuffer16
 }
 var mockLog = {
   error: function () {
@@ -101,6 +102,7 @@ test(
         })
         .then(function(emailRecord) {
           emailRecord.createdAt = Date.now()
+          emailRecord.tokenVerificationId = ACCOUNT.tokenVerificationId
           return db.createSessionToken(emailRecord, SESSION_TOKEN_UA)
         })
 

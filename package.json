@@ -56,7 +56,7 @@
     "ass": "git://github.com/jrgm/ass.git#5be99ee7abc9fcf63f9ebcc37b151b9c822146d1",
     "commander": "2.8.1",
     "eslint-config-fxa": "1.6.0",
-    "fxa-auth-db-mysql": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#master",
+    "fxa-auth-db-mysql": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#aaedd87e6c58fa64722588c9e979749e70cfa920",
     "fxa-conventional-changelog": "1.1.0",
     "grunt": "0.4.5",
     "grunt-bump": "0.3.1",
