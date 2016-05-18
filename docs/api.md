@@ -459,11 +459,14 @@ This sets the account password and resets wrapKb to a new random value.
 
 The accountResetToken is single-use, and is consumed regardless of whether the request succeeds or fails.
 
+Optionally a user can request a new `sessionToken`.
+
 ### Request
 
 ___Parameters___
 
 * authPW - the PBKDF2/HKDF stretched password as a hex string
+* sessionToken - request sessionToken as a boolean
 
 
 ___Headers___
@@ -478,14 +481,28 @@ curl -v \
 -H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", hash="vBODPWhDhiRWM4tmI9qp+np+3aoqEFzdGuGk0h7bh9w=", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
 https://api-accounts.dev.lcip.org/v1/account/reset \
 -d '{
-  "authPW": "f9fae9253549b2428a403d6fa51e6fb43d2f8a302e132cf902ffade52c02e6a4"
+  "authPW": "f9fae9253549b2428a403d6fa51e6fb43d2f8a302e132cf902ffade52c02e6a4",
+  "sessionToken": true
   }
 }'
 ```
 
 ### Response
 
-Successful requests will produce a "200 OK" response with empty JSON body:
+Successful requests will produce a "200 OK" response with JSON body:
+
+```json
+{
+  "uid": "4c352927cd4f4a4aa03d7d1893d950b8",
+  "sessionToken": "27cd4f4a4aa03d7d186a2ec81cbf19d5c8a604713362df9ee15c4f4a4aa03d7d",
+  "keyFetchToken": "7d1893d950b8cd69856a2ec81cbfd7d1893d950b3362df9e56a2ec81cbf19d5c",
+  "authAt": 1392144866,
+  "verified": true
+}
+```
+
+
+If no `sessionToken` is requested the response is an empty JSON body:
 
 ```json
 {}
@@ -1024,12 +1041,15 @@ Failing requests may be due to the following errors:
 
 :lock: HAWK-authenticated with the passwordChangeToken.
 
-Change the password and update `wrapKb`.
+Change the password and update `wrapKb`. Optionally returns a `sessionToken` and
+`keyFetchToken`.
 
 ___Parameters___
 
 * authPW - the new PBKDF2/HKDF stretched password as a hex string
 * wrapKb - the new wrapKb value as a hex string
+* keys - (optional) whether to request new `keyFetchToken`, `keys=true`
+* sessionToken - (optional) the current sessionToken as a hex string
 
 ### Request
 
@@ -1041,17 +1061,31 @@ curl -v \
 https://api-accounts.dev.lcip.org/v1/password/change/finish \
 -d '{
   "authPW": "761443da0ab27b1fa18c98912af6291714e9600aa3499109c5632ac35b28a309",
-  "wrapKb": "20e3f5391e134596c27519979b93a45e6d0da34c75ac55c0520f2edfb0267614"
+  "wrapKb": "20e3f5391e134596c27519979b93a45e6d0da34c75ac55c0520f2edfb0267614",
+  "sessionToken": "93a4f5391e134596c27519979b93a45e6d0da34c75ac55c0520f2edfb0267614'
 }'
 ```
 
 ### Response
 
-Successful requests will produce a "200 OK" response with an empty JSON body:
+Successful requests will produce a "200 OK" response with JSON body:
+
+```json
+{
+  "uid": "4c352927cd4f4a4aa03d7d1893d950b8",
+  "sessionToken": "27cd4f4a4aa03d7d186a2ec81cbf19d5c8a604713362df9ee15c4f4a4aa03d7d",
+  "keyFetchToken": "7d1893d950b8cd69856a2ec81cbfd7d1893d950b3362df9e56a2ec81cbf19d5c",
+  "authAt": 1392144866,
+  "verified": true
+}
+```
+
+If `sessionToken` not requested, return empty JSON body:
 
 ```json
 {}
 ```
+
 
 Failing requests may be due to the following errors:
 
