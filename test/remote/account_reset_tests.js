@@ -53,8 +53,8 @@ TestServer.start(config)
           )
           .then(
             function (response) {
-              t.notOk(response.sessionToken, 'session token is not response')
-              t.notOk(response.keyFetchToken, 'keyFetchToken token is not response')
+              t.notOk(response.sessionToken, 'session token is not in response')
+              t.notOk(response.keyFetchToken, 'keyFetchToken token is not in response')
               t.notOk(response.verified, 'verified is not in response')
             }
           )
@@ -175,7 +175,7 @@ TestServer.start(config)
     )
 
     test(
-      'account reset wo/keys',
+      'account reset w/o keys, with sessionToken',
       function (t) {
         var email = server.uniqueEmail()
         var password = 'allyourbasearebelongtous'

@@ -459,14 +459,15 @@ This sets the account password and resets wrapKb to a new random value.
 
 The accountResetToken is single-use, and is consumed regardless of whether the request succeeds or fails.
 
-Optionally a user can request a new `sessionToken`.
+The caller can optionally request a new `sessionToken` and `keyFetchToken`.
 
 ### Request
 
 ___Parameters___
 
 * authPW - the PBKDF2/HKDF stretched password as a hex string
-* sessionToken - request sessionToken as a boolean
+* sessionToken - (optional) boolean, whether to generate a new sessionToken; default is false
+* keys - (optional) whether to request new `keyFetchToken`, `keys=true`
 
 
 ___Headers___
@@ -479,7 +480,7 @@ curl -v \
 -H "Host: api-accounts.dev.lcip.org" \
 -H "Content-Type: application/json" \
 -H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", hash="vBODPWhDhiRWM4tmI9qp+np+3aoqEFzdGuGk0h7bh9w=", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
-https://api-accounts.dev.lcip.org/v1/account/reset \
+https://api-accounts.dev.lcip.org/v1/account/reset?keys=true \
 -d '{
   "authPW": "f9fae9253549b2428a403d6fa51e6fb43d2f8a302e132cf902ffade52c02e6a4",
   "sessionToken": true
@@ -1048,8 +1049,8 @@ ___Parameters___
 
 * authPW - the new PBKDF2/HKDF stretched password as a hex string
 * wrapKb - the new wrapKb value as a hex string
-* keys - (optional) whether to request new `keyFetchToken`, `keys=true`
 * sessionToken - (optional) the current sessionToken as a hex string
+* keys - (optional) whether to request new `keyFetchToken`, `keys=true`
 
 ### Request
 
@@ -1080,7 +1081,7 @@ Successful requests will produce a "200 OK" response with JSON body:
 }
 ```
 
-If `sessionToken` not requested, return empty JSON body:
+If a `sessionToken` was not requested, then an empty JSON body is returned:
 
 ```json
 {}
