@@ -129,7 +129,7 @@ TestServer.start(config)
           }
         )
         .then(
-          function (resp) {
+          function () {
             return server.mailbox.waitForCode(email)
           }
         )

@@ -93,7 +93,14 @@ test(
   'account with verified invalid email does not get deleted on status poll',
   function (t) {
     var mockDB = {
-      deleteAccount: sinon.spy()
+      deleteAccount: sinon.spy(),
+      sessionTokenWithVerificationStatus: function () {
+        return P.resolve({
+          email: TEST_EMAIL_INVALID,
+          tokenVerified: true,
+          emailVerified: true
+        })
+      }
     }
     var mockRequest = {
       auth: {
@@ -118,7 +125,9 @@ test(
       t.equal(mockDB.deleteAccount.callCount, 0)
       t.deepEqual(response, {
         email: TEST_EMAIL_INVALID,
-        verified: true
+        verified: true,
+        emailVerified: true,
+        sessionVerified: true
       })
     })
   }

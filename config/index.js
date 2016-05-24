@@ -381,6 +381,18 @@ var conf = convict({
     format: Number,
     env: 'CLIENT_ADDRESS_DEPTH',
     default: 3
+  },
+  signinConfirmation: {
+    enabled: {
+      doc: 'enable signin confirmation',
+      default: true,
+      env: 'SIGNIN_CONFIRMATION_ENABLE'
+    },
+    sample_rate: {
+      doc: 'signin confirmation sample rate',
+      default: 1.0,
+      env: 'SIGNIN_CONFIRMATION_RATE'
+    }
   }
 })
 
