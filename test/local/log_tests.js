@@ -20,8 +20,8 @@ var statsd = {
   write: sinon.spy()
 }
 var metricsContext = {
-  copy: sinon.spy(function (data, metadata) {
-    return P.resolve(metadata)
+  copy: sinon.spy(function (data, request) {
+    return P.resolve(request.payload && request.payload.metricsContext)
   })
 }
 var mocks = {
@@ -83,26 +83,27 @@ test(
 test(
   'log.activityEvent',
   function (t) {
-    var payload = { metricsContext: {} }
-    return log.activityEvent('foo', {
+    var request = {
       headers: {
-        'user-agent': 'bar'
+        'user-agent': 'foo'
       },
-      payload: payload
-    }, {
+      payload: {
+        metricsContext: {}
+      }
+    }
+    return log.activityEvent('bar', request, {
       uid: 'baz'
     }).then(function () {
       t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
       var args = metricsContext.copy.args[0]
-      t.equal(args.length, 4, 'metricsContext.copy was passed four arguments')
+      t.equal(args.length, 3, 'metricsContext.copy was passed three arguments')
       t.equal(typeof args[0], 'object', 'first argument was object')
       t.notEqual(args[0], null, 'first argument was not null')
       t.equal(Object.keys(args[0]).length, 2, 'first argument had two properties')
-      t.equal(args[0].event, 'foo', 'event property was correct')
-      t.equal(args[0].userAgent, 'bar', 'userAgent property was correct')
-      t.equal(args[1], payload.metricsContext, 'second argument was metricsContext payload')
-      t.equal(args[2], undefined, 'third argument was correct')
-      t.equal(args[3], false, 'fourth argument was correct')
+      t.equal(args[0].event, 'bar', 'event property was correct')
+      t.equal(args[0].userAgent, 'foo', 'userAgent property was correct')
+      t.equal(args[1], request, 'second argument was request object')
+      t.equal(args[2], 'bar', 'third argument was event name')
 
       t.equal(logger.info.callCount, 1, 'logger.info was called once')
       args = logger.info.args[0]
@@ -110,7 +111,7 @@ test(
       t.equal(args[0], 'activityEvent', 'first argument was correct')
       t.equal(typeof args[1], 'object', 'second argument was object')
       t.notEqual(args[1], null, 'second argument was not null')
-      t.equal(Object.keys(args[1]).length, 1, 'second argument had one property')
+      t.equal(Object.keys(args[1]).length, 1, 'second argument had three properties')
       t.equal(args[1].uid, 'baz', 'uid property was correct')
 
       t.equal(statsd.write.callCount, 1, 'statsd.write was called once')
@@ -151,7 +152,7 @@ test(
 
       t.equal(logger.info.callCount, 1, 'logger.info was called once')
       args = logger.info.args[0]
-      t.equal(Object.keys(args[1]).length, 2, 'second argument had two properties')
+      t.equal(Object.keys(args[1]).length, 2, 'second argument had four properties')
       t.equal(args[1].service, 'blee', 'service property was correct')
 
       t.equal(statsd.write.callCount, 1, 'statsd.write was called once')
@@ -239,38 +240,6 @@ test(
 )
 
 test(
-  'log.activityEvent with session token',
-  function (t) {
-    return log.activityEvent('foo', {
-      auth: {
-        credentials: 'bar'
-      },
-      headers: {},
-      payload: {
-        metricsContext: {}
-      }
-    }, {
-      uid: 'qux'
-    }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      t.equal(metricsContext.copy.args[0][2], 'bar', 'third argument was correct')
-
-      t.equal(logger.info.callCount, 1, 'logger.info was called once')
-      t.equal(statsd.write.callCount, 1, 'statsd.write was called once')
-
-      t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      t.equal(logger.error.callCount, 0, 'logger.error was not called')
-      t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
-
-      metricsContext.copy.reset()
-      logger.info.reset()
-      statsd.write.reset()
-    })
-  }
-)
-
-test(
   'log.activityEvent with extra data',
   function (t) {
     return log.activityEvent('foo', {
@@ -296,38 +265,6 @@ test(
 
       t.equal(statsd.write.callCount, 1, 'statsd.write was called once')
       t.equal(statsd.write.args[0][0], args[1], 'statsd.write argument was correct')
-
-      t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      t.equal(logger.error.callCount, 0, 'logger.error was not called')
-      t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
-
-      metricsContext.copy.reset()
-      logger.info.reset()
-      statsd.write.reset()
-    })
-  }
-)
-
-test(
-  'log.activityEvent with DNT header',
-  function (t) {
-    return log.activityEvent('foo', {
-      headers: {
-        'dnt': '1'
-      },
-      payload: {
-        metricsContext: {}
-      }
-    }, {
-      uid: 42
-    }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      t.equal(metricsContext.copy.args[0][3], true, 'fourth argument was correct')
-
-      t.equal(logger.info.callCount, 1, 'logger.info was called once')
-
-      t.equal(statsd.write.callCount, 1, 'statsd.write was called once')
 
       t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
       t.equal(logger.error.callCount, 0, 'logger.error was not called')

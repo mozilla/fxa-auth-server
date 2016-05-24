@@ -28,9 +28,9 @@ var conf = convict({
       env: 'LOG_FORMAT'
     }
   },
-  memcache: {
+  memcached: {
     address: {
-      doc: 'Hostname/IP:Port of the memcache server',
+      doc: 'Address:port of the memcached server',
       default: '127.0.0.1:11211',
       env: 'MEMCACHE_ADDRESS'
     },
@@ -39,6 +39,12 @@ var conf = convict({
       format: Number,
       default: 30000,
       env: 'MEMCACHE_IDLE'
+    },
+    lifetime: {
+      doc: 'Lifetime for memcached values (seconds)',
+      format: 'nat',
+      default: 1800,
+      env: 'MEMCACHE_METRICS_CONTEXT_LIFETIME'
     }
   },
   publicUrl: {

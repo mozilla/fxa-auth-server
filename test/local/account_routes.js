@@ -26,9 +26,10 @@ var makeRoutes = function (options) {
   var config = options.config || {}
   config.verifierVersion = config.verifierVersion || 0
   config.smtp = config.smtp ||  {}
-  config.memcache = config.memcache || {
+  config.memcached = config.memcached || {
     address: '127.0.0.1:1121',
-    idle: 500
+    idle: 500,
+    lifetime: 30
   }
 
   var log = options.log || mocks.mockLog()
@@ -305,6 +306,9 @@ test(
     var accountRoutes = makeRoutes({
       db: mockDB,
       log: mockLog,
+      metricsContext: {
+        remove: function () {}
+      },
       push: {
         notifyDeviceConnected: function () {}
       }
@@ -357,6 +361,9 @@ test(
     }
     var accountRoutes = makeRoutes({
       db: mockDB,
+      metricsContext: {
+        remove: function () {}
+      },
       push: mockPush
     })
 
@@ -953,12 +960,14 @@ test(
         })
 
         t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 2)
+        t.equal(mockMetricsContext.save.args[0].length, 3)
         t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.equal(mockMetricsContext.save.args[0][1], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 2)
+        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.verified', 'account.signed'])
+        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1].length, 3)
         t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1055,12 +1064,14 @@ test(
         })
 
         t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 2)
+        t.equal(mockMetricsContext.save.args[0].length, 3)
         t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.equal(mockMetricsContext.save.args[0][1], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 2)
+        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.signed'])
+        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1].length, 3)
         t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1116,8 +1127,9 @@ test(
         })
 
         t.equal(mockMetricsContext.remove.callCount, 1)
-        t.equal(mockMetricsContext.remove.args[0].length, 1)
+        t.equal(mockMetricsContext.remove.args[0].length, 2)
         t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
+        t.equal(mockMetricsContext.remove.args[0][1], 'account.keyfetch')
       },
       function () {
         t.fail('request should have succeeded')
@@ -1127,14 +1139,11 @@ test(
 )
 
 test(
-  '/account/device/destroy emits device.deleted activity event and removes metrics context',
+  '/account/device/destroy emits device.deleted activity event',
   function (t) {
     var mockLog = mocks.mockLog({
       activityEvent: sinon.spy()
     })
-    var mockMetricsContext = {
-      remove: sinon.spy()
-    }
     var mockRequest = {
       app: {},
       auth: {
@@ -1156,7 +1165,6 @@ test(
         }
       },
       log: mockLog,
-      metricsContext: mockMetricsContext,
       push: {
         notifyDeviceDisconnected: function () {
           return P.resolve()
@@ -1178,10 +1186,6 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex'),
           device_id: mockRequest.payload.id
         })
-
-        t.equal(mockMetricsContext.remove.callCount, 1)
-        t.equal(mockMetricsContext.remove.args[0].length, 1)
-        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1359,12 +1363,14 @@ test(
         })
 
         t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 2)
+        t.equal(mockMetricsContext.save.args[0].length, 3)
         t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.equal(mockMetricsContext.save.args[0][1], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 2)
+        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.signed'])
+        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1].length, 3)
         t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1374,12 +1380,15 @@ test(
 )
 
 test(
-  '/account/device emits device.created activity event',
+  '/account/device emits device.created activity event and removes metrics context',
   function (t) {
     var deviceId
     var mockLog = mocks.mockLog({
       activityEvent: sinon.spy()
     })
+    var mockMetricsContext = {
+      remove: sinon.spy()
+    }
     var mockRequest = {
       auth: {
         credentials: {
@@ -1405,7 +1414,8 @@ test(
           return P.resolve([])
         }
       },
-      log: mockLog
+      log: mockLog,
+      metricsContext: mockMetricsContext
     })
 
     return new P(function (resolve) {
@@ -1422,6 +1432,11 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex'),
           device_id: deviceId.toString('hex')
         })
+
+        t.equal(mockMetricsContext.remove.callCount, 1)
+        t.equal(mockMetricsContext.remove.args[0].length, 2)
+        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
+        t.equal(mockMetricsContext.remove.args[0][1], 'device.created')
       },
       function () {
         t.fail('request should have succeeded')
@@ -1431,12 +1446,15 @@ test(
 )
 
 test(
-  '/account/device emits device.updated activity event',
+  '/account/device emits device.updated activity event and removes metrics context',
   function (t) {
     var deviceId = crypto.randomBytes(16)
     var mockLog = mocks.mockLog({
       activityEvent: sinon.spy()
     })
+    var mockMetricsContext = {
+      remove: sinon.spy()
+    }
     var mockRequest = {
       auth: {
         credentials: {
@@ -1464,7 +1482,8 @@ test(
           return P.resolve(device)
         }
       },
-      log: mockLog
+      log: mockLog,
+      metricsContext: mockMetricsContext
     })
 
     return new P(function (resolve) {
@@ -1481,6 +1500,11 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex'),
           device_id: deviceId.toString('hex')
         })
+
+        t.equal(mockMetricsContext.remove.callCount, 1)
+        t.equal(mockMetricsContext.remove.args[0].length, 2)
+        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
+        t.equal(mockMetricsContext.remove.args[0][1], 'device.updated')
       },
       function () {
         t.fail('request should have succeeded')
