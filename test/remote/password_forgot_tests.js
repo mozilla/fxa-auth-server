@@ -24,20 +24,10 @@ TestServer.start(config)
       var wrapKb = null
       var kA = null
       var client = null
-      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-        .then(
-          function () {
-            return Client.login(config.publicUrl, email, password)
-          }
-        )
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (x) {
             client = x
-            return server.mailbox.waitForEmail(email)
-          }
-        )
-        .then(
-          function () {
             return client.keys()
           }
         )
@@ -325,7 +315,9 @@ TestServer.start(config)
         )
         .then(
           function (status) {
-            t.equal(status.verified, true, 'email verified')
+            t.equal(status.verified, false, 'account unverified')
+            t.equal(status.emailVerified, true, 'email verified')
+            t.equal(status.sessionVerified, false, 'session unverified')
           }
         )
     }

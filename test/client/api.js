@@ -134,6 +134,7 @@ ClientApi.prototype.accountLogin = function (email, authPW, opts) {
       email: email,
       authPW: authPW.toString('hex'),
       service: opts.service || undefined,
+      resume: opts.resume || undefined,
       reason: opts.reason || undefined,
       device: opts.device || undefined,
       metricsContext: opts.metricsContext || undefined

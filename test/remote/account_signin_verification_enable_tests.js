@@ -7,67 +7,67 @@ var TestServer = require('../test_server')
 var Client = require('../client')
 
 
-//test(
-//  'signin confirmation can be disabled',
-//  function (t) {
-//    process.env.SIGNIN_CONFIRMATION_ENABLE = false
-//    var config = require('../../config').getProperties()
-//    var server, email, client
-//    var password = 'allyourbasearebelongtous'
-//
-//    TestServer.start(config)
-//      .then(function main(serverObj) {
-//        server = serverObj
-//        email = server.uniqueEmail()
-//      })
-//      .then(function() {
-//        return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-//      })
-//      .then(
-//        function (x) {
-//          client = x
-//          t.ok(client.authAt, 'authAt was set')
-//        }
-//      )
-//      .then(
-//        function () {
-//          return client.emailStatus()
-//        }
-//      )
-//      .then(
-//        function (status) {
-//          t.equal(status.verified, true, 'account is verified')
-//        }
-//      )
-//      .then(
-//        function () {
-//          return client.login({keys:true})
-//        }
-//      )
-//      .then(
-//        function (response) {
-//          t.notEqual(response.verificationMethod, 'email', 'verification method not set')
-//          t.notEqual(response.verificationReason, 'login', 'verification reason not set')
-//        }
-//      )
-//      .then(
-//        function () {
-//          return client.emailStatus()
-//        }
-//      )
-//      .then(
-//        function (status) {
-//          t.equal(status.verified, true, 'account is verified')
-//          t.equal(status.emailVerified, true, 'email is verified')
-//          t.equal(status.sessionVerified, true, 'session is verified')
-//        }
-//      )
-//      .done(function() {
-//        server.stop()
-//        t.end()
-//      })
-//  }
-//)
+test(
+  'signin confirmation can be disabled',
+  function (t) {
+    process.env.SIGNIN_CONFIRMATION_ENABLE = false
+    var config = require('../../config').getProperties()
+    var server, email, client
+    var password = 'allyourbasearebelongtous'
+
+    TestServer.start(config)
+      .then(function main(serverObj) {
+        server = serverObj
+        email = server.uniqueEmail()
+      })
+      .then(function() {
+        return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+      })
+      .then(
+        function (x) {
+          client = x
+          t.ok(client.authAt, 'authAt was set')
+        }
+      )
+      .then(
+        function () {
+          return client.emailStatus()
+        }
+      )
+      .then(
+        function (status) {
+          t.equal(status.verified, true, 'account is verified')
+        }
+      )
+      .then(
+        function () {
+          return client.login({keys:true})
+        }
+      )
+      .then(
+        function (response) {
+          t.notEqual(response.verificationMethod, 'email', 'verification method not set')
+          t.notEqual(response.verificationReason, 'login', 'verification reason not set')
+        }
+      )
+      .then(
+        function () {
+          return client.emailStatus()
+        }
+      )
+      .then(
+        function (status) {
+          t.equal(status.verified, true, 'account is verified')
+          t.equal(status.emailVerified, true, 'email is verified')
+          t.equal(status.sessionVerified, true, 'session is verified')
+        }
+      )
+      .done(function() {
+        server.stop()
+        t.end()
+      })
+  }
+)
 
 test(
   'signin confirmation can be enabled',
