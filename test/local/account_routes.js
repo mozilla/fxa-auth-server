@@ -97,7 +97,6 @@ test(
       sessionTokenWithVerificationStatus: function () {
         return P.resolve({
           email: TEST_EMAIL_INVALID,
-          tokenVerified: true,
           emailVerified: true
         })
       }
@@ -105,6 +104,7 @@ test(
     var mockRequest = {
       auth: {
         credentials: {
+          uid: uuid.v4('binary').toString('hex'),
           email: TEST_EMAIL_INVALID,
           emailVerified: true
         }
@@ -125,9 +125,7 @@ test(
       t.equal(mockDB.deleteAccount.callCount, 0)
       t.deepEqual(response, {
         email: TEST_EMAIL_INVALID,
-        verified: true,
-        emailVerified: true,
-        sessionVerified: true
+        verified: true
       })
     })
   }
@@ -166,6 +164,112 @@ test(
       })
   }
 )
+
+test(
+  '/recovery_email/status with sign-in confirmation enabled',
+  function (t) {
+
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 1.0
+      }
+    }
+
+    var mockDB = {
+      deleteAccount: sinon.spy(),
+      sessionTokenWithVerificationStatus: function () {
+        return P.resolve({
+          email: TEST_EMAIL,
+          emailVerified: true,
+          tokenVerified: true
+        })
+      }
+    }
+
+    var mockRequest = {
+      auth: {
+        credentials: {
+          uid: uuid.v4('binary').toString('hex'),
+          email: TEST_EMAIL
+        }
+      }
+    }
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB
+    })
+
+    var route = getRoute(accountRoutes, '/recovery_email/status')
+    return new P(function(resolve) {
+      route.handler(mockRequest, function(response) {
+        resolve(response)
+      })
+    })
+    .then(function(response) {
+      t.equal(mockDB.deleteAccount.callCount, 0)
+      t.deepEqual(response, {
+        email: TEST_EMAIL,
+        verified: true,
+        sessionVerified: true,
+        emailVerified: true
+      })
+    })
+  }
+)
+
+test(
+  '/recovery_email/status with sign-in confirmation disabled',
+  function (t) {
+
+    var configOptions = {
+      signinConfirmation: {
+        enabled: false
+      }
+    }
+
+    var mockDB = {
+      deleteAccount: sinon.spy(),
+      sessionTokenWithVerificationStatus: function () {
+        return P.resolve({
+          email: TEST_EMAIL,
+          emailVerified: true
+        })
+      }
+    }
+
+    var mockRequest = {
+      auth: {
+        credentials: {
+          uid: uuid.v4('binary').toString('hex'),
+          email: TEST_EMAIL,
+          emailVerified: true
+        }
+      }
+    }
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB
+    })
+
+    var route = getRoute(accountRoutes, '/recovery_email/status')
+    return new P(function(resolve) {
+      route.handler(mockRequest, function(response) {
+        resolve(response)
+      })
+    })
+      .then(function(response) {
+        t.equal(mockDB.deleteAccount.callCount, 0)
+        t.deepEqual(response, {
+          email: TEST_EMAIL,
+          verified: true
+        })
+      })
+  }
+)
+
 
 test(
   'device should be notified when the account is reset',

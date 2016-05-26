@@ -21,7 +21,7 @@ test(
         email = server.uniqueEmail()
       })
       .then(function() {
-        return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+        return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
       })
       .then(
         function (x) {
@@ -58,8 +58,8 @@ test(
       .then(
         function (status) {
           t.equal(status.verified, true, 'account is verified')
-          t.equal(status.emailVerified, true, 'email is verified')
-          t.equal(status.sessionVerified, true, 'session is verified')
+          t.notOk(status.emailVerified, 'emailVerified not sent')
+          t.notOk(status.sessionVerified, 'sessionVerified not sent')
         }
       )
       .done(function() {
