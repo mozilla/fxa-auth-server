@@ -574,3 +574,160 @@ test(
     })
   }
 )
+
+test(
+  'login with disabled sign-in confirmation, sends new device email',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: false
+      },
+      newLoginNotificationEnabled: true
+    }
+
+    var uid = uuid.v4('binary')
+    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
+    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
+        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
+      })
+  }
+)
+
+test(
+  'login with enabled sign-in confirmation',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 1.0
+      }
+    }
+
+    var uid = uuid.v4('binary')
+    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
+    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
+        t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      })
+  }
+)
+
+test(
+  'login with sign-in confirmation enabled for specific uid',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 0.20
+      }
+    }
+
+    var uid = '20162205efab47ecb6418c797acd743f'
+    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
+    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
+        t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      })
+  }
+)
+
+test(
+  'login with sign-in confirmation enabled but not in sample range, sends new device email',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 0.10
+      },
+      newLoginNotificationEnabled: true
+    }
+
+    var uid = '20162205efab47ecb6418c797acd743f'
+    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
+    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
+        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
+      })
+  }
+)

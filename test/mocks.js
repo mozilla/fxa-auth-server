@@ -8,6 +8,8 @@
 
 var sinon = require('sinon')
 var extend = require('util')._extend
+var P = require('../lib/promise')
+var crypto = require('crypto')
 
 // A logging mock that doesn't capture anything.
 // You can pass in an object of custom logging methods
@@ -46,8 +48,79 @@ var spyLog = function(methods) {
   return mockLog(methods)
 }
 
+var createMailer = function () {
+  return {
+    sendVerifyCode: sinon.spy(function () {
+      return P.resolve()
+    }),
+    sendVerifyLoginEmail: sinon.spy(function () {
+      return P.resolve()
+    }),
+    sendNewDeviceLoginNotification: sinon.spy(function () {
+      return P.resolve()
+    })
+  }
+}
+
+var createRequest = function (email, keys) {
+  return {
+    app: {
+      acceptLangage: 'en-US'
+    },
+    headers: {
+      'user-agent': 'test-user-agent'
+    },
+    query: {
+      keys: keys
+    },
+    payload: {
+      email: email,
+      authPW: crypto.randomBytes(32).toString('hex'),
+      service: 'sync',
+      reason: 'signin'
+    }
+  }
+}
+
+var createDB = function (uid, email, verified) {
+  return {
+    emailRecord: sinon.spy(function () {
+      return P.resolve({
+        authSalt: new Buffer(crypto.randomBytes(32), 'hex'),
+        email: email,
+        emailVerified: verified,
+        kA: new Buffer(crypto.randomBytes(32), 'hex'),
+        uid: uid,
+        wrapWrapKb: new Buffer(crypto.randomBytes(32), 'hex')
+      })
+    }),
+    createSessionToken: sinon.spy(function () {
+      return P.resolve({
+        uid: uid,
+        email: email,
+        emailVerified: verified,
+        tokenVerificationId: (verified ? undefined : crypto.randomBytes(16)),
+        data: crypto.randomBytes(32),
+        lastAuthAt: function () {
+          return 0
+        }
+      })
+    }),
+    createKeyFetchToken: sinon.spy(function () {
+      return P.resolve({
+        data: crypto.randomBytes(32)
+      })
+    }),
+    sessions: sinon.spy(function () {
+      return P.resolve([{}, {}, {}])
+    })
+  }
+}
 
 module.exports = {
   mockLog: mockLog,
-  spyLog: spyLog
+  spyLog: spyLog,
+  createDB: createDB,
+  createMailer: createMailer,
+  createRequest: createRequest
 }
