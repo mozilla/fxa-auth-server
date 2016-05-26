@@ -30,7 +30,7 @@ var conf = convict({
   },
   memcached: {
     address: {
-      doc: 'Address:port of the memcached server',
+      doc: 'Address:port of the memcached server (or `none` to disable memcached)',
       default: '127.0.0.1:11211',
       env: 'MEMCACHE_ADDRESS'
     },

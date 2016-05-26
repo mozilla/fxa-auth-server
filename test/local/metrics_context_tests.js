@@ -538,6 +538,104 @@ test(
 )
 
 test(
+  'metricsContext.save with config.memcached.address === "none"',
+  function (t) {
+    var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      memcached: {
+        address: 'none',
+        idle: 500,
+        lifetime: 30
+      }
+    })
+    sinon.stub(Memcached.prototype, 'setAsync', function () {
+      return P.reject('wibble')
+    })
+    metricsContextWithoutMemcached.save({
+      tokenId: {
+        toString: function () {
+          return 'foo'
+        }
+      }
+    }, 'bar', 'baz').then(function (result) {
+      t.deepEqual(result, [ undefined ], 'result is undefined')
+
+      t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
+      t.equal(log.error.callCount, 0, 'log.error was not called')
+
+      Memcached.prototype.setAsync.restore()
+
+      t.end()
+    })
+  }
+)
+
+test(
+  'metricsContext.copy with config.memcached.address === "none"',
+  function (t) {
+    var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      memcached: {
+        address: 'none',
+        idle: 500,
+        lifetime: 30
+      }
+    })
+    sinon.stub(Memcached.prototype, 'getAsync', function () {
+      return P.reject('foo')
+    })
+    metricsContextWithoutMemcached.copy({}, {
+      auth: {
+        credentials: {
+          tokenId: {
+            toString: function () {
+              return 'bar'
+            }
+          }
+        }
+      }
+    }, 'baz').then(function () {
+      t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
+      t.equal(log.error.callCount, 0, 'log.error was not called')
+
+      Memcached.prototype.getAsync.restore()
+      log.error.reset()
+
+      t.end()
+    })
+  }
+)
+
+test(
+  'metricsContext.remove with config.memcached.address === "none"',
+  function (t) {
+    var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      memcached: {
+        address: 'none',
+        idle: 500,
+        lifetime: 30
+      }
+    })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.reject('wibble')
+    })
+    metricsContextWithoutMemcached.remove({
+      tokenId: {
+        toString: function () {
+          return 'blee'
+        }
+      }
+    }, 'asdf').then(function (result) {
+      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
+      t.equal(log.error.callCount, 0, 'log.error was not called')
+
+      Memcached.prototype.delAsync.restore()
+      log.error.reset()
+
+      t.end()
+    })
+  }
+)
+
+test(
   'metricsContext.validate with missing data bundle',
   function (t) {
     var mockLog = mocks.spyLog()
