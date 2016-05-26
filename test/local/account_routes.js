@@ -34,7 +34,7 @@ var makeRoutes = function (options) {
 
   var log = options.log || mocks.mockLog()
   var Password = options.Password || require('../../lib/crypto/password')(log, config)
-  var db = options.db || {}
+  var db = options.db || mocks.mockDb()
   var isPreVerified = require('../../lib/preverifier')(error, config)
   var customs = options.customs || {
     check: function () { return P.resolve(true) }
@@ -64,11 +64,7 @@ var makeRoutes = function (options) {
 test(
   'account with unverified invalid email gets deleted on status poll',
   function (t) {
-    var mockDB = {
-      deleteAccount: sinon.spy(function() {
-        return P.resolve()
-      })
-    }
+    var mockDB = mocks.mockDb()
     var mockRequest = {
       auth: {
         credentials: {
@@ -99,9 +95,7 @@ test(
 test(
   'account with verified invalid email does not get deleted on status poll',
   function (t) {
-    var mockDB = {
-      deleteAccount: sinon.spy()
-    }
+    var mockDB = mocks.mockDb()
     var mockRequest = {
       auth: {
         credentials: {
@@ -179,10 +173,7 @@ test(
         authPW: crypto.randomBytes(32).toString('hex')
       }
     }
-    var mockDB = {
-      resetAccount: sinon.spy(function () {
-        return P.resolve()
-      }),
+    var mockDB = mocks.mockDb({
       account: sinon.spy(function () {
         return P.resolve({
           uid: uid,
@@ -190,7 +181,7 @@ test(
           email: TEST_EMAIL
         })
       })
-    }
+    })
     var mockCustoms = {
       reset: sinon.spy(function (email) {
         return P.resolve()
@@ -245,11 +236,7 @@ test(
         name: 'my awesome device'
       }
     }
-    var mockDB = {
-      updateDevice: sinon.spy(function () {
-        return P.resolve()
-      })
-    }
+    var mockDB = mocks.mockDb()
     var mockLog = mocks.spyLog()
     var accountRoutes = makeRoutes({
       db: mockDB,
@@ -297,11 +284,11 @@ test(
         pushPublicKey: 'SomeEncodedBinaryStuffThatDoesntGetValidedByThisTest'
       }
     }
-    var mockDB = {
+    var mockDB = mocks.mockDb({
       updateDevice: sinon.spy(function (uid, sessionTokenId, deviceInfo) {
         return P.resolve(deviceInfo)
       })
-    }
+    })
     var mockLog = mocks.spyLog()
     var accountRoutes = makeRoutes({
       db: mockDB,
@@ -350,12 +337,12 @@ test(
       },
       payload: device
     }
-    var mockDB = {
+    var mockDB = mocks.mockDb({
       createDevice: sinon.spy(function () {
         device.id = crypto.randomBytes(16)
         return P.resolve(device)
       })
-    }
+    })
     var mockPush = {
       notifyDeviceConnected: sinon.spy(function () {})
     }
@@ -491,7 +478,7 @@ test(
         }
       }
     }
-    var mockDB = {
+    var mockDB = mocks.mockDb({
       emailRecord: sinon.spy(function () {
         return P.reject(new error.unknownAccount())
       }),
@@ -502,7 +489,7 @@ test(
           emailVerified: false
         })
       })
-    }
+    })
     // We want to test what's actually written to stdout by the logger.
     var mockLog = log('ERROR', 'test', {
       stdout: {
@@ -514,18 +501,17 @@ test(
         write: sinon.spy()
       }
     })
-    var mockMetricsContext = {
+    var mockMetricsContext = mocks.mockMetricsContext({
       copy: sinon.spy(function (data, metadata) {
         Object.keys(metadata).forEach(function (key) {
           data[key] = metadata[key]
         })
         return P.resolve(data)
       }),
-      save: function () {},
       validate: function () {
         return true
       }
-    }
+    })
     var accountRoutes = makeRoutes({
       db: mockDB,
       log: mockLog,
@@ -579,7 +565,7 @@ test(
       }
     }
     var uid = uuid.v4('binary')
-    var mockDB = {
+    var mockDB = mocks.mockDb({
       emailRecord: sinon.spy(function () {
         return P.resolve({
           uid: uid,
@@ -598,7 +584,7 @@ test(
       sessions: sinon.spy(function () {
         return P.resolve([{}, {}, {}])
       })
-    }
+    })
     // We want to test what's actually written to stdout by the logger.
     var mockLog = log('ERROR', 'test', {
       stdout: {
@@ -610,18 +596,17 @@ test(
         write: sinon.spy()
       }
     })
-    var mockMetricsContext = {
+    var mockMetricsContext = mocks.mockMetricsContext({
       copy: sinon.spy(function (data, metadata) {
         Object.keys(metadata).forEach(function (key) {
           data[key] = metadata[key]
         })
         return P.resolve(data)
       }),
-      save: function () {},
       validate: function () {
         return true
       }
-    }
+    })
     var accountRoutes = makeRoutes({
       db: mockDB,
       log: mockLog,
@@ -883,15 +868,12 @@ test(
   '/account/create emits account.created activity event and saves metrics context',
   function (t) {
     var keyFetchToken, sessionToken, uid
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      save: sinon.spy(),
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext({
       validate: function () {
         return true
       }
-    }
+    })
     var mockRequest = {
       app: {
         acceptLanguage: 'en',
@@ -914,7 +896,7 @@ test(
           return P.resolve()
         }
       },
-      db: {
+      db: mocks.mockDb({
         createAccount: function (account) {
           uid = account.uid
           return P.resolve(account)
@@ -935,7 +917,7 @@ test(
         emailRecord: function () {
           return P.reject(error.unknownAccount(mockRequest.payload.email))
         }
-      },
+      }),
       log: mockLog,
       mailer: {
         sendVerifyCode: function () {
@@ -980,15 +962,12 @@ test(
   '/account/login emits account.login activity event and saves metrics context',
   function (t) {
     var keyFetchToken, sessionToken, uid
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      save: sinon.spy(),
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext({
       validate: function () {
         return true
       }
-    }
+    })
     var mockRequest = {
       app: {
         acceptLanguage: 'en',
@@ -1014,7 +993,7 @@ test(
           return P.resolve()
         }
       },
-      db: {
+      db: mocks.mockDb({
         createKeyFetchToken: function (kft) {
           keyFetchToken = kft
           keyFetchToken.data = crypto.randomBytes(32)
@@ -1037,7 +1016,7 @@ test(
             uid: uid
           })
         }
-      },
+      }),
       log: mockLog,
       metricsContext: mockMetricsContext,
       Password: function () {
@@ -1083,12 +1062,8 @@ test(
 test(
   '/account/keys emits account.keyfetch activity event and removes metrics context',
   function (t) {
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      remove: sinon.spy()
-    }
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext()
     var mockRequest = {
       app: {},
       auth: {
@@ -1103,11 +1078,7 @@ test(
       query: {}
     }
     var accountRoutes = makeRoutes({
-      db: {
-        deleteKeyFetchToken: function () {
-          return P.resolve()
-        }
-      },
+      db: mocks.mockDb(),
       log: mockLog,
       metricsContext: mockMetricsContext
     })
@@ -1141,9 +1112,7 @@ test(
 test(
   '/account/device/destroy emits device.deleted activity event',
   function (t) {
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
+    var mockLog = mocks.spyLog()
     var mockRequest = {
       app: {},
       auth: {
@@ -1159,11 +1128,7 @@ test(
       query: {}
     }
     var accountRoutes = makeRoutes({
-      db: {
-        deleteDevice: function () {
-          return P.resolve()
-        }
-      },
+      db: mocks.mockDb(),
       log: mockLog,
       push: {
         notifyDeviceDisconnected: function () {
@@ -1197,9 +1162,7 @@ test(
 test(
   '/recovery_email/verify_code emits account.verified activity event',
   function (t) {
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
+    var mockLog = mocks.spyLog()
     var mockRequest = {
       app: {
         acceptLanguage: 'en'
@@ -1223,7 +1186,7 @@ test(
           return P.resolve()
         }
       },
-      db: {
+      db: mocks.mockDb({
         account: function (uid) {
           return P.resolve({
             createdAt: Date.now(),
@@ -1233,11 +1196,8 @@ test(
             locale: 'en',
             uid: uid
           })
-        },
-        verifyEmail: function () {
-          return P.resolve()
         }
-      },
+      }),
       log: mockLog,
       mailer: {
         sendPostVerifyEmail: function () {}
@@ -1272,12 +1232,8 @@ test(
   '/account/reset emits account.reset activity event and saves metrics context',
   function (t) {
     var keyFetchToken, sessionToken
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      save: sinon.spy()
-    }
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext()
     var mockRequest = {
       app: {},
       auth: {
@@ -1306,7 +1262,7 @@ test(
       customs: {
         reset: function () {}
       },
-      db: {
+      db: mocks.mockDb({
         account: function (uid) {
           return P.resolve({
             email: crypto.randomBytes(16).toString('hex') + '@restmail.net',
@@ -1330,7 +1286,7 @@ test(
           return P.resolve(sessionToken)
         },
         resetAccount: function () {}
-      },
+      }),
       log: mockLog,
       metricsContext: mockMetricsContext,
       Password: function () {
@@ -1383,12 +1339,8 @@ test(
   '/account/device emits device.created activity event and removes metrics context',
   function (t) {
     var deviceId
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      remove: sinon.spy()
-    }
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext()
     var mockRequest = {
       auth: {
         credentials: {
@@ -1404,7 +1356,7 @@ test(
       query: {}
     }
     var accountRoutes = makeRoutes({
-      db: {
+      db: mocks.mockDb({
         createDevice: function (uid, sessionTokenId, device) {
           deviceId = crypto.randomBytes(16)
           device.id = deviceId
@@ -1413,7 +1365,7 @@ test(
         devices: function () {
           return P.resolve([])
         }
-      },
+      }),
       log: mockLog,
       metricsContext: mockMetricsContext
     })
@@ -1449,12 +1401,8 @@ test(
   '/account/device emits device.updated activity event and removes metrics context',
   function (t) {
     var deviceId = crypto.randomBytes(16)
-    var mockLog = mocks.mockLog({
-      activityEvent: sinon.spy()
-    })
-    var mockMetricsContext = {
-      remove: sinon.spy()
-    }
+    var mockLog = mocks.spyLog()
+    var mockMetricsContext = mocks.mockMetricsContext()
     var mockRequest = {
       auth: {
         credentials: {
@@ -1474,14 +1422,14 @@ test(
       query: {}
     }
     var accountRoutes = makeRoutes({
-      db: {
+      db: mocks.mockDb({
         devices: function () {
           return P.resolve([])
         },
         updateDevice: function (uid, sessionTokenId, device) {
           return P.resolve(device)
         }
-      },
+      }),
       log: mockLog,
       metricsContext: mockMetricsContext
     })
