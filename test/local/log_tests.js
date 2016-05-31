@@ -33,10 +33,8 @@ mocks.mozlog.config = sinon.spy()
 mocks[path.resolve(__dirname, '../../lib') + '/./metrics/statsd'] = function () {
   return statsd
 }
-mocks[path.resolve(__dirname, '../../lib') + '/./metrics/context'] = function () {
-  return metricsContext
-}
 var log = proxyquire('../../lib/log', mocks)('foo', 'bar')
+log.setMetricsContext(metricsContext)
 
 test(
   'initialised correctly',

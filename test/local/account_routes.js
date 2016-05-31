@@ -502,16 +502,14 @@ test(
       }
     })
     var mockMetricsContext = mocks.mockMetricsContext({
-      copy: sinon.spy(function (data, metadata) {
-        Object.keys(metadata).forEach(function (key) {
-          data[key] = metadata[key]
-        })
-        return P.resolve(data)
+      copy: sinon.spy(function (data, request) {
+        return P.resolve(request.payload.metricsContext)
       }),
       validate: function () {
         return true
       }
     })
+    mockLog.setMetricsContext(mockMetricsContext)
     var accountRoutes = makeRoutes({
       db: mockDB,
       log: mockLog,
@@ -531,9 +529,7 @@ test(
       t.equal(eventData.event, 'login', 'it was a login event')
       t.equal(eventData.data.service, 'sync', 'it was for sync')
       t.equal(eventData.data.email, TEST_EMAIL, 'it was for the correct email')
-      t.equal(eventData.data.metricsContext.entrypoint, 'preferences', 'it contained the entrypoint metrics field')
-      t.equal(eventData.data.metricsContext.utm_content, 'some-content-string', 'it contained the utm_content metrics field')
-
+      t.deepEqual(eventData.data.metricsContext, mockRequest.payload.metricsContext, 'it contained the metrics context')
     }).finally(function () {
       mockLog.close()
     })
@@ -597,16 +593,14 @@ test(
       }
     })
     var mockMetricsContext = mocks.mockMetricsContext({
-      copy: sinon.spy(function (data, metadata) {
-        Object.keys(metadata).forEach(function (key) {
-          data[key] = metadata[key]
-        })
-        return P.resolve(data)
+      copy: sinon.spy(function (data, request) {
+        return P.resolve(request.payload.metricsContext)
       }),
       validate: function () {
         return true
       }
     })
+    mockLog.setMetricsContext(mockMetricsContext)
     var accountRoutes = makeRoutes({
       db: mockDB,
       log: mockLog,
@@ -631,8 +625,7 @@ test(
       t.equal(eventData.event, 'login', 'it was a login event')
       t.equal(eventData.data.service, 'sync', 'it was for sync')
       t.equal(eventData.data.email, TEST_EMAIL, 'it was for the correct email')
-      t.equal(eventData.data.metricsContext.entrypoint, 'preferences', 'it contained the entrypoint metrics field')
-      t.equal(eventData.data.metricsContext.utm_content, 'some-content-string', 'it contained the utm_content metrics field')
+      t.deepEqual(eventData.data.metricsContext, mockRequest.payload.metricsContext, 'it contained the metrics context')
     }).finally(function () {
       mockLog.close()
     })
