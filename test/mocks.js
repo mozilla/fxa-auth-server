@@ -18,6 +18,8 @@ var crypto = require('crypto')
 var LOG_METHOD_NAMES = ['trace', 'increment', 'info', 'error', 'begin', 'warn',
                         'activityEvent', 'event']
 
+var METRICS_CONTEXT_METHOD_NAMES = ['add', 'validate']
+
 var mockLog = function(methods) {
   var log = extend({}, methods)
   LOG_METHOD_NAMES.forEach(function(name) {
@@ -116,11 +118,23 @@ var createDB = function (uid, email, verified) {
     })
   }
 }
+function mockObject (methodNames) {
+  return function (methods) {
+    return methodNames.reduce(function (object, name) {
+      object[name] = methods && methods[name] || sinon.spy(function () {
+        return P.resolve()
+      })
+
+      return object
+    }, {})
+  }
+}
 
 module.exports = {
   mockLog: mockLog,
   spyLog: spyLog,
   createDB: createDB,
   createMailer: createMailer,
-  createRequest: createRequest
+  createRequest: createRequest,
+  mockMetricsContext: mockObject(METRICS_CONTEXT_METHOD_NAMES)
 }
