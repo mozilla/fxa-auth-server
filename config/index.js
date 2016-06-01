@@ -32,13 +32,13 @@ var conf = convict({
     address: {
       doc: 'Address:port of the memcached server (or `none` to disable memcached)',
       default: '127.0.0.1:11211',
-      env: 'MEMCACHE_ADDRESS'
+      env: 'MEMCACHE_METRICS_CONTEXT_ADDRESS'
     },
     idle: {
       doc: 'Idle timeout for memcached connections (milliseconds)',
       format: Number,
       default: 30000,
-      env: 'MEMCACHE_IDLE'
+      env: 'MEMCACHE_METRICS_CONTEXT_IDLE'
     },
     lifetime: {
       doc: 'Lifetime for memcached values (seconds)',
