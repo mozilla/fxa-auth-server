@@ -321,13 +321,6 @@ ClientApi.prototype.recoveryEmailStatus = function (sessionTokenHex) {
 ClientApi.prototype.recoveryEmailResendCode = function (sessionTokenHex, options) {
   options = options || {}
 
-  // Default to desktop client context
-  if (!options.metricsContext) {
-    options.metricsContext = {
-      context: 'fx_desktop_v3'
-    }
-  }
-
   return tokens.SessionToken.fromHex(sessionTokenHex)
     .then(
       function (token) {
@@ -338,8 +331,7 @@ ClientApi.prototype.recoveryEmailResendCode = function (sessionTokenHex, options
           {
             service: options.service || undefined,
             redirectTo: options.redirectTo || undefined,
-            resume: options.resume || undefined,
-            metricsContext: options.metricsContext || undefined
+            resume: options.resume || undefined
           }
         )
       }.bind(this)
