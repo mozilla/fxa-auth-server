@@ -145,10 +145,17 @@ test(
     metricsContext.save(null, 'foo', 'bar').then(function (result) {
       t.equal(result, undefined, 'result is undefined')
 
+      t.equal(log.error.callCount, 1, 'log.error was called once')
+      t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
+      t.equal(log.error.args[0][0].op, 'metricsContext.save', 'op property was correct')
+      t.equal(log.error.args[0][0].err.message, 'Invalid argument', 'err.message property was correct')
+      t.equal(log.error.args[0][0].token, null, 'token property was correct')
+      t.deepEqual(log.error.args[0][0].events, ['foo'], 'events property was correct')
+
       t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
-      t.equal(log.error.callCount, 0, 'log.error was not called')
 
       Memcached.prototype.setAsync.restore()
+      log.error.reset()
 
       t.end()
     })
@@ -170,10 +177,17 @@ test(
     }, '', 'bar').then(function (result) {
       t.equal(result, undefined, 'result is undefined')
 
+      t.equal(log.error.callCount, 1, 'log.error was called once')
+      t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
+      t.equal(log.error.args[0][0].op, 'metricsContext.save', 'op property was correct')
+      t.equal(log.error.args[0][0].err.message, 'Invalid argument', 'err.message property was correct')
+      t.equal(log.error.args[0][0].token.tokenId.toString(), 'foo', 'events property was correct')
+      t.equal(log.error.args[0][0].events, '', 'events property was correct')
+
       t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
-      t.equal(log.error.callCount, 0, 'log.error was not called')
 
       Memcached.prototype.setAsync.restore()
+      log.error.reset()
 
       t.end()
     })
