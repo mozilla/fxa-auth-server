@@ -95,20 +95,15 @@ test(
   'account with verified invalid email does not get deleted on status poll',
   function (t) {
     var mockDB = {
-      deleteAccount: sinon.spy(),
-      sessionTokenWithVerificationStatus: function () {
-        return P.resolve({
-          email: TEST_EMAIL_INVALID,
-          emailVerified: true
-        })
-      }
+      deleteAccount: sinon.spy()
     }
     var mockRequest = {
       auth: {
         credentials: {
           uid: uuid.v4('binary').toString('hex'),
           email: TEST_EMAIL_INVALID,
-          emailVerified: true
+          emailVerified: true,
+          tokenVerified: true
         }
       }
     }
@@ -127,7 +122,9 @@ test(
       t.equal(mockDB.deleteAccount.callCount, 0)
       t.deepEqual(response, {
         email: TEST_EMAIL_INVALID,
-        verified: true
+        verified: true,
+        emailVerified: true,
+        sessionVerified: true
       })
     })
   }
@@ -179,21 +176,16 @@ test(
     }
 
     var mockDB = {
-      deleteAccount: sinon.spy(),
-      sessionTokenWithVerificationStatus: function () {
-        return P.resolve({
-          email: TEST_EMAIL,
-          emailVerified: true,
-          tokenVerified: true
-        })
-      }
+      deleteAccount: sinon.spy()
     }
 
     var mockRequest = {
       auth: {
         credentials: {
           uid: uuid.v4('binary').toString('hex'),
-          email: TEST_EMAIL
+          email: TEST_EMAIL,
+          emailVerified: true,
+          tokenVerified: true
         }
       }
     }
@@ -232,13 +224,7 @@ test(
     }
 
     var mockDB = {
-      deleteAccount: sinon.spy(),
-      sessionTokenWithVerificationStatus: function () {
-        return P.resolve({
-          email: TEST_EMAIL,
-          emailVerified: true
-        })
-      }
+      deleteAccount: sinon.spy()
     }
 
     var mockRequest = {
@@ -246,7 +232,8 @@ test(
         credentials: {
           uid: uuid.v4('binary').toString('hex'),
           email: TEST_EMAIL,
-          emailVerified: true
+          emailVerified: true,
+          tokenVerified: true
         }
       }
     }
@@ -266,7 +253,9 @@ test(
         t.equal(mockDB.deleteAccount.callCount, 0)
         t.deepEqual(response, {
           email: TEST_EMAIL,
-          verified: true
+          verified: true,
+          emailVerified: true,
+          sessionVerified: true
         })
       })
   }
@@ -736,7 +725,9 @@ test(
   function (t) {
     var configOptions = {
       signinConfirmation: {
-        enabled: false
+        enabled: false,
+        allowClients: ['fx_desktop_v3'],
+        allowEmails:['@mozilla.com']
       },
       newLoginNotificationEnabled: true
     }
@@ -776,7 +767,9 @@ test(
     var configOptions = {
       signinConfirmation: {
         enabled: true,
-        sample_rate: 1.0
+        sample_rate: 1.0,
+        allowClients: ['fx_desktop_v3'],
+        allowEmails:['@mozilla.com']
       }
     }
 
@@ -801,7 +794,7 @@ test(
         })
     })
       .then(function (response) {
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
@@ -815,7 +808,9 @@ test(
     var configOptions = {
       signinConfirmation: {
         enabled: true,
-        sample_rate: 0.20
+        sample_rate: 0.20,
+        allowClients: ['fx_desktop_v3'],
+        allowEmails:['@mozilla.com']
       }
     }
 
@@ -840,10 +835,93 @@ test(
         })
     })
       .then(function (response) {
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      })
+  }
+)
+
+test(
+  'login with sign-in confirmation enabled for specific email',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 0.00,
+        allowClients: ['fx_desktop_v3'],
+        allowEmails:['@mozilla.com']
+      }
+    }
+
+    var uid = '20162205efab47ecb6418c797acd743f'
+    var mockRequest = mocks.createRequest('test@mozilla.com', true)
+    var mockDB = mocks.createDB(uid, 'test@mozilla.com', true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
+        t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      })
+  }
+)
+
+test(
+  'login with sign-in confirmation, invalid client, does not perform confirmation',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 1.00,
+        allowClients: ['fx_desktop_v999'],
+        allowEmails:['@mozilla.com']
+      },
+      newLoginNotificationEnabled: true
+    }
+
+    var uid = '20162205efab47ecb6418c797acd743f'
+    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
+    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.createMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
+        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       })
   }
 )
@@ -854,7 +932,9 @@ test(
     var configOptions = {
       signinConfirmation: {
         enabled: true,
-        sample_rate: 0.10
+        sample_rate: 0.10,
+        allowClients: ['fx_desktop_v3'],
+        allowEmails:['@mozilla.com']
       },
       newLoginNotificationEnabled: true
     }

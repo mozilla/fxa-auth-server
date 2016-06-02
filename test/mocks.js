@@ -79,7 +79,8 @@ var createRequest = function (email, keys) {
       email: email,
       authPW: crypto.randomBytes(32).toString('hex'),
       service: 'sync',
-      reason: 'signin'
+      reason: 'signin',
+      metricsContext: {context:'fx_desktop_v3'}
     }
   }
 }
@@ -102,6 +103,7 @@ var createDB = function (uid, email, verified) {
         email: email,
         emailVerified: verified,
         tokenVerificationId: (verified ? undefined : crypto.randomBytes(16)),
+        tokenVerified: (verified ? true : false),
         data: crypto.randomBytes(32),
         lastAuthAt: function () {
           return 0

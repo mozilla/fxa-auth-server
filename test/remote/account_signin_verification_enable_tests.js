@@ -58,8 +58,6 @@ test(
       .then(
         function (status) {
           t.equal(status.verified, true, 'account is verified')
-          t.notOk(status.emailVerified, 'emailVerified not sent')
-          t.notOk(status.sessionVerified, 'sessionVerified not sent')
         }
       )
       .done(function() {

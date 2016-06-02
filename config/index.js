@@ -404,6 +404,27 @@ var conf = convict({
       doc: 'signin confirmation sample rate',
       default: 1.0,
       env: 'SIGNIN_CONFIRMATION_RATE'
+    },
+    allowClients: {
+      doc: 'allow sign-in confirmation for only these clients',
+      format: Array,
+      default: [
+        'iframe',
+        'fx_firstrun_v1',
+        'fx_firstrun_v2',
+        'fx_desktop_v1',
+        'fx_desktop_v2',
+        'fx_desktop_v3'
+      ],
+      env: 'ALLOW_SIGNIN_CLIENTS'
+    },
+    allowEmails: {
+      doc: 'allow sign-in confirmation for only these email domains',
+      format: Array,
+      default: [
+        '@mozilla.com'
+      ],
+      env: 'ALLOW_SIGNIN_EMAILS'
     }
   }
 })
