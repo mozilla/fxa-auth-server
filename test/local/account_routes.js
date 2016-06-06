@@ -860,7 +860,7 @@ test(
 test(
   '/account/create emits account.created activity event and stashes metrics context',
   function (t) {
-    var keyFetchToken, sessionToken, uid
+    var keyFetchToken, sessionToken, uid, emailCode
     var mockLog = mocks.spyLog()
     var mockMetricsContext = mocks.mockMetricsContext({
       validate: function () {
@@ -892,6 +892,7 @@ test(
       db: mocks.mockDb({
         createAccount: function (account) {
           uid = account.uid
+          emailCode = account.emailCode
           return P.resolve(account)
         },
         createKeyFetchToken: function (kft) {
@@ -934,15 +935,22 @@ test(
           uid: uid.toString('hex')
         })
 
-        t.equal(mockMetricsContext.stash.callCount, 2)
+        t.equal(mockMetricsContext.stash.callCount, 3)
         t.equal(mockMetricsContext.stash.args[0].length, 3)
         t.equal(mockMetricsContext.stash.args[0][0], sessionToken)
-        t.deepEqual(mockMetricsContext.stash.args[0][1], ['device.created', 'account.verified', 'account.signed'])
+        t.deepEqual(mockMetricsContext.stash.args[0][1], ['device.created', 'account.signed'])
         t.equal(mockMetricsContext.stash.args[0][2], mockRequest.payload.metricsContext)
         t.equal(mockMetricsContext.stash.args[1].length, 3)
-        t.equal(mockMetricsContext.stash.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.stash.args[1][1], 'account.keyfetch')
+        t.deepEqual(mockMetricsContext.stash.args[1][0], {
+          uid: uid.toString('hex'),
+          id: emailCode.toString('hex')
+        })
+        t.equal(mockMetricsContext.stash.args[1][1], 'account.verified')
         t.equal(mockMetricsContext.stash.args[1][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.args[2].length, 3)
+        t.equal(mockMetricsContext.stash.args[2][0], keyFetchToken)
+        t.equal(mockMetricsContext.stash.args[2][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.stash.args[2][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1204,9 +1212,17 @@ test(
         t.equal(mockLog.activityEvent.callCount, 1)
         t.equal(mockLog.activityEvent.args[0].length, 3)
         t.equal(mockLog.activityEvent.args[0][0], 'account.verified')
-        t.equal(mockLog.activityEvent.args[0][1], mockRequest)
+        t.deepEqual(mockLog.activityEvent.args[0][1].auth, {
+          credentials: {
+            uid: mockRequest.payload.uid,
+            id: mockRequest.payload.code
+          }
+        })
+        t.equal(mockLog.activityEvent.args[0][1].headers, mockRequest.headers)
+        t.equal(mockLog.activityEvent.args[0][1].payload, mockRequest.payload)
+        t.equal(mockLog.activityEvent.args[0][1].query, mockRequest.query)
         t.deepEqual(mockLog.activityEvent.args[0][2], {
-          uid: mockRequest.payload.uid.toString('hex')
+          uid: mockRequest.payload.uid
         })
       },
       function () {

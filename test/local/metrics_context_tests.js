@@ -48,18 +48,15 @@ test(
       return P.resolve('wibble')
     })
     metricsContext.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, 'bar', 'baz').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, 'baz', 'qux').then(function (result) {
       t.deepEqual(result, [ 'wibble' ], 'result is correct')
 
       t.equal(Memcached.prototype.setAsync.callCount, 1, 'memcached.setAsync was called once')
       t.equal(Memcached.prototype.setAsync.args[0].length, 3, 'memcached.setAsync was passed three arguments')
-      t.equal(Memcached.prototype.setAsync.args[0][0], 'foo:bar', 'first argument was correct')
-      t.equal(Memcached.prototype.setAsync.args[0][1], 'baz', 'second argument was correct')
+      t.equal(Memcached.prototype.setAsync.args[0][0], 'foo:bar:baz', 'first argument was correct')
+      t.equal(Memcached.prototype.setAsync.args[0][1], 'qux', 'second argument was correct')
       t.equal(Memcached.prototype.setAsync.args[0][2], 30, 'third argument was correct')
 
       t.equal(log.error.callCount, 0, 'log.error was not called')
@@ -78,20 +75,17 @@ test(
       return P.resolve('wibble')
     })
     metricsContext.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, [ 'bar', 'baz' ], 'qux').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, [ 'baz', 'qux' ], 'blee').then(function (result) {
       t.deepEqual(result, [ 'wibble', 'wibble' ], 'result is correct')
 
       t.equal(Memcached.prototype.setAsync.callCount, 2, 'memcached.setAsync was called twice')
-      t.equal(Memcached.prototype.setAsync.args[0][0], 'foo:bar', 'first argument was correct in first call')
-      t.equal(Memcached.prototype.setAsync.args[0][1], 'qux', 'second argument was correct in first call')
+      t.equal(Memcached.prototype.setAsync.args[0][0], 'foo:bar:baz', 'first argument was correct in first call')
+      t.equal(Memcached.prototype.setAsync.args[0][1], 'blee', 'second argument was correct in first call')
       t.equal(Memcached.prototype.setAsync.args[0][2], 30, 'third argument was correct in first call')
-      t.equal(Memcached.prototype.setAsync.args[1][0], 'foo:baz', 'first argument was correct in second call')
-      t.equal(Memcached.prototype.setAsync.args[1][1], 'qux', 'second argument was correct in second call')
+      t.equal(Memcached.prototype.setAsync.args[1][0], 'foo:bar:qux', 'first argument was correct in second call')
+      t.equal(Memcached.prototype.setAsync.args[1][1], 'blee', 'second argument was correct in second call')
       t.equal(Memcached.prototype.setAsync.args[1][2], 30, 'third argument was correct in second call')
 
       t.equal(log.error.callCount, 0, 'log.error was not called')
@@ -110,12 +104,9 @@ test(
       return P.reject('wibble')
     })
     metricsContext.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, 'bar', 'baz').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, 'baz', 'qux').then(function (result) {
       t.deepEqual(result, [ undefined ], 'result is undefined')
 
       t.equal(Memcached.prototype.setAsync.callCount, 1, 'memcached.setAsync was called once')
@@ -166,19 +157,17 @@ test(
       return P.resolve('wibble')
     })
     metricsContext.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, '', 'bar').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, '', 'baz').then(function (result) {
       t.equal(result, undefined, 'result is undefined')
 
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
       t.equal(log.error.args[0][0].op, 'metricsContext.stash', 'op property was correct')
       t.equal(log.error.args[0][0].err.message, 'Invalid argument', 'err.message property was correct')
-      t.equal(log.error.args[0][0].token.tokenId.toString(), 'foo', 'events property was correct')
+      t.equal(log.error.args[0][0].token.uid, 'foo', 'token.uid property was correct')
+      t.equal(log.error.args[0][0].token.id, 'bar', 'token.id property was correct')
       t.equal(log.error.args[0][0].events, '', 'events property was correct')
 
       t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
@@ -198,12 +187,9 @@ test(
       return P.resolve('wibble')
     })
     metricsContext.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, 'bar').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, 'baz').then(function (result) {
       t.equal(result, undefined, 'result is undefined')
 
       t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
@@ -377,21 +363,18 @@ test(
     metricsContext.gather({}, {
       auth: {
         credentials: {
-          tokenId: {
-            toString: function () {
-              return 'foo'
-            }
-          }
+          uid: 'foo',
+          id: 'bar'
         }
       }
-    }, 'bar').then(function (result) {
+    }, 'baz').then(function (result) {
       t.equal(Memcached.prototype.getAsync.callCount, 1, 'memcached.getAsync was called once')
       t.equal(Memcached.prototype.getAsync.args[0].length, 1, 'memcached.getAsync was passed one argument')
-      t.equal(Memcached.prototype.getAsync.args[0][0], 'foo:bar', 'memcached.getAsync argument was correct')
+      t.equal(Memcached.prototype.getAsync.args[0][0], 'foo:bar:baz', 'memcached.getAsync argument was correct')
 
       t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
       t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
-      t.equal(Memcached.prototype.delAsync.args[0][0], 'foo:bar', 'memcached.delAsync argument was correct')
+      t.equal(Memcached.prototype.delAsync.args[0][0], 'foo:bar:baz', 'memcached.delAsync argument was correct')
 
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
@@ -436,27 +419,24 @@ test(
     metricsContext.gather({}, {
       auth: {
         credentials: {
-          tokenId: {
-            toString: function () {
-              return 'bar'
-            }
-          }
+          uid: 'bar',
+          id: 'baz'
         }
       },
       payload: {
         metricsContext: {
-          flowId: 'baz',
+          flowId: 'qux',
           flowBeginTime: time
         }
       }
-    }, 'qux').then(function (result) {
+    }, 'blee').then(function (result) {
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
-      t.equal(result.flow_id, 'baz', 'result.flow_id is correct')
+      t.equal(result.flow_id, 'qux', 'result.flow_id is correct')
 
       t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
       t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was called once')
-      t.equal(Memcached.prototype.delAsync.args[0][0], 'bar:qux', 'memcached.delAsync argument was correct')
+      t.equal(Memcached.prototype.delAsync.args[0][0], 'bar:baz:blee', 'memcached.delAsync argument was correct')
 
       t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
       t.equal(log.error.callCount, 0, 'log.error was not called')
@@ -481,14 +461,11 @@ test(
     metricsContext.gather({}, {
       auth: {
         credentials: {
-          tokenId: {
-            toString: function () {
-              return 'bar'
-            }
-          }
+          uid: 'bar',
+          id: 'baz'
         }
       }
-    }, 'baz').then(function () {
+    }, 'qux').then(function () {
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
       t.equal(log.error.args[0][0].op, 'memcached.get', 'argument op property was correct')
@@ -521,14 +498,11 @@ test(
     metricsContext.gather({}, {
       auth: {
         credentials: {
-          tokenId: {
-            toString: function () {
-              return 'baz'
-            }
-          }
+          uid: 'baz',
+          id: 'qux'
         }
       }
-    }, 'qux').then(function (result) {
+    }, 'blee').then(function (result) {
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
       t.equal(result.flow_id, 'foo', 'result.flow_id is correct')
@@ -564,12 +538,9 @@ test(
       return P.reject('wibble')
     })
     metricsContextWithoutMemcached.stash({
-      tokenId: {
-        toString: function () {
-          return 'foo'
-        }
-      }
-    }, 'bar', 'baz').then(function (result) {
+      uid: 'foo',
+      id: 'bar'
+    }, 'baz', 'qux').then(function (result) {
       t.deepEqual(result, [ undefined ], 'result is undefined')
 
       t.equal(Memcached.prototype.setAsync.callCount, 0, 'memcached.setAsync was not called')
@@ -604,14 +575,11 @@ test(
     metricsContextWithoutMemcached.gather({}, {
       auth: {
         credentials: {
-          tokenId: {
-            toString: function () {
-              return 'bar'
-            }
-          }
+          uid: 'bar',
+          id: 'baz'
         }
       }
-    }, 'baz').then(function () {
+    }, 'qux').then(function () {
       t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
       t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.getAsync was not called')
       t.equal(log.error.callCount, 0, 'log.error was not called')
