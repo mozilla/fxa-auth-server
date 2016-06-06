@@ -1053,7 +1053,7 @@ test(
 )
 
 test(
-  '/account/keys emits account.keyfetch activity event and removes metrics context',
+  '/account/keys emits account.keyfetch activity event',
   function (t) {
     var mockLog = mocks.spyLog()
     var mockMetricsContext = mocks.mockMetricsContext()
@@ -1089,11 +1089,6 @@ test(
         t.deepEqual(mockLog.activityEvent.args[0][2], {
           uid: mockRequest.auth.credentials.uid.toString('hex')
         })
-
-        t.equal(mockMetricsContext.remove.callCount, 1)
-        t.equal(mockMetricsContext.remove.args[0].length, 2)
-        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
-        t.equal(mockMetricsContext.remove.args[0][1], 'account.keyfetch')
       },
       function () {
         t.fail('request should have succeeded')
@@ -1329,7 +1324,7 @@ test(
 )
 
 test(
-  '/account/device emits device.created activity event and removes metrics context',
+  '/account/device emits device.created activity event',
   function (t) {
     var deviceId
     var mockLog = mocks.spyLog()
@@ -1377,11 +1372,6 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex'),
           device_id: deviceId.toString('hex')
         })
-
-        t.equal(mockMetricsContext.remove.callCount, 1)
-        t.equal(mockMetricsContext.remove.args[0].length, 2)
-        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
-        t.equal(mockMetricsContext.remove.args[0][1], 'device.created')
       },
       function () {
         t.fail('request should have succeeded')
@@ -1391,7 +1381,7 @@ test(
 )
 
 test(
-  '/account/device emits device.updated activity event and removes metrics context',
+  '/account/device emits device.updated activity event',
   function (t) {
     var deviceId = crypto.randomBytes(16)
     var mockLog = mocks.spyLog()
@@ -1441,11 +1431,6 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex'),
           device_id: deviceId.toString('hex')
         })
-
-        t.equal(mockMetricsContext.remove.callCount, 1)
-        t.equal(mockMetricsContext.remove.args[0].length, 2)
-        t.equal(mockMetricsContext.remove.args[0][0], mockRequest.auth.credentials)
-        t.equal(mockMetricsContext.remove.args[0][1], 'device.updated')
       },
       function () {
         t.fail('request should have succeeded')

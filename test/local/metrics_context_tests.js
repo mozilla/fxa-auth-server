@@ -23,7 +23,7 @@ test(
   function (t) {
     t.equal(typeof metricsContext, 'object', 'metricsContext is object')
     t.notEqual(metricsContext, null, 'metricsContext is not null')
-    t.equal(Object.keys(metricsContext).length, 5, 'metricsContext has 2 properties')
+    t.equal(Object.keys(metricsContext).length, 4, 'metricsContext has 4 properties')
 
     t.equal(typeof metricsContext.schema, 'object', 'metricsContext.schema is object')
     t.notEqual(metricsContext.schema, null, 'metricsContext.schema is not null')
@@ -33,9 +33,6 @@ test(
 
     t.equal(typeof metricsContext.copy, 'function', 'metricsContext.copy is function')
     t.equal(metricsContext.copy.length, 3, 'metricsContext.copy expects 3 arguments')
-
-    t.equal(typeof metricsContext.remove, 'function', 'metricsContext.remove is function')
-    t.equal(metricsContext.remove.length, 2, 'metricsContext.remove expects 2 arguments')
 
     t.equal(typeof metricsContext.validate, 'function', 'metricsContext.validate is function')
     t.equal(metricsContext.validate.length, 1, 'metricsContext.validate expects 1 argument')
@@ -237,6 +234,15 @@ test(
 test(
   'metricsContext.copy with metadata',
   function (t) {
+    sinon.stub(Memcached.prototype, 'getAsync', function () {
+      return P.resolve({
+        flowId: 'not this flow id',
+        flowBeginTime: 0
+      })
+    })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.resolve()
+    })
     var time = Date.now() - 1
     metricsContext.copy({}, {
       payload: {
@@ -273,7 +279,12 @@ test(
       t.equal(result.utm_source, 'mock utm_source', 'result.utm_source is correct')
       t.equal(result.utm_term, 'mock utm_term', 'result.utm_term is correct')
 
+      t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
+      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
       t.equal(log.error.callCount, 0, 'log.error was not called')
+
+      Memcached.prototype.getAsync.restore()
+      Memcached.prototype.delAsync.restore()
 
       t.end()
     })
@@ -360,6 +371,9 @@ test(
         ignore: 'ignore me'
       })
     })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.resolve()
+    })
     metricsContext.copy({}, {
       auth: {
         credentials: {
@@ -371,9 +385,13 @@ test(
         }
       }
     }, 'bar').then(function (result) {
-      t.equal(Memcached.prototype.getAsync.callCount, 1)
-      t.equal(Memcached.prototype.getAsync.args[0].length, 1)
-      t.equal(Memcached.prototype.getAsync.args[0][0], 'foo:bar')
+      t.equal(Memcached.prototype.getAsync.callCount, 1, 'memcached.getAsync was called once')
+      t.equal(Memcached.prototype.getAsync.args[0].length, 1, 'memcached.getAsync was passed one argument')
+      t.equal(Memcached.prototype.getAsync.args[0][0], 'foo:bar', 'memcached.getAsync argument was correct')
+
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+      t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
+      t.equal(Memcached.prototype.delAsync.args[0][0], 'foo:bar', 'memcached.delAsync argument was correct')
 
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
@@ -395,6 +413,7 @@ test(
       t.equal(log.error.callCount, 0, 'log.error was not called')
 
       Memcached.prototype.getAsync.restore()
+      Memcached.prototype.delAsync.restore()
 
       t.end()
     })
@@ -410,6 +429,9 @@ test(
         flowId: 'foo',
         flowBeginTime: time
       })
+    })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.resolve()
     })
     metricsContext.copy({}, {
       auth: {
@@ -432,10 +454,15 @@ test(
       t.notEqual(result, null, 'result is not null')
       t.equal(result.flow_id, 'baz', 'result.flow_id is correct')
 
-      t.equal(Memcached.prototype.getAsync.callCount, 0)
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+      t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was called once')
+      t.equal(Memcached.prototype.delAsync.args[0][0], 'bar:qux', 'memcached.delAsync argument was correct')
+
+      t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
       t.equal(log.error.callCount, 0, 'log.error was not called')
 
       Memcached.prototype.getAsync.restore()
+      Memcached.prototype.delAsync.restore()
 
       t.end()
     })
@@ -443,10 +470,13 @@ test(
 )
 
 test(
-  'metricsContext.copy with error',
+  'metricsContext.copy with get error',
   function (t) {
     sinon.stub(Memcached.prototype, 'getAsync', function () {
       return P.reject('foo')
+    })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.resolve()
     })
     metricsContext.copy({}, {
       auth: {
@@ -461,12 +491,14 @@ test(
     }, 'baz').then(function () {
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
-      t.equal(log.error.args[0][0].op, 'metricsContext.restore', 'argument op property was correct')
+      t.equal(log.error.args[0][0].op, 'memcached.get', 'argument op property was correct')
       t.equal(log.error.args[0][0].err, 'foo', 'argument err property was correct')
 
       t.equal(Memcached.prototype.getAsync.callCount, 1, 'memcached.getAsync was called once')
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
 
       Memcached.prototype.getAsync.restore()
+      Memcached.prototype.delAsync.restore()
       log.error.reset()
 
       t.end()
@@ -475,76 +507,43 @@ test(
 )
 
 test(
-  'metricsContext.remove',
+  'metricsContext.copy with del error',
   function (t) {
-    sinon.stub(Memcached.prototype, 'delAsync', function () {
-      return P.resolve('foo')
+    sinon.stub(Memcached.prototype, 'getAsync', function () {
+      return P.resolve({
+        flowId: 'foo',
+        flowBeginTime: 42
+      })
     })
-    metricsContext.remove({
-      tokenId: {
-        toString: function () {
-          return 'bar'
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.reject('bar')
+    })
+    metricsContext.copy({}, {
+      auth: {
+        credentials: {
+          tokenId: {
+            toString: function () {
+              return 'baz'
+            }
+          }
         }
       }
-    }, 'baz').then(function (result) {
-      t.equal(result, 'foo', 'result is correct')
-
-      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
-      t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
-      t.equal(Memcached.prototype.delAsync.args[0][0], 'bar:baz', 'first argument was correct')
-
-      t.equal(log.error.callCount, 0, 'log.error was not called')
-
-      Memcached.prototype.delAsync.restore()
-
-      t.end()
-    })
-  }
-)
-
-test(
-  'metricsContext.remove error',
-  function (t) {
-    sinon.stub(Memcached.prototype, 'delAsync', function () {
-      return P.reject('wibble')
-    })
-    metricsContext.remove({
-      tokenId: {
-        toString: function () {
-          return 'blee'
-        }
-      }
-    }, 'asdf').then(function (result) {
-      t.equal(result, undefined, 'result is undefined')
-
-      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+    }, 'qux').then(function (result) {
+      t.equal(typeof result, 'object', 'result is object')
+      t.notEqual(result, null, 'result is not null')
+      t.equal(result.flow_id, 'foo', 'result.flow_id is correct')
 
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
-      t.equal(log.error.args[0][0].op, 'metricsContext.remove', 'argument op property was correct')
-      t.equal(log.error.args[0][0].err, 'wibble', 'argument err property was correct')
+      t.equal(log.error.args[0][0].op, 'memcached.del', 'argument op property was correct')
+      t.equal(log.error.args[0][0].err, 'bar', 'argument err property was correct')
 
+      t.equal(Memcached.prototype.getAsync.callCount, 1, 'memcached.getAsync was called once')
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+
+      Memcached.prototype.getAsync.restore()
       Memcached.prototype.delAsync.restore()
       log.error.reset()
-
-      t.end()
-    })
-  }
-)
-
-test(
-  'metricsContext.remove without token',
-  function (t) {
-    sinon.stub(Memcached.prototype, 'delAsync', function () {
-      return P.resolve('foo')
-    })
-    metricsContext.remove(null, 'bar').then(function (result) {
-      t.equal(result, undefined, 'result is undefined')
-
-      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
-      t.equal(log.error.callCount, 0, 'log.error was not called')
-
-      Memcached.prototype.delAsync.restore()
 
       t.end()
     })
@@ -594,7 +593,13 @@ test(
       }
     })
     sinon.stub(Memcached.prototype, 'getAsync', function () {
-      return P.reject('foo')
+      return P.resolve({
+        flowId: 'foo',
+        flowBeginTime: 42
+      })
+    })
+    sinon.stub(Memcached.prototype, 'delAsync', function () {
+      return P.resolve()
     })
     metricsContextWithoutMemcached.copy({}, {
       auth: {
@@ -608,39 +613,10 @@ test(
       }
     }, 'baz').then(function () {
       t.equal(Memcached.prototype.getAsync.callCount, 0, 'memcached.getAsync was not called')
+      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.getAsync was not called')
       t.equal(log.error.callCount, 0, 'log.error was not called')
 
       Memcached.prototype.getAsync.restore()
-      log.error.reset()
-
-      t.end()
-    })
-  }
-)
-
-test(
-  'metricsContext.remove with config.memcached.address === "none"',
-  function (t) {
-    var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
-      memcached: {
-        address: 'none',
-        idle: 500,
-        lifetime: 30
-      }
-    })
-    sinon.stub(Memcached.prototype, 'delAsync', function () {
-      return P.reject('wibble')
-    })
-    metricsContextWithoutMemcached.remove({
-      tokenId: {
-        toString: function () {
-          return 'blee'
-        }
-      }
-    }, 'asdf').then(function (result) {
-      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
-      t.equal(log.error.callCount, 0, 'log.error was not called')
-
       Memcached.prototype.delAsync.restore()
       log.error.reset()
 
