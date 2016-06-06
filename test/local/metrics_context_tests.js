@@ -28,11 +28,11 @@ test(
     t.equal(typeof metricsContext.schema, 'object', 'metricsContext.schema is object')
     t.notEqual(metricsContext.schema, null, 'metricsContext.schema is not null')
 
-    t.equal(typeof metricsContext.save, 'function', 'metricsContext.save is function')
-    t.equal(metricsContext.save.length, 3, 'metricsContext.save expects 3 arguments')
+    t.equal(typeof metricsContext.stash, 'function', 'metricsContext.stash is function')
+    t.equal(metricsContext.stash.length, 3, 'metricsContext.stash expects 3 arguments')
 
-    t.equal(typeof metricsContext.copy, 'function', 'metricsContext.copy is function')
-    t.equal(metricsContext.copy.length, 3, 'metricsContext.copy expects 3 arguments')
+    t.equal(typeof metricsContext.gather, 'function', 'metricsContext.gather is function')
+    t.equal(metricsContext.gather.length, 3, 'metricsContext.gather expects 3 arguments')
 
     t.equal(typeof metricsContext.validate, 'function', 'metricsContext.validate is function')
     t.equal(metricsContext.validate.length, 1, 'metricsContext.validate expects 1 argument')
@@ -42,12 +42,12 @@ test(
 )
 
 test(
-  'metricsContext.save',
+  'metricsContext.stash',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.resolve('wibble')
     })
-    metricsContext.save({
+    metricsContext.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -72,12 +72,12 @@ test(
 )
 
 test(
-  'metricsContext.save with two events',
+  'metricsContext.stash with two events',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.resolve('wibble')
     })
-    metricsContext.save({
+    metricsContext.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -104,12 +104,12 @@ test(
 )
 
 test(
-  'metricsContext.save error',
+  'metricsContext.stash error',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.reject('wibble')
     })
-    metricsContext.save({
+    metricsContext.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -122,7 +122,7 @@ test(
 
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
-      t.equal(log.error.args[0][0].op, 'metricsContext.save', 'argument op property was correct')
+      t.equal(log.error.args[0][0].op, 'metricsContext.stash', 'argument op property was correct')
       t.equal(log.error.args[0][0].err, 'wibble', 'argument err property was correct')
 
       Memcached.prototype.setAsync.restore()
@@ -134,17 +134,17 @@ test(
 )
 
 test(
-  'metricsContext.save without token',
+  'metricsContext.stash without token',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.resolve('wibble')
     })
-    metricsContext.save(null, 'foo', 'bar').then(function (result) {
+    metricsContext.stash(null, 'foo', 'bar').then(function (result) {
       t.equal(result, undefined, 'result is undefined')
 
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
-      t.equal(log.error.args[0][0].op, 'metricsContext.save', 'op property was correct')
+      t.equal(log.error.args[0][0].op, 'metricsContext.stash', 'op property was correct')
       t.equal(log.error.args[0][0].err.message, 'Invalid argument', 'err.message property was correct')
       t.equal(log.error.args[0][0].token, null, 'token property was correct')
       t.deepEqual(log.error.args[0][0].events, ['foo'], 'events property was correct')
@@ -160,12 +160,12 @@ test(
 )
 
 test(
-  'metricsContext.save without event',
+  'metricsContext.stash without event',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.resolve('wibble')
     })
-    metricsContext.save({
+    metricsContext.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -176,7 +176,7 @@ test(
 
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
-      t.equal(log.error.args[0][0].op, 'metricsContext.save', 'op property was correct')
+      t.equal(log.error.args[0][0].op, 'metricsContext.stash', 'op property was correct')
       t.equal(log.error.args[0][0].err.message, 'Invalid argument', 'err.message property was correct')
       t.equal(log.error.args[0][0].token.tokenId.toString(), 'foo', 'events property was correct')
       t.equal(log.error.args[0][0].events, '', 'events property was correct')
@@ -192,12 +192,12 @@ test(
 )
 
 test(
-  'metricsContext.save without metadata',
+  'metricsContext.stash without metadata',
   function (t) {
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.resolve('wibble')
     })
-    metricsContext.save({
+    metricsContext.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -217,9 +217,9 @@ test(
 )
 
 test(
-  'metricsContext.copy without metadata or session token',
+  'metricsContext.gather without metadata or session token',
   function (t) {
-    metricsContext.copy({}, {}).then(function (result) {
+    metricsContext.gather({}, {}).then(function (result) {
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
       t.equal(Object.keys(result).length, 0, 'result is empty')
@@ -232,7 +232,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with metadata',
+  'metricsContext.gather with metadata',
   function (t) {
     sinon.stub(Memcached.prototype, 'getAsync', function () {
       return P.resolve({
@@ -244,7 +244,7 @@ test(
       return P.resolve()
     })
     var time = Date.now() - 1
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       payload: {
         metricsContext: {
           flowId: 'mock flow id',
@@ -292,9 +292,9 @@ test(
 )
 
 test(
-  'metricsContext.copy with bad flowBeginTime',
+  'metricsContext.gather with bad flowBeginTime',
   function (t) {
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       payload: {
         metricsContext: {
           flowBeginTime: Date.now() + 10000
@@ -313,10 +313,10 @@ test(
 )
 
 test(
-  'metricsContext.copy with DNT header',
+  'metricsContext.gather with DNT header',
   function (t) {
     var time = Date.now() - 1
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       headers: {
         dnt: '1'
       },
@@ -352,7 +352,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with session token',
+  'metricsContext.gather with session token',
   function (t) {
     var time = Date.now() - 1
     sinon.stub(Memcached.prototype, 'getAsync', function () {
@@ -374,7 +374,7 @@ test(
     sinon.stub(Memcached.prototype, 'delAsync', function () {
       return P.resolve()
     })
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       auth: {
         credentials: {
           tokenId: {
@@ -421,7 +421,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with metadata and session token',
+  'metricsContext.gather with metadata and session token',
   function (t) {
     var time = Date.now() - 1
     sinon.stub(Memcached.prototype, 'getAsync', function () {
@@ -433,7 +433,7 @@ test(
     sinon.stub(Memcached.prototype, 'delAsync', function () {
       return P.resolve()
     })
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       auth: {
         credentials: {
           tokenId: {
@@ -470,7 +470,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with get error',
+  'metricsContext.gather with get error',
   function (t) {
     sinon.stub(Memcached.prototype, 'getAsync', function () {
       return P.reject('foo')
@@ -478,7 +478,7 @@ test(
     sinon.stub(Memcached.prototype, 'delAsync', function () {
       return P.resolve()
     })
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       auth: {
         credentials: {
           tokenId: {
@@ -507,7 +507,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with del error',
+  'metricsContext.gather with del error',
   function (t) {
     sinon.stub(Memcached.prototype, 'getAsync', function () {
       return P.resolve({
@@ -518,7 +518,7 @@ test(
     sinon.stub(Memcached.prototype, 'delAsync', function () {
       return P.reject('bar')
     })
-    metricsContext.copy({}, {
+    metricsContext.gather({}, {
       auth: {
         credentials: {
           tokenId: {
@@ -551,7 +551,7 @@ test(
 )
 
 test(
-  'metricsContext.save with config.memcached.address === "none"',
+  'metricsContext.stash with config.memcached.address === "none"',
   function (t) {
     var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
       memcached: {
@@ -563,7 +563,7 @@ test(
     sinon.stub(Memcached.prototype, 'setAsync', function () {
       return P.reject('wibble')
     })
-    metricsContextWithoutMemcached.save({
+    metricsContextWithoutMemcached.stash({
       tokenId: {
         toString: function () {
           return 'foo'
@@ -583,7 +583,7 @@ test(
 )
 
 test(
-  'metricsContext.copy with config.memcached.address === "none"',
+  'metricsContext.gather with config.memcached.address === "none"',
   function (t) {
     var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
       memcached: {
@@ -601,7 +601,7 @@ test(
     sinon.stub(Memcached.prototype, 'delAsync', function () {
       return P.resolve()
     })
-    metricsContextWithoutMemcached.copy({}, {
+    metricsContextWithoutMemcached.gather({}, {
       auth: {
         credentials: {
           tokenId: {

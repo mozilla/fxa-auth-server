@@ -22,7 +22,7 @@ var DB_METHOD_NAMES = ['account', 'createAccount', 'createDevice', 'createKeyFet
                        'devices', 'emailRecord', 'resetAccount', 'sessions', 'updateDevice',
                        'verifyEmail']
 
-var METRICS_CONTEXT_METHOD_NAMES = ['save', 'copy', 'remove', 'validate']
+var METRICS_CONTEXT_METHOD_NAMES = ['stash', 'gather', 'validate']
 
 var mockLog = function(methods) {
   var log = extend({}, methods)

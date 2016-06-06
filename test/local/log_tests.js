@@ -20,7 +20,7 @@ var statsd = {
   write: sinon.spy()
 }
 var metricsContext = {
-  copy: sinon.spy(function (data, request) {
+  gather: sinon.spy(function (data, request) {
     return P.resolve(request.payload && request.payload.metricsContext)
   })
 }
@@ -55,7 +55,7 @@ test(
     t.equal(statsd.init.args[0].length, 0, 'statsd.init was passed no arguments')
 
     t.equal(statsd.write.callCount, 0, 'statsd.write was not called')
-    t.equal(metricsContext.copy.callCount, 0, 'metricsContext.copy was not called')
+    t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
     t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
     t.equal(logger.error.callCount, 0, 'logger.error was not called')
     t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
@@ -92,9 +92,9 @@ test(
     return log.activityEvent('bar', request, {
       uid: 'baz'
     }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      var args = metricsContext.copy.args[0]
-      t.equal(args.length, 3, 'metricsContext.copy was passed three arguments')
+      t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+      var args = metricsContext.gather.args[0]
+      t.equal(args.length, 3, 'metricsContext.gather was passed three arguments')
       t.equal(typeof args[0], 'object', 'first argument was object')
       t.notEqual(args[0], null, 'first argument was not null')
       t.equal(Object.keys(args[0]).length, 2, 'first argument had two properties')
@@ -122,7 +122,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
 
-      metricsContext.copy.reset()
+      metricsContext.gather.reset()
       logger.info.reset()
       statsd.write.reset()
     })
@@ -141,8 +141,8 @@ test(
     }, {
       uid: 'ugg'
     }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      var args = metricsContext.copy.args[0]
+      t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+      var args = metricsContext.gather.args[0]
       t.equal(args[0].event, 'wibble', 'event property was correct')
       t.equal(args[0].userAgent, undefined, 'userAgent property was undefined')
       t.equal(typeof args[1], 'object', 'second argument was object')
@@ -161,7 +161,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
 
-      metricsContext.copy.reset()
+      metricsContext.gather.reset()
       logger.info.reset()
       statsd.write.reset()
     })
@@ -182,8 +182,8 @@ test(
     }, {
       uid: 'baz'
     }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      t.equal(metricsContext.copy.args[0][0].event, 'foo', 'event property was correct')
+      t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+      t.equal(metricsContext.gather.args[0][0].event, 'foo', 'event property was correct')
 
       t.equal(logger.info.callCount, 1, 'logger.info was called once')
       t.equal(logger.info.args[0][1].service, 'bar', 'service property was correct')
@@ -196,7 +196,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
 
-      metricsContext.copy.reset()
+      metricsContext.gather.reset()
       logger.info.reset()
       statsd.write.reset()
     })
@@ -217,7 +217,7 @@ test(
     }, {
       uid: 'qux'
     }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
+      t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
 
       t.equal(logger.info.callCount, 1, 'logger.info was called once')
       t.equal(logger.info.args[0][1].service, 'bar', 'service property was correct')
@@ -230,7 +230,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
 
-      metricsContext.copy.reset()
+      metricsContext.gather.reset()
       logger.info.reset()
       statsd.write.reset()
     })
@@ -252,8 +252,8 @@ test(
       uid: 42,
       wibble: 'blee'
     }).then(function () {
-      t.equal(metricsContext.copy.callCount, 1, 'metricsContext.copy was called once')
-      t.equal(Object.keys(metricsContext.copy.args[0][0]).length, 2, 'first argument had two properties')
+      t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+      t.equal(Object.keys(metricsContext.gather.args[0][0]).length, 2, 'first argument had two properties')
 
       t.equal(logger.info.callCount, 1, 'logger.info was called once')
       var args = logger.info.args[0]
@@ -269,7 +269,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
 
-      metricsContext.copy.reset()
+      metricsContext.gather.reset()
       logger.info.reset()
       statsd.write.reset()
     })
@@ -292,7 +292,7 @@ test(
       t.equal(Object.keys(args[1]).length, 2, 'second argument had two properties')
       t.equal(args[1].data, undefined, 'data property was undefined')
 
-      t.equal(metricsContext.copy.callCount, 0, 'metricsContext.copy was not called')
+      t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
       t.equal(statsd.write.callCount, 0, 'statsd.write was not called')
       t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
@@ -320,7 +320,7 @@ test(
       t.equal(Object.keys(args[1].data).length, 1, 'data property had one property')
       t.equal(args[1].data.foo, 'bar', 'data property had correct property')
 
-      t.equal(metricsContext.copy.callCount, 0, 'metricsContext.copy was not called')
+      t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
       t.equal(statsd.write.callCount, 0, 'statsd.write was not called')
       t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')

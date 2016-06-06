@@ -502,7 +502,7 @@ test(
       }
     })
     var mockMetricsContext = mocks.mockMetricsContext({
-      copy: sinon.spy(function (data, request) {
+      gather: sinon.spy(function (data, request) {
         return P.resolve(request.payload.metricsContext)
       }),
       validate: function () {
@@ -593,7 +593,7 @@ test(
       }
     })
     var mockMetricsContext = mocks.mockMetricsContext({
-      copy: sinon.spy(function (data, request) {
+      gather: sinon.spy(function (data, request) {
         return P.resolve(request.payload.metricsContext)
       }),
       validate: function () {
@@ -858,7 +858,7 @@ test(
 )
 
 test(
-  '/account/create emits account.created activity event and saves metrics context',
+  '/account/create emits account.created activity event and stashes metrics context',
   function (t) {
     var keyFetchToken, sessionToken, uid
     var mockLog = mocks.spyLog()
@@ -934,15 +934,15 @@ test(
           uid: uid.toString('hex')
         })
 
-        t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 3)
-        t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.verified', 'account.signed'])
-        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 3)
-        t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
-        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.callCount, 2)
+        t.equal(mockMetricsContext.stash.args[0].length, 3)
+        t.equal(mockMetricsContext.stash.args[0][0], sessionToken)
+        t.deepEqual(mockMetricsContext.stash.args[0][1], ['device.created', 'account.verified', 'account.signed'])
+        t.equal(mockMetricsContext.stash.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.args[1].length, 3)
+        t.equal(mockMetricsContext.stash.args[1][0], keyFetchToken)
+        t.equal(mockMetricsContext.stash.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.stash.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -952,7 +952,7 @@ test(
 )
 
 test(
-  '/account/login emits account.login activity event and saves metrics context',
+  '/account/login emits account.login activity event and stashes metrics context',
   function (t) {
     var keyFetchToken, sessionToken, uid
     var mockLog = mocks.spyLog()
@@ -1035,15 +1035,15 @@ test(
           uid: uid.toString('hex')
         })
 
-        t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 3)
-        t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.signed'])
-        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 3)
-        t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
-        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.callCount, 2)
+        t.equal(mockMetricsContext.stash.args[0].length, 3)
+        t.equal(mockMetricsContext.stash.args[0][0], sessionToken)
+        t.deepEqual(mockMetricsContext.stash.args[0][1], ['device.created', 'account.signed'])
+        t.equal(mockMetricsContext.stash.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.args[1].length, 3)
+        t.equal(mockMetricsContext.stash.args[1][0], keyFetchToken)
+        t.equal(mockMetricsContext.stash.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.stash.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
@@ -1217,7 +1217,7 @@ test(
 )
 
 test(
-  '/account/reset emits account.reset activity event and saves metrics context',
+  '/account/reset emits account.reset activity event and stashes metrics context',
   function (t) {
     var keyFetchToken, sessionToken
     var mockLog = mocks.spyLog()
@@ -1306,15 +1306,15 @@ test(
           uid: mockRequest.auth.credentials.uid.toString('hex')
         })
 
-        t.equal(mockMetricsContext.save.callCount, 2)
-        t.equal(mockMetricsContext.save.args[0].length, 3)
-        t.equal(mockMetricsContext.save.args[0][0], sessionToken)
-        t.deepEqual(mockMetricsContext.save.args[0][1], ['device.created', 'account.signed'])
-        t.equal(mockMetricsContext.save.args[0][2], mockRequest.payload.metricsContext)
-        t.equal(mockMetricsContext.save.args[1].length, 3)
-        t.equal(mockMetricsContext.save.args[1][0], keyFetchToken)
-        t.equal(mockMetricsContext.save.args[1][1], 'account.keyfetch')
-        t.equal(mockMetricsContext.save.args[1][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.callCount, 2)
+        t.equal(mockMetricsContext.stash.args[0].length, 3)
+        t.equal(mockMetricsContext.stash.args[0][0], sessionToken)
+        t.deepEqual(mockMetricsContext.stash.args[0][1], ['device.created', 'account.signed'])
+        t.equal(mockMetricsContext.stash.args[0][2], mockRequest.payload.metricsContext)
+        t.equal(mockMetricsContext.stash.args[1].length, 3)
+        t.equal(mockMetricsContext.stash.args[1][0], keyFetchToken)
+        t.equal(mockMetricsContext.stash.args[1][1], 'account.keyfetch')
+        t.equal(mockMetricsContext.stash.args[1][2], mockRequest.payload.metricsContext)
       },
       function () {
         t.fail('request should have succeeded')
