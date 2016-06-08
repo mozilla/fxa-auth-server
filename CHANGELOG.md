@@ -1,3 +1,13 @@
+<a name="1.63.1"></a>
+## [1.63.1](https://github.com/mozilla/fxa-auth-server/compare/v1.63.0...v1.63.1) (2016-06-08)
+
+
+### Bug Fixes
+
+* **metrics:** Monitor for clients sending obsolete contentToken parameter. ([a22c758](https://github.com/mozilla/fxa-auth-server/commit/a22c758))
+
+
+
 <a name="1.63.0"></a>
 # [1.63.0](https://github.com/mozilla/fxa-auth-server/compare/v1.62.1...v1.63.0) (2016-06-02)
 
