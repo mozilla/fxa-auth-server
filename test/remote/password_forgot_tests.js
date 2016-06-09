@@ -9,7 +9,6 @@ var TestServer = require('../test_server')
 var crypto = require('crypto')
 var base64url = require('base64url')
 
-
 var config = require('../../config').getProperties()
 
 TestServer.start(config)
@@ -315,9 +314,7 @@ TestServer.start(config)
         )
         .then(
           function (status) {
-            t.equal(status.verified, false, 'account unverified')
-            t.equal(status.emailVerified, true, 'email verified')
-            t.equal(status.sessionVerified, false, 'session unverified')
+            t.equal(status.verified, true, 'account unverified')
           }
         )
     }

@@ -102,7 +102,6 @@ test(
         })
         .then(function(emailRecord) {
           emailRecord.createdAt = Date.now()
-          emailRecord.tokenVerificationId = ACCOUNT.tokenVerificationId
           return db.createSessionToken(emailRecord, SESSION_TOKEN_UA)
         })
 

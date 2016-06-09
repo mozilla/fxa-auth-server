@@ -165,7 +165,7 @@ test(
 )
 
 test(
-  '/recovery_email/status with sign-in confirmation enabled',
+  '/recovery_email/status with sign-in confirmation enabled, emailVerified=true, sessionVerified=true',
   function (t) {
 
     var configOptions = {
@@ -202,7 +202,6 @@ test(
       })
     })
     .then(function(response) {
-      t.equal(mockDB.deleteAccount.callCount, 0)
       t.deepEqual(response, {
         email: TEST_EMAIL,
         verified: true,
@@ -210,6 +209,54 @@ test(
         emailVerified: true
       })
     })
+  }
+)
+
+test(
+  '/recovery_email/status with sign-in confirmation enabled, emailVerified=true, sessionVerified=false',
+  function (t) {
+
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 1.0
+      }
+    }
+
+    var mockDB = {
+      deleteAccount: sinon.spy()
+    }
+
+    var mockRequest = {
+      auth: {
+        credentials: {
+          uid: uuid.v4('binary').toString('hex'),
+          email: TEST_EMAIL,
+          emailVerified: true,
+          tokenVerified: false
+        }
+      }
+    }
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB
+    })
+
+    var route = getRoute(accountRoutes, '/recovery_email/status')
+    return new P(function(resolve) {
+      route.handler(mockRequest, function(response) {
+        resolve(response)
+      })
+    })
+      .then(function(response) {
+        t.deepEqual(response, {
+          email: TEST_EMAIL,
+          verified: false,
+          sessionVerified: false,
+          emailVerified: true
+        })
+      })
   }
 )
 
@@ -250,7 +297,6 @@ test(
       })
     })
       .then(function(response) {
-        t.equal(mockDB.deleteAccount.callCount, 0)
         t.deepEqual(response, {
           email: TEST_EMAIL,
           verified: true,
@@ -726,16 +772,16 @@ test(
     var configOptions = {
       signinConfirmation: {
         enabled: false,
-        allowClients: ['fx_desktop_v3'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v3'],
+        forceEmails:['@mozilla.com']
       },
       newLoginNotificationEnabled: true
     }
 
     var uid = uuid.v4('binary')
-    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
-    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest(TEST_EMAIL, 'true')
+    var mockDB = mocks.mockDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,
@@ -754,7 +800,7 @@ test(
     })
       .then(function (response) {
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail wasn not called')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       })
@@ -768,15 +814,15 @@ test(
       signinConfirmation: {
         enabled: true,
         sample_rate: 1.0,
-        allowClients: ['fx_desktop_v3'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v3'],
+        forceEmails:['@mozilla.com']
       }
     }
 
     var uid = uuid.v4('binary')
-    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
-    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest(TEST_EMAIL, 'true')
+    var mockDB = mocks.mockDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,
@@ -809,15 +855,15 @@ test(
       signinConfirmation: {
         enabled: true,
         sample_rate: 0.20,
-        allowClients: ['fx_desktop_v3'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v3'],
+        forceEmails:['@mozilla.com']
       }
     }
 
     var uid = '20162205efab47ecb6418c797acd743f'
-    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
-    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest(TEST_EMAIL, 'true')
+    var mockDB = mocks.mockDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,
@@ -850,15 +896,15 @@ test(
       signinConfirmation: {
         enabled: true,
         sample_rate: 0.00,
-        allowClients: ['fx_desktop_v3'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v3'],
+        forceEmails:['@mozilla.com']
       }
     }
 
     var uid = '20162205efab47ecb6418c797acd743f'
-    var mockRequest = mocks.createRequest('test@mozilla.com', true)
-    var mockDB = mocks.createDB(uid, 'test@mozilla.com', true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest('test@mozilla.com', 'true')
+    var mockDB = mocks.mockDB(uid, 'test@mozilla.com', true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,
@@ -891,16 +937,16 @@ test(
       signinConfirmation: {
         enabled: true,
         sample_rate: 1.00,
-        allowClients: ['fx_desktop_v999'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v999'],
+        forceEmails:['@mozilla.com']
       },
       newLoginNotificationEnabled: true
     }
 
     var uid = '20162205efab47ecb6418c797acd743f'
-    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
-    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest(TEST_EMAIL, 'true')
+    var mockDB = mocks.mockDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,
@@ -933,16 +979,16 @@ test(
       signinConfirmation: {
         enabled: true,
         sample_rate: 0.10,
-        allowClients: ['fx_desktop_v3'],
-        allowEmails:['@mozilla.com']
+        supportedClients: ['fx_desktop_v3'],
+        forceEmails:['@mozilla.com']
       },
       newLoginNotificationEnabled: true
     }
 
     var uid = '20162205efab47ecb6418c797acd743f'
-    var mockRequest = mocks.createRequest(TEST_EMAIL, true)
-    var mockDB = mocks.createDB(uid, TEST_EMAIL, true)
-    var mockMailer = mocks.createMailer()
+    var mockRequest = mocks.mockRequest(TEST_EMAIL, 'true')
+    var mockDB = mocks.mockDB(uid, TEST_EMAIL, true)
+    var mockMailer = mocks.mockMailer()
 
     var accountRoutes = makeRoutes({
       config: configOptions,

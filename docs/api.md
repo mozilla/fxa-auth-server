@@ -790,7 +790,7 @@ Failing requests may be due to the following errors:
 
 Returns the "verified" status for the account's recovery email address.
 
-Currently, each account is associated with exactly one email address. This address must be "verified" before the account can be used (specifically, `/v1/account/keys` will return errors until verified). In the future, this may be expanded to include multiple addresses, and/or alternate types of recovery methods (e.g., SMS). A new API will be provided for this extra functionality.
+Currently, each account is associated with exactly one email address. This address must be "verified" before the account can be used (specifically, `/v1/certificate/sign` and `/v1/account/keys` will return errors until the address is verified). In the future, this may be expanded to include multiple addresses, and/or alternate types of recovery methods (e.g., SMS). A new API will be provided for this extra functionality.
 
 This call is used to determine the current state (verified or unverified) of the account. During account creation, until the address is verified, the agent can poll this method to discover when it should proceed with `/v1/certificate/sign` and `/v1/account/keys`.
 

@@ -70,7 +70,7 @@ TestServer.start(config)
         'e': '65537'
       }
       var duration = 1000 * 60 * 60 * 24 // 24 hours
-      return Client.loginAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
+      return Client.login(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (x) {
             client = x

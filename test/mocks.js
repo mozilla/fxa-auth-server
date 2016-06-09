@@ -50,7 +50,7 @@ var spyLog = function(methods) {
   return mockLog(methods)
 }
 
-var createMailer = function () {
+var mockMailer = function () {
   return {
     sendVerifyCode: sinon.spy(function () {
       return P.resolve()
@@ -64,7 +64,7 @@ var createMailer = function () {
   }
 }
 
-var createRequest = function (email, keys) {
+var mockRequest = function (email, keys) {
   return {
     app: {
       acceptLangage: 'en-US'
@@ -85,7 +85,7 @@ var createRequest = function (email, keys) {
   }
 }
 
-var createDB = function (uid, email, verified) {
+var mockDB = function (uid, email, verified) {
   return {
     emailRecord: sinon.spy(function () {
       return P.resolve({
@@ -135,8 +135,8 @@ function mockObject (methodNames) {
 module.exports = {
   mockLog: mockLog,
   spyLog: spyLog,
-  createDB: createDB,
-  createMailer: createMailer,
-  createRequest: createRequest,
+  mockDB: mockDB,
+  mockMailer: mockMailer,
+  mockRequest: mockRequest,
   mockMetricsContext: mockObject(METRICS_CONTEXT_METHOD_NAMES)
 }

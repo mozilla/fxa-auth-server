@@ -391,7 +391,7 @@ var conf = convict({
   signinConfirmation: {
     enabled: {
       doc: 'enable signin confirmation',
-      default: true,
+      default: false,
       env: 'SIGNIN_CONFIRMATION_ENABLE'
     },
     sample_rate: {
@@ -399,8 +399,8 @@ var conf = convict({
       default: 1.0,
       env: 'SIGNIN_CONFIRMATION_RATE'
     },
-    allowClients: {
-      doc: 'allow sign-in confirmation for only these clients',
+    supportedClients: {
+      doc: 'support sign-in confirmation for only these clients',
       format: Array,
       default: [
         'iframe',
@@ -410,15 +410,15 @@ var conf = convict({
         'fx_desktop_v2',
         'fx_desktop_v3'
       ],
-      env: 'ALLOW_SIGNIN_CLIENTS'
+      env: 'FORCED_SIGNIN_CLIENTS'
     },
-    allowEmails: {
-      doc: 'allow sign-in confirmation for only these email domains',
+    forceEmails: {
+      doc: 'If feature enabled, force sign-in confirmation for these email domains',
       format: Array,
       default: [
         '@mozilla.com'
       ],
-      env: 'ALLOW_SIGNIN_EMAILS'
+      env: 'SUPPORTED_SIGNIN_EMAILS'
     }
   }
 })

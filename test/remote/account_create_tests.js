@@ -56,6 +56,16 @@ TestServer.start(config)
         )
         .then(
           function () {
+            return client.emailStatus()
+          }
+        )
+        .then(
+          function (status) {
+            t.equal(status.verified, false)
+          }
+        )
+        .then(
+          function () {
             return server.mailbox.waitForCode(email)
           }
         )
