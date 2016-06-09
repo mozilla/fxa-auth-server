@@ -6549,6 +6549,42 @@
         }
       }
     },
+    "memcached": {
+      "version": "2.2.1",
+      "from": "memcached@*",
+      "resolved": "https://registry.npmjs.org/memcached/-/memcached-2.2.1.tgz",
+      "dependencies": {
+        "hashring": {
+          "version": "3.2.0",
+          "from": "hashring@>=3.2.0 <3.3.0",
+          "resolved": "https://registry.npmjs.org/hashring/-/hashring-3.2.0.tgz",
+          "dependencies": {
+            "connection-parse": {
+              "version": "0.0.7",
+              "from": "connection-parse@>=0.0.0 <0.1.0",
+              "resolved": "https://registry.npmjs.org/connection-parse/-/connection-parse-0.0.7.tgz"
+            },
+            "simple-lru-cache": {
+              "version": "0.0.2",
+              "from": "simple-lru-cache@>=0.0.0 <0.1.0",
+              "resolved": "https://registry.npmjs.org/simple-lru-cache/-/simple-lru-cache-0.0.2.tgz"
+            }
+          }
+        },
+        "jackpot": {
+          "version": "0.0.6",
+          "from": "jackpot@>=0.0.6",
+          "resolved": "https://registry.npmjs.org/jackpot/-/jackpot-0.0.6.tgz",
+          "dependencies": {
+            "retry": {
+              "version": "0.6.0",
+              "from": "retry@0.6.0",
+              "resolved": "https://registry.npmjs.org/retry/-/retry-0.6.0.tgz"
+            }
+          }
+        }
+      }
+    },
     "mozlog": {
       "version": "2.0.3",
       "from": "mozlog@2.0.3",

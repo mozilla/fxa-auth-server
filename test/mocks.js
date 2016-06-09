@@ -15,9 +15,14 @@ var P = require('../lib/promise')
 // if you need to e.g. make assertions about logged values.
 
 var LOG_METHOD_NAMES = ['trace', 'increment', 'info', 'error', 'begin', 'warn',
-                        'activityEvent', 'event']
+                        'activityEvent', 'event', 'timing']
 
-var METRICS_CONTEXT_METHOD_NAMES = ['add', 'validate']
+var DB_METHOD_NAMES = ['account', 'createAccount', 'createDevice', 'createKeyFetchToken',
+                       'createSessionToken', 'deleteAccount', 'deleteDevice', 'deleteKeyFetchToken',
+                       'devices', 'emailRecord', 'resetAccount', 'sessions', 'updateDevice',
+                       'verifyEmail']
+
+var METRICS_CONTEXT_METHOD_NAMES = ['stash', 'gather', 'validate']
 
 var mockLog = function(methods) {
   var log = extend({}, methods)
@@ -49,6 +54,13 @@ var spyLog = function(methods) {
   return mockLog(methods)
 }
 
+module.exports = {
+  mockLog: mockLog,
+  spyLog: spyLog,
+  mockDb: mockObject(DB_METHOD_NAMES),
+  mockMetricsContext: mockObject(METRICS_CONTEXT_METHOD_NAMES)
+}
+
 function mockObject (methodNames) {
   return function (methods) {
     return methodNames.reduce(function (object, name) {
@@ -61,8 +73,3 @@ function mockObject (methodNames) {
   }
 }
 
-module.exports = {
-  mockLog: mockLog,
-  spyLog: spyLog,
-  mockMetricsContext: mockObject(METRICS_CONTEXT_METHOD_NAMES)
-}
