@@ -8,7 +8,7 @@ var test = require('../ptaptest')
 var TestServer = require('../test_server')
 var url = require('url')
 
-process.env.SIGNIN_CONFIRMATION_ENABLE = true
+process.env.SIGNIN_CONFIRMATION_ENABLED = true
 process.env.SIGNIN_CONFIRMATION_RATE = 1.0
 
 TestServer.start(config)

@@ -16,7 +16,7 @@ var publicKey = {
   'e': '65537'
 }
 
-process.env.SIGNIN_CONFIRMATION_ENABLE = true
+process.env.SIGNIN_CONFIRMATION_ENABLED = true
 process.env.SIGNIN_CONFIRMATION_RATE = 1.0
 
 TestServer.start(config)
