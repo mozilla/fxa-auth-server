@@ -564,26 +564,6 @@ TestServer.start(config)
           )
           .then(
             function () {
-              // Attempt to login from new location
-              return client.login({keys:true})
-            }
-          )
-          .then(
-            function (c) {
-              client = c
-              return client.emailStatus()
-            }
-          )
-          .then(
-            function (status) {
-              // Ensure unverified session
-              t.equal(status.verified, false, 'account is not verified')
-              t.equal(status.emailVerified, true, 'account email is verified')
-              t.equal(status.sessionVerified, false, 'account session is not verified')
-            }
-          )
-          .then(
-            function () {
               // Attempt to get signed cert
               return client.sign(publicKey, duration)
             }
@@ -597,7 +577,7 @@ TestServer.start(config)
               t.ok(payload['fxa-generation'] > 0, 'cert has non-zero generation number')
               t.ok(new Date() - new Date(payload['fxa-lastAuthAt'] * 1000) < 1000 * 60 * 60, 'lastAuthAt is plausible')
               t.equal(payload['fxa-verifiedEmail'], email, 'verifiedEmail is correct')
-              t.equal(payload['fxa-tokenVerified'], false, 'tokenVerified is not verified')
+              t.equal(payload['fxa-tokenVerified'], true, 'tokenVerified is verified')
             }
           )
       }
