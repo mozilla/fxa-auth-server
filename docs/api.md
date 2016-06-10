@@ -352,8 +352,8 @@ Successful requests will produce a "200 OK" and a json body. `keyFetchToken` and
 ```
 
 * authAt - authentication time for the session (seconds since epoch)
-* verificationReason - authentication method that was requested that caused the account to require re-verification (Currently, only `login`)
-* verificationMethod - the medium for how the user can re-verify (Currently, only `email`)
+* verificationReason - authentication method that was requested that required additional verification (Currently, only `login`)
+* verificationMethod - the medium for how the user can verify (Currently, only `email`)
 
 Failing requests may be due to the following errors:
 

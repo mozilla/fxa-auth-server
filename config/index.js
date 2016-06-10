@@ -399,7 +399,7 @@ var conf = convict({
     enabled: {
       doc: 'enable signin confirmation',
       default: false,
-      env: 'SIGNIN_CONFIRMATION_ENABLE'
+      env: 'SIGNIN_CONFIRMATION_ENABLED'
     },
     sample_rate: {
       doc: 'signin confirmation sample rate',
@@ -417,7 +417,7 @@ var conf = convict({
         'fx_desktop_v2',
         'fx_desktop_v3'
       ],
-      env: 'FORCED_SIGNIN_CLIENTS'
+      env: 'SIGNIN_CONFIRMATION_SUPPORTED_CLIENTS'
     },
     forceEmails: {
       doc: 'If feature enabled, force sign-in confirmation for these email domains',
@@ -425,7 +425,7 @@ var conf = convict({
       default: [
         '@mozilla.com'
       ],
-      env: 'SUPPORTED_SIGNIN_EMAILS'
+      env: 'SIGNIN_CONFIRMATION_FORCE_EMAILS'
     }
   }
 })

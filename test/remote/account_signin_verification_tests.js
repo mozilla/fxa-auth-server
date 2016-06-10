@@ -16,7 +16,7 @@ var publicKey = {
   'e': '65537'
 }
 
-process.env.SIGNIN_CONFIRMATION_ENABLE = true
+process.env.SIGNIN_CONFIRMATION_ENABLED = true
 process.env.SIGNIN_CONFIRMATION_RATE = 1.0
 
 TestServer.start(config)
@@ -255,6 +255,89 @@ TestServer.start(config)
           .then(
             function (status) {
               t.equal(status.verified, true, 'account is verified by confirming email')
+            }
+          )
+      }
+    )
+
+    test(
+      'Account verification links still work after session verification',
+      function (t) {
+        var email = server.uniqueEmail()
+        var password = 'allyourbasearebelongtous'
+        var client = null
+        var emailCode
+        var tokenCode
+        return Client.create(config.publicUrl, email, password)
+          .then(
+            function (x) {
+              client = x
+            }
+          )
+          .then(
+            function () {
+              return server.mailbox.waitForEmail(email)
+            }
+          )
+          .then(
+            function (emailData) {
+              t.equal(emailData.subject, 'Verify your Firefox Account')
+              emailCode = emailData.headers['x-verify-code']
+              t.ok(emailCode, 'sent verify code')
+            }
+          )
+          .then(
+            function () {
+              return client.login({keys:true})
+            }
+          )
+          .then(
+            function () {
+              return server.mailbox.waitForEmail(email)
+            }
+          )
+          .then(
+            function (emailData) {
+              t.equal(emailData.subject, 'Confirm new sign-in to Firefox')
+              tokenCode = emailData.headers['x-verify-code']
+              t.ok(tokenCode, 'sent verify code')
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(tokenCode)
+            }
+          )
+          .then(
+            function () {
+              return client.emailStatus()
+            }
+          )
+          .then(
+            function (status) {
+              t.equal(status.verified, true, 'account is verified by confirming email')
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(emailCode)
+            }
+          )
+          .then(
+            function () {
+              t.pass('The code from the account verification email still worked')
+              return client.emailStatus()
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(emailCode)
+            }
+          )
+          .then(
+            function () {
+              t.pass('The code from the account verification email worked again')
+              return client.emailStatus()
             }
           )
       }
