@@ -261,6 +261,89 @@ TestServer.start(config)
     )
 
     test(
+      'Account verification links still work after session verification',
+      function (t) {
+        var email = server.uniqueEmail()
+        var password = 'allyourbasearebelongtous'
+        var client = null
+        var emailCode
+        var tokenCode
+        return Client.create(config.publicUrl, email, password)
+          .then(
+            function (x) {
+              client = x
+            }
+          )
+          .then(
+            function () {
+              return server.mailbox.waitForEmail(email)
+            }
+          )
+          .then(
+            function (emailData) {
+              t.equal(emailData.subject, 'Verify your Firefox Account')
+              emailCode = emailData.headers['x-verify-code']
+              t.ok(emailCode, 'sent verify code')
+            }
+          )
+          .then(
+            function () {
+              return client.login({keys:true})
+            }
+          )
+          .then(
+            function () {
+              return server.mailbox.waitForEmail(email)
+            }
+          )
+          .then(
+            function (emailData) {
+              t.equal(emailData.subject, 'Confirm new sign-in to Firefox')
+              tokenCode = emailData.headers['x-verify-code']
+              t.ok(tokenCode, 'sent verify code')
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(tokenCode)
+            }
+          )
+          .then(
+            function () {
+              return client.emailStatus()
+            }
+          )
+          .then(
+            function (status) {
+              t.equal(status.verified, true, 'account is verified by confirming email')
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(emailCode)
+            }
+          )
+          .then(
+            function () {
+              t.pass('The code from the account verification email still worked')
+              return client.emailStatus()
+            }
+          )
+          .then(
+            function () {
+              return client.verifyEmail(emailCode)
+            }
+          )
+          .then(
+            function () {
+              t.pass('The code from the account verification email worked again')
+              return client.emailStatus()
+            }
+          )
+      }
+    )
+
+    test(
       'sign-in verification email link',
       function (t) {
         var email = server.uniqueEmail()
