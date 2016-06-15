@@ -931,6 +931,48 @@ test(
 )
 
 test(
+  'login with sign-in confirmation enable for email domain',
+  function (t) {
+    var configOptions = {
+      signinConfirmation: {
+        enabled: true,
+        sample_rate: 0.00,
+        supportedClients: ['fx_desktop_v3'],
+        forceEmailRegex: ['@mozilla.com$', 'fennec@fire.fox']
+      },
+      newLoginNotificationEnabled: true
+    }
+
+    var uid = '20162205efab47ecb6418c797acd743f'
+    var mockRequest = mocks.mockRequest('asdf@mozilla.com', 'true')
+    var mockDB = mocks.mockDB(uid, 'asdf@mozilla.com', true)
+    var mockMailer = mocks.mockMailer()
+
+    var accountRoutes = makeRoutes({
+      config: configOptions,
+      db: mockDB,
+      mailer: mockMailer,
+      checkPassword: function () {
+        return P.resolve(true)
+      }
+    })
+
+    return new P(function (resolve) {
+      getRoute(accountRoutes, '/account/login')
+        .handler(mockRequest, function (response) {
+          resolve(response)
+        })
+    })
+      .then(function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
+        t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      })
+  }
+)
+
+test(
   'login with sign-in confirmation enable for specific email',
   function (t) {
     var configOptions = {
