@@ -420,7 +420,7 @@ var conf = convict({
       env: 'SIGNIN_CONFIRMATION_SUPPORTED_CLIENTS'
     },
     forceEmailRegex: {
-      doc: 'If feature enabled, force sign-in confirmation for any of these email regex',
+      doc: 'If feature enabled, force sign-in confirmation for email addresses matching this regex.',
       format: Array,
       default: [
         '@mozilla.com$'
