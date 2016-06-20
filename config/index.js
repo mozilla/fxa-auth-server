@@ -86,6 +86,14 @@ var conf = convict({
       env: 'PORT'
     }
   },
+  captcha: {
+    secret: {
+      format: String,
+      doc: 'reCAPTCHA server secret from google.com/recaptcha/admin',
+      default: 'CHANGE ME PLEASE',
+      env: 'CAPTCHA_SECRET'
+    }
+  },
   customsUrl: {
     doc: 'fraud / abuse server url',
     default: 'http://127.0.0.1:7000',

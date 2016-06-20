@@ -149,6 +149,9 @@ Since this is a HTTP-based protocol, clients should be prepared to gracefully ha
     * [GET /v1/account/devices (:lock: sessionToken)](#get-v1accountdevices)
     * [POST /v1/account/device/destroy (:lock: sessionToken)](#post-v1accountdevicedestroy)
 
+* CAPTCHA
+    * [POST /v1/captcha/validate](#post-v1captcha_validate)
+
 * Miscellaneous
     * [POST /v1/get_random_bytes](#post-v1get_random_bytes)
 
@@ -1481,6 +1484,21 @@ with an empty object in the JSON body:
 Failing requests may return the following error:
 
 * status code 400, errno 123: unknown device
+
+
+## POST /v1/captcha/validate
+
+Not HAWK-authenticated.
+
+Post a reCAPTCHA response for an email to reset the customs server record.
+
+```
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
+    "email": "email@email.com",
+    "recaptchaResponse": "foo"
+}' "https://api-accounts.dev.lcip.org/v1/captcha/validate"
+```
+
 
 ## POST /v1/get_random_bytes
 
