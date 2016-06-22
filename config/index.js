@@ -380,6 +380,12 @@ var conf = convict({
       doc: 'Time after which flowIds are considered stale.',
       format: 'duration',
       default: '30 minutes'
+    },
+    force_flow_validation: {
+      doc: 'Is the flow metrics id required for account requests',
+      format: Boolean,
+      default: false,
+      env: 'FORCE_FLOW_VALIDATION'
     }
   },
   corsOrigin: {
