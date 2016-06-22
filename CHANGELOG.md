@@ -1,3 +1,12 @@
+<a name="1.63.3"></a>
+## [1.63.3](https://github.com/mozilla/fxa-auth-server/compare/v1.63.2...v1.63.3) (2016-06-22)
+
+### Features
+
+* **metrics:** enable flow validation config option, flag flow errors to customs ([7406e1a](https://github.com/mozilla/fxa-auth-server/commit/7406e1a))
+
+
+
 <a name="1.63.2"></a>
 ## [1.63.2](https://github.com/mozilla/fxa-auth-server/compare/v1.63.1...v1.63.2) (2016-06-22)
 
