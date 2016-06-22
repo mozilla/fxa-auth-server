@@ -26,6 +26,7 @@ var makeRoutes = function (options) {
   var config = options.config || {}
   config.verifierVersion = config.verifierVersion || 0
   config.smtp = config.smtp ||  {}
+  config.metrics = config.metrics ||  {}
 
   var log = options.log || mocks.mockLog()
   var Password = require('../../lib/crypto/password')(log, config)
@@ -695,7 +696,6 @@ test('/account/login', function (t) {
     })
   }, t)
 })
-
 
 test('/recovery_email/verify_code', function (t) {
   var uid = uuid.v4('binary').toString('hex')
