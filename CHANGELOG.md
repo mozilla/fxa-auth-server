@@ -1,3 +1,13 @@
+<a name="1.63.2"></a>
+## [1.63.2](https://github.com/mozilla/fxa-auth-server/compare/v1.63.1...v1.63.2) (2016-06-22)
+
+
+### Features
+
+* **metrics:** decline requestes if validation fails ([90b893f](https://github.com/mozilla/fxa-auth-server/commit/90b893f))
+
+
+
 <a name="1.63.1"></a>
 ## [1.63.1](https://github.com/mozilla/fxa-auth-server/compare/v1.63.0...v1.63.1) (2016-06-08)
 
