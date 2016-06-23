@@ -1,3 +1,13 @@
+<a name="1.64.1"></a>
+## [1.64.1](https://github.com/mozilla/fxa-auth-server/compare/v1.64.0...v1.64.1) (2016-06-23)
+
+
+### Features
+
+* **metrics:** block requests with unexpectedly invalid metrics context. ([eeaf9e9](https://github.com/mozilla/fxa-auth-server/commit/eeaf9e9))
+
+
+
 <a name="1.64.0"></a>
 # [1.64.0](https://github.com/mozilla/fxa-auth-server/compare/v1.63.0...v1.64.0) (2016-06-23)
 
