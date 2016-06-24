@@ -1,3 +1,13 @@
+<a name="1.64.2"></a>
+## [1.64.2](https://github.com/mozilla/fxa-auth-server/compare/v1.64.1...v1.64.2) (2016-06-24)
+
+
+### Bug Fixes
+
+* **deps:** update l10n and mailer SHAs ([2e2e637](https://github.com/mozilla/fxa-auth-server/commit/2e2e637))
+
+
+
 <a name="1.64.1"></a>
 ## [1.64.1](https://github.com/mozilla/fxa-auth-server/compare/v1.64.0...v1.64.1) (2016-06-23)
 
