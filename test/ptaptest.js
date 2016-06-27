@@ -32,28 +32,38 @@
 require('ass')
 
 var tap = require('tap')
+var P = require('../lib/promise')
+
+var CHILDREN = '__ptaptest_children:' + Math.random()
 
 module.exports = function(name, testfunc, parentTest) {
   var t = parentTest || tap
   if (!testfunc) {
     return t.test(name)
   }
+
+  var children
+  if (t === tap) {
+    children = false
+  } else {
+    children = (t[CHILDREN] || (t[CHILDREN] = []))
+  }
+
   var wrappedtestfunc = function(t) {
     var res = testfunc(t)
     if (typeof res !== 'undefined') {
-      if (typeof res.done === 'function') {
-        res.done(
-          function() {
-            t.end()
-          },
-          function(err) {
-            console.error(err.stack)
-            t.fail(err.message || err.error || err)
-            t.end()
-          }
-        )
+      if (typeof res.then === 'function') {
+        return res
       }
     }
+    return P.resolve()
   }
-  return t.test(name, wrappedtestfunc)
+  return t.test(name, function promisifyChildren (t) {
+    var res = wrappedtestfunc(t)
+    if (res) {
+      return res
+    } else if (children) {
+      return P.all(children)
+    }
+  })
 }
