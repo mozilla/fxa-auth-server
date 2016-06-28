@@ -382,30 +382,7 @@ var conf = convict({
       format: 'duration',
       default: '30 minutes',
       env: 'FLOW_ID_EXPIRY'
-    },
-    force_flow_validation: {
-      doc: 'Is the flow metrics id required for account requests',
-      format: Boolean,
-      default: false,
-      env: 'FORCE_FLOW_VALIDATION'
-    },
-    allowedUARegex: {
-      doc: 'An array of STRING regexes. Passing any one will get through.',
-      default: [
-        // Generic FirefoxOS devices
-        '\\((?:Mobile|Tablet|TV);.+Firefox',
-        // Some specific partner devices with custom UAs
-        '\\(FreeBSD; Viera;.+Firefox',
-        'Mozilla.+SamsungBrowser.+Mobile',
-        'Firefox.+SBrowser'
-      ],
-      env: 'ALLOW_UA_REGEX'
-    },
-    allowedEmailRegex: {
-      doc: 'An array of STRING regexes. Passing any one will get through.',
-      default: ['.+@restmail.net$', '.+@mockmyid.com$'],
-      env: 'ALLOW_EMAIL_REGEX'
-    },
+    }
   },
   corsOrigin: {
     doc: 'Value for the Access-Control-Allow-Origin response header',
