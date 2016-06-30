@@ -233,6 +233,7 @@ test(
     var valid = metricsContext.validate(mockRequest)
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowBeginTime, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -270,6 +271,7 @@ test(
     var valid = metricsContext.validate(mockRequest)
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -308,6 +310,7 @@ test(
     var valid = metricsContext.validate(mockRequest)
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -346,6 +349,7 @@ test(
     var valid = metricsContext.validate(mockRequest)
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -394,6 +398,7 @@ test(
     }
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -442,6 +447,7 @@ test(
     }
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
@@ -490,6 +496,7 @@ test(
     }
 
     t.notOk(valid, 'the data is treated as invalid')
+    t.notOk(mockRequest.payload.metricsContext.flowId, 'the invalid flow data was removed')
     t.equal(mockLog.info.callCount, 0, 'log.info was not called')
     t.equal(mockLog.warn.callCount, 1, 'log.warn was called once')
     t.ok(mockLog.warn.calledWithExactly({
