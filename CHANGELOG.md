@@ -1,3 +1,13 @@
+<a name="1.64.3"></a>
+## [1.64.3](https://github.com/mozilla/fxa-auth-server/compare/v1.64.2...v1.64.3) (2016-06-30)
+
+
+### Features
+
+* **customs:** Send more request metadata to customs-server for checking. ([0d78d15](https://github.com/mozilla/fxa-auth-server/commit/0d78d15))
+
+
+
 <a name="1.64.2"></a>
 ## [1.64.2](https://github.com/mozilla/fxa-auth-server/compare/v1.64.1...v1.64.2) (2016-06-24)
 
