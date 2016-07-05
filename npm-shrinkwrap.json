@@ -6111,9 +6111,9 @@
           "resolved": "https://registry.npmjs.org/boom/-/boom-2.7.2.tgz"
         },
         "call": {
-          "version": "2.0.1",
-          "from": "call@2.0.1",
-          "resolved": "https://registry.npmjs.org/call/-/call-2.0.1.tgz"
+          "version": "3.0.2",
+          "from": "call@3.0.2",
+          "resolved": "https://registry.npmjs.org/call/-/call-3.0.2.tgz"
         },
         "catbox": {
           "version": "4.3.0",
