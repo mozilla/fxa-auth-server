@@ -9,5 +9,5 @@ fi
 
 ./scripts/gen_keys.js
 ./scripts/check-i18n.js
-./scripts/tap-coverage.js $glob 2>/dev/null
+./scripts/tap-coverage.js $glob
 grunt eslint copyright
