@@ -681,11 +681,9 @@ test('/account/login', function (t) {
   })
 
   t.test('sign-in confirmation enabled', function (t) {
-    t.plan(8)
+    t.plan(5)
     config.signinConfirmation = {
-      enabled: true,
-      supportedClients: [ 'fx_desktop_v3' ],
-      forceEmailRegex: [ '.+@mozilla\.com$', 'fennec@fire.fox' ]
+      enabled: true
     }
 
     t.test('always on', function (t) {
@@ -730,22 +728,10 @@ test('/account/login', function (t) {
       })
     })
 
-    t.test('on for email regex match', function (t) {
-      mockRequest.payload.email = 'test@mozilla.com'
-      mockDB.emailRecord = function () {
-        return P.resolve({
-          authSalt: crypto.randomBytes(32),
-          data: crypto.randomBytes(32),
-          email: 'test@mozilla.com',
-          emailVerified: true,
-          kA: crypto.randomBytes(32),
-          lastAuthAt: function () {
-            return Date.now()
-          },
-          uid: uid,
-          wrapWrapKb: crypto.randomBytes(32)
-        })
-      }
+    t.test('always on for direct API access', function (t) {
+      config.signinConfirmation.sample_rate = 0.0
+      var origMetricsContext = mockRequest.payload.metricsContext
+      mockRequest.payload.metricsContext = null
 
       return runTest(route, mockRequest, function (response) {
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
@@ -754,79 +740,12 @@ test('/account/login', function (t) {
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockRequest.payload.metricsContext = origMetricsContext
       })
     })
-
-    t.test('on for specific email', function (t) {
-      mockRequest.payload.email = 'fennec@fire.fox'
-      mockDB.emailRecord = function () {
-        return P.resolve({
-          authSalt: crypto.randomBytes(32),
-          data: crypto.randomBytes(32),
-          email: 'fennec@fire.fox',
-          emailVerified: true,
-          kA: crypto.randomBytes(32),
-          lastAuthAt: function () {
-            return Date.now()
-          },
-          uid: uid,
-          wrapWrapKb: crypto.randomBytes(32)
-        })
-      }
-
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
-        t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
-        t.equal(response.verificationReason, 'login', 'verificationReason is login')
-      }).then(function () {
-        mockMailer.sendVerifyLoginEmail.reset()
-      })
-    })
-
-    t.test('off for email regex mismatch', function (t) {
-      mockRequest.payload.email = 'moz@fire.fox'
-      mockDB.emailRecord = function () {
-        return P.resolve({
-          authSalt: crypto.randomBytes(32),
-          data: crypto.randomBytes(32),
-          email: 'moz@fire.fox',
-          emailVerified: true,
-          kA: crypto.randomBytes(32),
-          lastAuthAt: function () {
-            return Date.now()
-          },
-          uid: uid,
-          wrapWrapKb: crypto.randomBytes(32)
-        })
-      }
-
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
-        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
-        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
-      }).then(function () {
-        mockMailer.sendNewDeviceLoginNotification.reset()
-      })
-    })
-
-    t.test('off for unsupported client', function (t) {
-      config.signinConfirmation.supportedClients = [ 'fx_desktop_v999' ]
-
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
-        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
-        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
-      }).then(function () {
-        mockMailer.sendNewDeviceLoginNotification.reset()
-      })
-    }, t)
 
     t.test('unverified account does not get any confirmation emails', function (t) {
-      config.signinConfirmation.supportedClients = [ 'fx_desktop_v3' ]
-      mockRequest.payload.email = 'test@mozilla.com'
+      config.signinConfirmation.sample_rate = 1.0
       mockDB.emailRecord = function () {
         return P.resolve({
           authSalt: crypto.randomBytes(32),
