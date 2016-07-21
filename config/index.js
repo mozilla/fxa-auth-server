@@ -420,30 +420,6 @@ var conf = convict({
       doc: 'signin confirmation sample rate, between 0.0 and 1.0',
       default: 1.0,
       env: 'SIGNIN_CONFIRMATION_RATE'
-    },
-    supportedClients: {
-      doc: 'support sign-in confirmation for only these clients',
-      format: Array,
-      default: [
-        'iframe',
-        'fx_firstrun_v1',
-        'fx_firstrun_v2',
-        'fx_desktop_v1',
-        'fx_desktop_v2',
-        'fx_desktop_v3',
-        'fx_ios_v1',
-        'fx_ios_v2',
-        'fx_fennec_v1'
-      ],
-      env: 'SIGNIN_CONFIRMATION_SUPPORTED_CLIENTS'
-    },
-    forceEmailRegex: {
-      doc: 'If feature enabled, force sign-in confirmation for email addresses matching this regex.',
-      format: Array,
-      default: [
-        '.+@mozilla\.com$'
-      ],
-      env: 'SIGNIN_CONFIRMATION_FORCE_EMAIL_REGEX'
     }
   }
 })
