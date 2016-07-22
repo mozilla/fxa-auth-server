@@ -9,18 +9,20 @@ var test = tap.test
 var P = require('../../lib/promise')
 var mockLog = require('../mocks').mockLog
 var mockUid = new Buffer('foo')
+var uuid = require('uuid')
 
 var PushManager = require('../push_helper').PushManager
 
 var pushManager = new PushManager({
   server: 'wss://push.services.mozilla.com/',
-  channelId: '9500b5e6-9954-40d5-8ac1-3920832e781e'
+  // use a fresh uuid for tests to avoid channelId expiration.
+  channelId: uuid.v4()
 })
 
 test(
   'pushToDevices sends notifications using a real push server',
   function (t) {
-
+    t.plan(1)
     pushManager.getSubscription().then(function (subscription) {
       var mockDbResult = {
         devices: function (/* uid */) {
@@ -42,6 +44,7 @@ test(
       var thisMockLog = mockLog({
         info: function (log) {
           if (log.name === 'push.account_verify.success') {
+            t.assert('Push message successful')
             t.end()
           }
         }
