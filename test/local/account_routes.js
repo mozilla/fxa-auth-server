@@ -162,7 +162,6 @@ test('/recovery_email/status', function (t) {
   t.test('sign-in confirmation enabled', function (t) {
     t.plan(2)
     config.signinConfirmation.enabled = true
-    config.signinConfirmation.enabled = 1
     var mockRequest = mocks.mockRequest({
       credentials: {
         uid: uuid.v4('binary').toString('hex'),
@@ -694,6 +693,20 @@ test('/account/login', function (t) {
       }
     }
   })
+  var mockRequestNoKeys = mocks.mockRequest({
+    query: {},
+    payload: {
+      authPW: crypto.randomBytes(32).toString('hex'),
+      email: 'test@mozilla.com',
+      service: 'dcdb5ae7add825d2',
+      reason: 'signin',
+      metricsContext: {
+        flowBeginTime: Date.now(),
+        flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
+        service: 'dcdb5ae7add825d2'
+      }
+    }
+  })
   var keyFetchTokenId = crypto.randomBytes(16)
   var sessionTokenId = crypto.randomBytes(16)
   var uid = uuid.v4('binary')
@@ -784,6 +797,9 @@ test('/account/login', function (t) {
       t.equal(args[2], mockRequest.payload.metricsContext, 'third argument was metrics context')
 
       t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+      t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].location.city, 'Mountain View')
+      t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].location.country, 'United States')
+      t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].timeZone, 'America/Los_Angeles')
       t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
       t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
       t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
@@ -793,7 +809,7 @@ test('/account/login', function (t) {
   })
 
   t.test('sign-in confirmation enabled', function (t) {
-    t.plan(9)
+    t.plan(11)
     config.signinConfirmation = {
       enabled: true,
       supportedClients: [ 'fx_desktop_v3' ],
@@ -808,6 +824,17 @@ test('/account/login', function (t) {
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
+      }).then(function () {
+        mockMailer.sendVerifyLoginEmail.reset()
+      })
+    })
+
+    t.test('location data is present in sign-in confirmation email', function (t) {
+      return runTest(route, mockRequest, function (response) {
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(mockMailer.sendVerifyLoginEmail.getCall(0).args[2].location.city, 'Mountain View')
+        t.equal(mockMailer.sendVerifyLoginEmail.getCall(0).args[2].location.country, 'United States')
+        t.equal(mockMailer.sendVerifyLoginEmail.getCall(0).args[2].timeZone, 'America/Los_Angeles')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
       })
@@ -842,7 +869,7 @@ test('/account/login', function (t) {
       })
     })
 
-    t.test('on for email regex match', function (t) {
+    t.test('on for email regex match, keys requested', function (t) {
       mockRequest.payload.email = 'test@mozilla.com'
       mockDB.emailRecord = function () {
         return P.resolve({
@@ -866,6 +893,30 @@ test('/account/login', function (t) {
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+      })
+    })
+
+    t.test('off for email regex match, keys not requested', function (t) {
+      mockDB.emailRecord = function () {
+        return P.resolve({
+          authSalt: crypto.randomBytes(32),
+          data: crypto.randomBytes(32),
+          email: 'test@mozilla.com',
+          emailVerified: true,
+          kA: crypto.randomBytes(32),
+          lastAuthAt: function () {
+            return Date.now()
+          },
+          uid: uid,
+          wrapWrapKb: crypto.randomBytes(32)
+        })
+      }
+
+      return runTest(route, mockRequestNoKeys, function (response) {
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
+        t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       })
     })
 

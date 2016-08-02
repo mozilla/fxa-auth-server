@@ -1,6 +1,6 @@
 {
   "name": "fxa-auth-server",
-  "version": "1.66.0",
+  "version": "1.66.1",
   "description": "Firefox Accounts, an identity provider for Mozilla cloud services",
   "bin": {
     "fxa-auth": "./bin/key_server.js"
@@ -37,6 +37,7 @@
     "email-addresses": "2.0.2",
     "envc": "2.4.0",
     "fxa-auth-mailer": "git+https://github.com/mozilla/fxa-auth-mailer.git#master",
+    "fxa-geodb": "0.0.6",
     "fxa-jwtool": "0.7.1",
     "hapi": "8.8.1",
     "hapi-auth-hawk": "3.0.1",
