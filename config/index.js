@@ -492,14 +492,15 @@ conf.validate({ strict: true })
 conf.set('domain', url.parse(conf.get('publicUrl')).host)
 
 // derive fxa-auth-mailer configuration from our content-server url
+conf.set('smtp.accountUnlockUrl', conf.get('contentServer.url') + '/v1/complete_unlock_account')
+conf.set('smtp.authorizeLoginUrl', conf.get('contentServer.url') + '/complete_signin_authorization')
+conf.set('smtp.rejectAuthorizeLoginUrl', conf.get('contentServer.url') + '/reject_authorize_login')
+conf.set('smtp.initiatePasswordChangeUrl', conf.get('contentServer.url') + '/settings/change_password')
+conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')
+conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/v1/complete_reset_password')
 conf.set('smtp.signInUrl', conf.get('contentServer.url') + '/signin')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/v1/verify_email')
-conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/v1/complete_reset_password')
-conf.set('smtp.accountUnlockUrl', conf.get('contentServer.url') + '/v1/complete_unlock_account')
-conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')
-conf.set('smtp.initiatePasswordChangeUrl', conf.get('contentServer.url') + '/settings/change_password')
 conf.set('smtp.verifyLoginUrl', conf.get('contentServer.url') + '/complete_signin')
-
 conf.set('isProduction', conf.get('env') === 'prod')
 
 module.exports = conf
