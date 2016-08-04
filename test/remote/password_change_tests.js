@@ -247,19 +247,17 @@ TestServer.start(config)
   )
 
   test(
-    'password change, with raw session data rather than session token id, return invalid token',
+    'password change, with raw session data rather than session token id, return invalid token error',
     function (t) {
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
       var newPassword = 'foobar'
-      var client, firstAuthPW, originalSessionToken
+      var client
 
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
         .then(
           function (x) {
             client = x
-            originalSessionToken = client.sessionToken
-            firstAuthPW = x.authPW.toString('hex')
             return client.keys()
           }
         )
