@@ -453,6 +453,7 @@ TestServer.start(config)
         var password = 'allyourbasearebelongtous'
         var client = null
 
+        // Initial account creation uses keys=true
         return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys:true})
           .then(
             function (c) {
@@ -469,7 +470,7 @@ TestServer.start(config)
           )
           .then(
             function () {
-              // Attempt to login from new location, but don't request keys
+              // Attempt a second login, but don't request keys
               return client.login({keys:false})
             }
           )

@@ -805,6 +805,7 @@ test('/account/login', function (t) {
       t.equal(mockDB.emailRecord.callCount, 1, 'db.emailRecord was called')
       t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
       var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+      t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
       t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
       t.equal(mockDB.sessions.callCount, 1, 'db.sessions was called')
 
@@ -848,6 +849,7 @@ test('/account/login', function (t) {
       t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].location.country, 'United States')
       t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].timeZone, 'America/Los_Angeles')
       t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+      t.ok(response.verified, 'response indicates account is verified')
       t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
       t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
     }).then(function () {
@@ -871,9 +873,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
 
@@ -913,9 +917,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
@@ -930,9 +936,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
         t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
@@ -961,9 +969,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
@@ -991,11 +1001,13 @@ test('/account/login', function (t) {
       return runTest(route, mockRequestNoKeys, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken does not have to be verified')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         // Note that *neither* email is sent in this case,
         // since it can't have been a new device connection.
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
@@ -1023,9 +1035,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
@@ -1054,9 +1068,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
         t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
@@ -1071,9 +1087,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
         t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
@@ -1103,9 +1121,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
@@ -1135,9 +1155,11 @@ test('/account/login', function (t) {
       return runTest(route, mockRequest, function (response) {
         t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
         t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'signup', 'verificationReason is signup')
       })
