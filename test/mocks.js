@@ -200,17 +200,27 @@ function spyLog (methods) {
   return mockLog(methods)
 }
 
-function mockRequest (data) {
+function mockRequest(data) {
+  if (!data) {
+    data = {
+      headers: {}
+    }
+  }
+
+  if (!data.headers) {
+    data.headers = {}
+  }
+
   return {
     app: {
       acceptLanguage: 'en-US',
-      clientAddress: '8.8.8.8'
+      clientAddress: data.ipAddress || '8.8.8.8'
     },
     auth: {
-      credentials: data.credentials
+      credentials: data.credentials || 'test@email.com'
     },
     headers: {
-      'user-agent': 'test user-agent'
+      'user-agent': data.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:51.0) Gecko/20100101 Firefox/51.0'
     },
     query: data.query,
     payload: data.payload
