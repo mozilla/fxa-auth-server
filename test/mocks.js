@@ -10,6 +10,7 @@ var sinon = require('sinon')
 var extend = require('util')._extend
 var P = require('../lib/promise')
 var crypto = require('crypto')
+var geoDB = require('fxa-geodb')
 
 var DB_METHOD_NAMES = ['account', 'createAccount', 'createDevice', 'createKeyFetchToken',
                        'createPasswordForgotToken', 'createSessionToken', 'deleteAccount',
@@ -34,6 +35,7 @@ var PUSH_METHOD_NAMES = ['notifyDeviceConnected', 'notifyDeviceDisconnected', 'n
 module.exports = {
   mockDB: mockDB,
   mockDevices: mockDevices,
+  mockGeo: mockGeo,
   mockLog: mockLog,
   spyLog: spyLog,
   mockMailer: mockObject(MAILER_METHOD_NAMES),
@@ -139,6 +141,10 @@ function mockDB (data, errors) {
   })
 }
 
+function mockGeo() {
+  return geoDB(mockLog)
+}
+
 function mockObject (methodNames) {
   return function (methods) {
     return methodNames.reduce(function (object, name) {
@@ -226,4 +232,5 @@ function mockRequest(data) {
     payload: data.payload
   }
 }
+
 
