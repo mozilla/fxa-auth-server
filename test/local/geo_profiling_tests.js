@@ -15,13 +15,13 @@ function setupMockDB() {
   mockDB.securityEvents = sinon.spy(function () {
     return P.resolve([
       {
-        "name": "account.login",
-        "createdAt": 1471269712790,
-        "ipAddr": "192.168.0.1",
-        "uid": "0",
-        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:51.0) Gecko/20100101 Firefox/51.0",
-        "lat": 25.52,
-        "lon": -81.39
+        'name': 'account.login',
+        'createdAt': 1471269712790,
+        'ipAddr': '192.168.0.1',
+        'uid': '0',
+        'userAgent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:51.0) Gecko/20100101 Firefox/51.0',
+        'lat': 25.52,
+        'lon': -81.39
       }
     ])
   })
