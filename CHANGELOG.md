@@ -1,3 +1,14 @@
+<a name="1.67.1"></a>
+## [1.67.1](https://github.com/mozilla/fxa-auth-server/compare/v1.67.0...v1.67.1) (2016-08-16)
+
+
+### Bug Fixes
+
+* **geodb:** load at startup and log configuration used (#1414) r=vladikoff (#1417) ([446b767](https://github.com/mozilla/fxa-auth-server/commit/446b767))
+* **geodb:** update to fxa-geodb 0.0.7 (#1418) ([b38cd7c](https://github.com/mozilla/fxa-auth-server/commit/b38cd7c))
+
+
+
 <a name="1.67.0"></a>
 # [1.67.0](https://github.com/mozilla/fxa-auth-server/compare/v1.66.1...v1.67.0) (2016-08-11)
 
