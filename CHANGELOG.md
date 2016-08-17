@@ -1,3 +1,13 @@
+<a name="1.67.2"></a>
+## [1.67.2](https://github.com/mozilla/fxa-auth-server/compare/v1.67.1...v1.67.2) (2016-08-17)
+
+
+### Bug Fixes
+
+* **geodb:** if you write a module that takes a hash argument, call it with a hash argument ([0a1744d](https://github.com/mozilla/fxa-auth-server/commit/0a1744d))
+
+
+
 <a name="1.67.1"></a>
 ## [1.67.1](https://github.com/mozilla/fxa-auth-server/compare/v1.67.0...v1.67.1) (2016-08-16)
 
