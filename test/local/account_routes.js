@@ -30,6 +30,10 @@ var makeRoutes = function (options, requireMocks) {
     idle: 500,
     lifetime: 30
   }
+  config.i18n = {
+    supportedLanguages: ['en'],
+    defaultLanguage: 'en'
+  }
 
   var log = options.log || mocks.mockLog()
   var Password = options.Password || require('../../lib/crypto/password')(log, config)
@@ -56,7 +60,8 @@ var makeRoutes = function (options, requireMocks) {
     isPreVerified,
     checkPassword,
     push,
-    metricsContext
+    metricsContext,
+    options.devices || require('../../lib/devices')(log, db, push)
   )
 }
 
@@ -160,8 +165,9 @@ test('/recovery_email/status', function (t) {
   })
 
   t.test('sign-in confirmation enabled', function (t) {
-    t.plan(2)
+    t.plan(3)
     config.signinConfirmation.enabled = true
+    config.signinConfirmation.sample_rate = 1
     var mockRequest = mocks.mockRequest({
       credentials: {
         uid: uuid.v4('binary').toString('hex'),
@@ -183,14 +189,30 @@ test('/recovery_email/status', function (t) {
       })
     })
 
-    t.test('verified account, unverified session', function (t) {
+    t.test('verified account, unverified session, must verify session', function (t) {
       mockRequest.auth.credentials.emailVerified = true
       mockRequest.auth.credentials.tokenVerified = false
+      mockRequest.auth.credentials.mustVerify = true
 
       return runTest(route, mockRequest, function (response) {
         t.deepEqual(response, {
           email: TEST_EMAIL,
           verified: false,
+          sessionVerified: false,
+          emailVerified: true
+        })
+      })
+    })
+
+    t.test('verified account, unverified session, neednt verify session', function (t) {
+      mockRequest.auth.credentials.emailVerified = true
+      mockRequest.auth.credentials.tokenVerified = false
+      mockRequest.auth.credentials.mustVerify = false
+
+      return runTest(route, mockRequest, function (response) {
+        t.deepEqual(response, {
+          email: TEST_EMAIL,
+          verified: true,
           sessionVerified: false,
           emailVerified: true
         })
@@ -247,152 +269,107 @@ test('/account/reset', function (t) {
 })
 
 test('/account/device', function (t) {
-  t.plan(2)
+  t.plan(4)
   var config = {}
   var uid = uuid.v4('binary')
-  var device = {}
+  var deviceId = crypto.randomBytes(16)
   var mockRequest = mocks.mockRequest({
     credentials: {
-      uid: uid.toString('hex')
+      deviceCallbackPublicKey: '',
+      deviceCallbackURL: '',
+      deviceId: deviceId,
+      deviceName: 'my awesome device',
+      deviceType: 'desktop',
+      tokenId: crypto.randomBytes(16),
+      uid: uid
     },
-    payload: device
+    payload: {
+      id: deviceId.toString('hex'),
+      name: 'my awesome device'
+    }
   })
-  var deviceCreatedAt = Date.now()
-  var deviceId = crypto.randomBytes(16).toString('hex')
-  var mockDB = mocks.mockDB({
-    device: device,
-    deviceCreatedAt: deviceCreatedAt,
-    deviceId: deviceId
-  })
+  var mockDevices = mocks.mockDevices()
   var mockLog = mocks.spyLog()
-  var mockPush = mocks.mockPush()
   var accountRoutes = makeRoutes({
     config: config,
-    db: mockDB,
-    log: mockLog,
-    push: mockPush
+    devices: mockDevices,
+    log: mockLog
   })
   var route = getRoute(accountRoutes, '/account/device')
 
-  t.test('create', function (t) {
-    device.name = 'My Phone'
-    device.type = 'mobile'
-    device.pushCallback = 'https://updates.push.services.mozilla.com/update/abcdef01234567890abcdefabcdef01234567890abcdef'
-
+  t.test('identical data', function (t) {
     return runTest(route, mockRequest, function (response) {
-      t.equal(mockDB.createDevice.callCount, 1)
+      t.equal(mockLog.increment.callCount, 1, 'a counter was incremented')
+      t.equal(mockLog.increment.firstCall.args[0], 'device.update.spurious')
 
-      t.equal(mockPush.notifyDeviceConnected.callCount, 1)
-      t.equal(mockPush.notifyDeviceConnected.firstCall.args[0], mockRequest.auth.credentials.uid)
-      t.equal(mockPush.notifyDeviceConnected.firstCall.args[1], device.name)
-      t.equal(mockPush.notifyDeviceConnected.firstCall.args[2], deviceId)
-
-      t.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
-      var args = mockLog.activityEvent.args[0]
-      t.equal(args.length, 3, 'log.activityEvent was passed three arguments')
-      t.equal(args[0], 'device.created', 'first argument was event name')
-      t.equal(args[1], mockRequest, 'second argument was request object')
-      t.deepEqual(args[2], { uid: uid.toString('hex'), device_id: deviceId }, 'third argument contained uid')
-
-      t.equal(mockLog.notifyAttachedServices.callCount, 1)
-      args = mockLog.notifyAttachedServices.args[0]
-      t.equal(args.length, 3)
-      t.equal(args[0], 'device:create')
-      t.equal(args[1], mockRequest)
-      t.deepEqual(args[2], {
-        uid: uid.toString('hex'),
-        id: deviceId,
-        type: 'mobile',
-        timestamp: deviceCreatedAt
-      })
+      t.deepEqual(response, mockRequest.payload)
     })
     .then(function () {
-      mockDB.createDevice.reset()
-      mockLog.activityEvent.reset()
-      mockLog.notifyAttachedServices.reset()
-      mockPush.notifyDeviceConnected.reset()
+      mockLog.increment.reset()
     })
   })
 
-  t.test('update', function (t) {
-    t.plan(3)
-    var deviceId = crypto.randomBytes(16)
-    var credentials = mockRequest.auth.credentials
-    credentials.tokenId = 'lookmumasessiontoken'
-    credentials.deviceName = 'my awesome device'
-    credentials.deviceType = 'desktop'
-    credentials.deviceCallbackURL = ''
-    credentials.deviceCallbackPublicKey = ''
-    device.name = device.type = device.pushCallback = undefined
-    device.id = deviceId.toString('hex')
+  t.test('different data', function (t) {
+    mockRequest.auth.credentials.deviceId = crypto.randomBytes(16)
+    var payload = mockRequest.payload
+    payload.name = 'my even awesomer device'
+    payload.type = 'phone'
+    payload.pushCallback = 'https://push.services.mozilla.com/123456'
+    payload.pushPublicKey = 'SomeEncodedBinaryStuffThatDoesntGetValidedByThisTest'
 
-    t.test('identical data', function (t) {
-      mockRequest.auth.credentials.deviceId = deviceId
-      mockRequest.payload.name = 'my awesome device'
+    return runTest(route, mockRequest, function (response) {
+      t.equal(mockLog.increment.callCount, 5, 'the counters were incremented')
+      t.equal(mockLog.increment.getCall(0).args[0], 'device.update.sessionToken')
+      t.equal(mockLog.increment.getCall(1).args[0], 'device.update.name')
+      t.equal(mockLog.increment.getCall(2).args[0], 'device.update.type')
+      t.equal(mockLog.increment.getCall(3).args[0], 'device.update.pushCallback')
+      t.equal(mockLog.increment.getCall(4).args[0], 'device.update.pushPublicKey')
 
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockDB.updateDevice.callCount, 0, 'updateDevice was not called')
-
-        t.equal(mockLog.increment.callCount, 1, 'a counter was incremented')
-        t.equal(mockLog.increment.firstCall.args[0], 'device.update.spurious')
-
-        t.deepEqual(response, mockRequest.payload)
-      })
-      .then(function () {
-        mockLog.increment.reset()
-      })
+      t.equal(mockDevices.upsert.callCount, 1, 'devices.upsert was called once')
+      var args = mockDevices.upsert.args[0]
+      t.equal(args.length, 3, 'devices.upsert was passed three arguments')
+      t.equal(args[0], mockRequest, 'first argument was request object')
+      t.deepEqual(args[1].tokenId, mockRequest.auth.credentials.tokenId, 'second argument was session token')
+      t.deepEqual(args[1].uid, uid, 'sessionToken.uid was correct')
+      t.deepEqual(args[2], mockRequest.payload, 'third argument was payload')
     })
-
-    t.test('different data', function (t) {
-      mockRequest.auth.credentials.deviceId = crypto.randomBytes(16)
-      var payload = mockRequest.payload
-      payload.name = 'my even awesomer device'
-      payload.type = 'phone'
-      payload.pushCallback = 'https://push.services.mozilla.com/123456'
-      payload.pushPublicKey = 'SomeEncodedBinaryStuffThatDoesntGetValidedByThisTest'
-
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockDB.updateDevice.callCount, 1, 'updateDevice was called')
-
-        t.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
-        var args = mockLog.activityEvent.args[0]
-        t.equal(args.length, 3, 'log.activityEvent was passed three arguments')
-        t.equal(args[0], 'device.updated', 'first argument was event name')
-        t.equal(args[1], mockRequest, 'second argument was request object')
-        t.deepEqual(args[2], { uid: uid.toString('hex'), device_id: deviceId.toString('hex') }, 'third argument contained uid')
-
-        t.equal(mockLog.notifyAttachedServices.callCount, 0, 'log.notifyAttachedServices was not called')
-
-        t.equal(mockLog.increment.callCount, 5, 'the counters were incremented')
-        t.equal(mockLog.increment.getCall(0).args[0], 'device.update.sessionToken')
-        t.equal(mockLog.increment.getCall(1).args[0], 'device.update.name')
-        t.equal(mockLog.increment.getCall(2).args[0], 'device.update.type')
-        t.equal(mockLog.increment.getCall(3).args[0], 'device.update.pushCallback')
-        t.equal(mockLog.increment.getCall(4).args[0], 'device.update.pushPublicKey')
-      })
-      .then(function () {
-        mockDB.updateDevice.reset()
-        mockLog.activityEvent.reset()
-        mockLog.increment.reset()
-      })
+    .then(function () {
+      mockLog.increment.reset()
+      mockDevices.upsert.reset()
     })
+  })
 
-    t.test('device updates disabled', function (t) {
-      config.deviceUpdatesEnabled = false
+  t.test('with no id in payload', function (t) {
+    mockRequest.payload.id = undefined
 
-      return runTest(route, mockRequest, function () {
-        t.fail('should have thrown')
-      })
-      .catch(function (err) {
-        t.equal(err.output.statusCode, 503, 'correct status code is returned')
-        t.equal(err.errno, error.ERRNO.FEATURE_NOT_ENABLED, 'correct errno is returned')
-      })
+    return runTest(route, mockRequest, function (response) {
+      t.equal(mockLog.increment.callCount, 0, 'log.increment was not called')
+
+      t.equal(mockDevices.upsert.callCount, 1, 'devices.upsert was called once')
+      var args = mockDevices.upsert.args[0]
+      t.equal(args[2].id, mockRequest.auth.credentials.deviceId.toString('hex'), 'payload.id defaulted to credentials.deviceId')
+    })
+    .then(function () {
+      mockLog.increment.reset()
+      mockDevices.upsert.reset()
+    })
+  }, t)
+
+  t.test('device updates disabled', function (t) {
+    config.deviceUpdatesEnabled = false
+
+    return runTest(route, mockRequest, function () {
+      t.fail('should have thrown')
+    })
+    .catch(function (err) {
+      t.equal(err.output.statusCode, 503, 'correct status code is returned')
+      t.equal(err.errno, error.ERRNO.FEATURE_NOT_ENABLED, 'correct errno is returned')
     })
   })
 })
 
 test('/account/devices/notify', function (t) {
-  t.plan(4)
+  t.plan(5)
   var config = {}
   var uid = uuid.v4('binary')
   var mockRequest = mocks.mockRequest({
@@ -417,8 +394,15 @@ test('/account/devices/notify', function (t) {
       }
     }
   }
+  var sandbox = sinon.sandbox.create()
+  var mockCustoms = {
+    checkAuthenticated: sandbox.spy(function () {
+      return P.resolve()
+    })
+  }
   var accountRoutes = makeRoutes({
     config: config,
+    customs: mockCustoms,
     push: mockPush
   }, {
     ajv: mockAjv
@@ -450,6 +434,7 @@ test('/account/devices/notify', function (t) {
       payload: pushPayload
     }
     return runTest(route, mockRequest, function (response) {
+      t.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
       t.equal(mockPush.pushToAllDevices.callCount, 1, 'mockPush.pushToAllDevices was called once')
       var args = mockPush.pushToAllDevices.args[0]
       t.equal(args.length, 3, 'mockPush.pushToAllDevices was passed three arguments')
@@ -464,12 +449,14 @@ test('/account/devices/notify', function (t) {
   })
 
   t.test('specific devices', function (t) {
+    mockCustoms.checkAuthenticated.reset()
     mockRequest.payload = {
       to: ['bogusid1', 'bogusid2'],
       TTL: 60,
       payload: pushPayload
     }
     return runTest(route, mockRequest, function (response) {
+      t.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
       t.equal(mockPush.pushToDevices.callCount, 1, 'mockPush.pushToDevices was called once')
       var args = mockPush.pushToDevices.args[0]
       t.equal(args.length, 4, 'mockPush.pushToDevices was passed four arguments')
@@ -498,6 +485,25 @@ test('/account/devices/notify', function (t) {
     .catch(function (err) {
       t.equal(err.output.statusCode, 503, 'correct status code is returned')
       t.equal(err.errno, error.ERRNO.FEATURE_NOT_ENABLED, 'correct errno is returned')
+    })
+  })
+
+  t.test('throws error if customs blocked the request', function (t) {
+    config.deviceNotificationsEnabled = true
+
+    mockCustoms = {
+      checkAuthenticated: sandbox.spy(function () {
+        throw error.tooManyRequests(1)
+      })
+    }
+    route = getRoute(makeRoutes({customs: mockCustoms}), '/account/devices/notify')
+
+    return runTest(route, mockRequest, function (response) {
+      t.fail('should have thrown')
+    })
+    .catch(function (err) {
+      t.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
+      t.equal(err.message, 'Client has sent too many requests')
     })
   })
 })
@@ -602,6 +608,7 @@ test('/account/create', function (t) {
     return P.resolve()
   })
   var mockMailer = mocks.mockMailer()
+  var mockPush = mocks.mockPush()
   var accountRoutes = makeRoutes({
     db: mockDB,
     log: mockLog,
@@ -616,7 +623,8 @@ test('/account/create', function (t) {
           return P.resolve('wibble')
         }
       }
-    }
+    },
+    push: mockPush
   })
   var route = getRoute(accountRoutes, '/account/create')
 
@@ -737,6 +745,7 @@ test('/account/login', function (t) {
     return P.resolve()
   })
   var mockMailer = mocks.mockMailer()
+  var mockPush = mocks.mockPush()
   var accountRoutes = makeRoutes({
     checkPassword: function () {
       return P.resolve(true)
@@ -750,7 +759,8 @@ test('/account/login', function (t) {
     db: mockDB,
     log: mockLog,
     mailer: mockMailer,
-    metricsContext: mockMetricsContext
+    metricsContext: mockMetricsContext,
+    push: mockPush
   })
   var route = getRoute(accountRoutes, '/account/login')
 
@@ -758,6 +768,9 @@ test('/account/login', function (t) {
     return runTest(route, mockRequest, function (response) {
       t.equal(mockDB.emailRecord.callCount, 1, 'db.emailRecord was called')
       t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+      var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+      t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
+      t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
       t.equal(mockDB.sessions.callCount, 1, 'db.sessions was called')
 
       t.equal(mockLog.stdout.write.callCount, 1, 'an sqs event was logged')
@@ -800,10 +813,12 @@ test('/account/login', function (t) {
       t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].location.country, 'United States')
       t.equal(mockMailer.sendNewDeviceLoginNotification.getCall(0).args[1].timeZone, 'America/Los_Angeles')
       t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+      t.ok(response.verified, 'response indicates account is verified')
       t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
       t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
     }).then(function () {
       mockMailer.sendNewDeviceLoginNotification.reset()
+      mockDB.createSessionToken.reset()
       mockMetricsContext.stash.reset()
     })
   })
@@ -820,8 +835,13 @@ test('/account/login', function (t) {
       config.signinConfirmation.sample_rate = 1
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
 
@@ -848,6 +868,7 @@ test('/account/login', function (t) {
         t.equal(mockMailer.sendVerifyLoginEmail.getCall(0).args[2].timeZone, 'America/Los_Angeles')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -858,12 +879,18 @@ test('/account/login', function (t) {
       config.signinConfirmation.sample_rate = 0.02
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -871,12 +898,18 @@ test('/account/login', function (t) {
       config.signinConfirmation.sample_rate = 0.01
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
+        t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
         mockMailer.sendNewDeviceLoginNotification.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -898,12 +931,18 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -924,10 +963,19 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequestNoKeys, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken does not have to be verified')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
+        // Note that *neither* email is sent in this case,
+        // since it can't have been a new device connection.
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
+      }).then(function () {
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -949,12 +997,18 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -976,12 +1030,18 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
+        t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
         mockMailer.sendNewDeviceLoginNotification.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -989,12 +1049,18 @@ test('/account/login', function (t) {
       config.signinConfirmation.supportedClients = [ 'fx_desktop_v999' ]
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.notOk(tokenData.mustVerify, 'sessionToken was created verified')
+        t.notOk(tokenData.tokenVerificationId, 'sessionToken was created verified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.ok(response.verified, 'response indicates account is verified')
         t.notOk(response.verificationMethod, 'verificationMethod doesn\'t exist')
         t.notOk(response.verificationReason, 'verificationReason doesn\'t exist')
       }).then(function () {
         mockMailer.sendNewDeviceLoginNotification.reset()
+        mockDB.createSessionToken.reset()
       })
     }, t)
 
@@ -1017,12 +1083,18 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'login', 'verificationReason is login')
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
+        mockDB.createSessionToken.reset()
       })
     })
 
@@ -1045,8 +1117,13 @@ test('/account/login', function (t) {
       }
 
       return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+        var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+        t.ok(tokenData.mustVerify, 'sessionToken must be verified before use')
+        t.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+        t.notOk(response.verified, 'response indicates account is not verified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'signup', 'verificationReason is signup')
       })
@@ -1185,36 +1262,54 @@ test('/recovery_email/verify_code', function (t) {
   })
 
   t.test('verifyTokens resolves', function (t) {
+    t.plan(2)
+
     dbData.emailVerified = true
     dbErrors.verifyTokens = undefined
 
-    return runTest(route, mockRequest, function (response) {
-      t.equal(mockDB.verifyTokens.callCount, 1, 'call db.verifyTokens')
-      t.equal(mockDB.verifyEmail.callCount, 0, 'does not call db.verifyEmail')
-      t.equal(mockLog.notifyAttachedServices.callCount, 0, 'does not call log.notifyAttachedServices')
-
-      t.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
-      var args = mockLog.activityEvent.args[0]
-      t.equal(args.length, 3, 'log.activityEvent was passed three arguments')
-      t.equal(args[0], 'account.confirmed', 'first argument was event name')
-      t.deepEqual(args[1], {
-        auth: {
-          credentials: {
-            uid: Buffer(uid, 'hex'),
-            id: mockRequest.payload.code,
-          }
-        },
-        headers: mockRequest.headers,
-        payload: mockRequest.payload,
-        query: mockRequest.query
-      }, 'second argument was synthesized request object')
-      t.deepEqual(args[2], {
-        uid: uid.toString('hex')
-      }, 'third argument contained uid')
+    t.test('email verification', function (t) {
+      return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.verifyTokens.callCount, 1, 'call db.verifyTokens')
+        t.equal(mockDB.verifyEmail.callCount, 0, 'does not call db.verifyEmail')
+        t.equal(mockLog.notifyAttachedServices.callCount, 0, 'does not call log.notifyAttachedServices')
+        t.equal(mockLog.activityEvent.callCount, 0, 'log.activityEvent was not called')
+      })
+      .then(function () {
+        mockDB.verifyTokens.reset()
+      })
     })
-    .then(function () {
-      mockDB.verifyTokens.reset()
-      mockLog.activityEvent.reset()
+
+    t.test('sign-in confirmation', function (t) {
+      dbData.emailCode = crypto.randomBytes(16)
+
+      return runTest(route, mockRequest, function (response) {
+        t.equal(mockDB.verifyTokens.callCount, 1, 'call db.verifyTokens')
+        t.equal(mockDB.verifyEmail.callCount, 0, 'does not call db.verifyEmail')
+        t.equal(mockLog.notifyAttachedServices.callCount, 0, 'does not call log.notifyAttachedServices')
+
+        t.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
+        var args = mockLog.activityEvent.args[0]
+        t.equal(args.length, 3, 'log.activityEvent was passed three arguments')
+        t.equal(args[0], 'account.confirmed', 'first argument was event name')
+        t.deepEqual(args[1], {
+          auth: {
+            credentials: {
+              uid: Buffer(uid, 'hex'),
+              id: mockRequest.payload.code,
+            }
+          },
+          headers: mockRequest.headers,
+          payload: mockRequest.payload,
+          query: mockRequest.query
+        }, 'second argument was synthesized request object')
+        t.deepEqual(args[2], {
+          uid: uid.toString('hex')
+        }, 'third argument contained uid')
+      })
+      .then(function () {
+        mockDB.verifyTokens.reset()
+        mockLog.activityEvent.reset()
+      })
     })
   })
 })
@@ -1331,3 +1426,58 @@ test('/account/destroy', function (t) {
     t.equal(args[2].uid, uid.toString('hex'), 'third argument was event data')
   })
 })
+
+test('/account/devices', function (t) {
+  var mockRequest = mocks.mockRequest({
+    credentials: {
+      uid: crypto.randomBytes(16),
+      tokenId: crypto.randomBytes(16)
+    },
+    payload: {}
+  })
+  var unnamedDevice = { sessionToken: crypto.randomBytes(16) }
+  var mockDB = mocks.mockDB({
+    devices: [
+      { name: 'current session', type: 'mobile', sessionToken: mockRequest.auth.credentials.tokenId },
+      { name: 'has no type', sessionToken: crypto.randomBytes(16) },
+      { name: 'has device type', sessionToken: crypto.randomBytes(16), uaDeviceType: 'wibble' },
+      unnamedDevice
+    ]
+  })
+  var mockDevices = mocks.mockDevices()
+  var accountRoutes = makeRoutes({
+    db: mockDB,
+    devices: mockDevices
+  })
+  var route = getRoute(accountRoutes, '/account/devices')
+
+  return runTest(route, mockRequest, function (response) {
+    t.ok(Array.isArray(response), 'response is array')
+    t.equal(response.length, 4, 'response contains 4 items')
+
+    t.equal(response[0].name, 'current session')
+    t.equal(response[0].type, 'mobile')
+    t.equal(response[0].sessionToken, undefined)
+    t.equal(response[0].isCurrentDevice, true)
+
+    t.equal(response[1].name, 'has no type')
+    t.equal(response[1].type, 'desktop')
+    t.equal(response[1].sessionToken, undefined)
+    t.equal(response[1].isCurrentDevice, false)
+
+    t.equal(response[2].name, 'has device type')
+    t.equal(response[2].type, 'wibble')
+    t.equal(response[2].isCurrentDevice, false)
+
+    t.equal(response[3].name, null)
+
+    t.equal(mockDB.devices.callCount, 1, 'db.devices was called once')
+    t.equal(mockDB.devices.args[0].length, 1, 'db.devices was passed one argument')
+    t.deepEqual(mockDB.devices.args[0][0], mockRequest.auth.credentials.uid, 'db.devices was passed uid')
+
+    t.equal(mockDevices.synthesizeName.callCount, 1, 'mockDevices.synthesizeName was called once')
+    t.equal(mockDevices.synthesizeName.args[0].length, 1, 'mockDevices.synthesizeName was passed one argument')
+    t.equal(mockDevices.synthesizeName.args[0][0], unnamedDevice, 'mockDevices.synthesizeName was passed unnamed device')
+  })
+})
+
