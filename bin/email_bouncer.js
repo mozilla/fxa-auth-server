@@ -7,6 +7,11 @@ var log = require('../lib/log')(config.log.level, 'fxa-email-bouncer')
 var error = require('../lib/error')
 var Token = require('../lib/tokens')(log, config.tokenLifetimes)
 var SQSReceiver = require('../lib/sqs')(log)
+
+// setup metrics context for flowEvents
+var metricsContext = require('../lib/metrics/context')(log, config)
+log.setMetricsContext(metricsContext)
+
 var bounces = require('../lib/bounces')(log, error)
 
 var DB = require('../lib/db')(

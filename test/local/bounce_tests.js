@@ -42,7 +42,7 @@ test(
     var mockDB = {
       emailRecord: sinon.spy(function (email) {
         return P.resolve({
-          uid: '123456',
+          uid: Buffer('123456'),
           email: email,
           emailVerified: false
         })
@@ -83,7 +83,7 @@ test(
     var mockDB = {
       emailRecord: sinon.spy(function (email) {
         return P.resolve({
-          uid: '123456',
+          uid: Buffer('123456'),
           email: email,
           emailVerified: false
         })
@@ -117,7 +117,7 @@ test(
     var mockDB = {
       emailRecord: sinon.spy(function (email) {
         return P.resolve({
-          uid: '123456',
+          uid: Buffer('123456'),
           email: email,
           emailVerified: (email === 'verified@example.com')
         })
@@ -141,7 +141,7 @@ test(
       t.equal(mockDB.emailRecord.args[1][0], 'verified@example.com')
       t.equal(mockDB.deleteAccount.callCount, 1)
       t.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
-      t.equal(mockLog.messages.length, 6)
+      t.equal(mockLog.messages.length, 7)
       t.equal(mockLog.messages[0].args[0].op, 'handleBounce')
       t.equal(mockLog.messages[0].args[0].email, 'test@example.com')
       t.equal(mockLog.messages[0].args[0].status, '5.0.0')
@@ -199,7 +199,7 @@ test(
     var mockDB = {
       emailRecord: sinon.spy(function (email) {
         return P.resolve({
-          uid: '123456',
+          uid: Buffer('123456'),
           email: email,
           emailVerified: false
         })
@@ -244,7 +244,7 @@ test(
           return P.reject(new error.unknownAccount(email))
         }
         return P.resolve({
-          uid: '123456',
+          uid: Buffer('123456'),
           email: email,
           emailVerified: false
         })
