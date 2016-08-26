@@ -477,6 +477,28 @@ var conf = convict({
       ],
       env: 'SIGNIN_CONFIRMATION_FORCE_EMAIL_REGEX'
     }
+  },
+  hpkpConfig: {
+    max_age: {
+      doc: 'Max age for HPKP headers',
+      default: 0,
+      env: 'HPKP_MAX_AGE'
+    },
+    pin_sha256: {
+      doc: 'Supported pin-sha256s',
+      format: Array,
+      default: [
+        '5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w=',
+        'PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw=',
+        'r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E='
+      ],
+      env: 'HPKP_PIN_SHA256'
+    },
+    includeSubDomains: {
+      doc: 'Include Sub-Domains',
+      default: true,
+      env: 'HPKP_INCLUDE_SUBDOMAINS'
+    }
   }
 })
 
