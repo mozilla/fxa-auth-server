@@ -1,3 +1,13 @@
+<a name="1.68.1"></a>
+## [1.68.1](https://github.com/mozilla/fxa-auth-server/compare/v1.68.0...v1.68.1) (2016-08-29)
+
+
+### Bug Fixes
+
+* **deps:** use poolee@1.0.1 (train-68) ([69ebc21](https://github.com/mozilla/fxa-auth-server/commit/69ebc21))
+
+
+
 <a name="1.68.0"></a>
 # [1.68.0](https://github.com/mozilla/fxa-auth-server/compare/v1.67.0...v1.68.0) (2016-08-24)
 
