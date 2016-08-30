@@ -92,9 +92,12 @@ TestServer.start(config)
       url: config.publicUrl + '/'
     }
 
-    var expectedHeader = 'max-age=0; includeSubDomains; pin-sha256="5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w="; pin-sha256="PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw="; pin-sha256="r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E=";'
+    var headerValue = 'pin-sha256="5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w="; ' +
+      'pin-sha256="PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw="; ' +
+      'pin-sha256="r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E="; ' +
+      'max-age=1; includeSubdomains';
     request(options, function (err, res, body) {
-      t.equal(res.headers['public-key-pins'], expectedHeader, 'HPKP header was set correctly')
+      t.equal(res.headers['public-key-pins'], headerValue, 'HPKP header was set correctly')
       t.end()
     })
   })
