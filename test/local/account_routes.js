@@ -118,7 +118,7 @@ test('/recovery_email/status', function (t) {
         .then(function () {
           mockDB.deleteAccount.reset()
         })
-      }, t)
+      })
 
       t.test('verified account', function (t) {
         mockRequest.auth.credentials.uid = uuid.v4('binary').toString('hex')
@@ -678,7 +678,7 @@ test('/account/create', function (t) {
 })
 
 test('/account/login', function (t) {
-  t.plan(3)
+  t.plan(4)
   var config = {
     newLoginNotificationEnabled: true
   }
@@ -1154,6 +1154,7 @@ test('/account/login', function (t) {
   })
 
   t.test('sign-in unverified account', function (t) {
+    t.plan(2)
     mockDB.emailRecord = function () {
       return P.resolve({
         authSalt: crypto.randomBytes(32),
