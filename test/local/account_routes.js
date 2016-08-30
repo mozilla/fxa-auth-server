@@ -1172,10 +1172,10 @@ test('/account/login', function (t) {
 
     t.test('without `sendEmailIfUnverified` param', function (t) {
       return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyCode was called')
+        t.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyCode was not called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        t.equal(response.verified, false, 'response indicates account is verified')
+        t.equal(response.verified, false, 'response indicates account is unverified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'signup', 'verificationReason is signup')
       })
@@ -1187,7 +1187,7 @@ test('/account/login', function (t) {
         t.equal(mockMailer.sendVerifyCode.callCount, 1, 'mailer.sendVerifyCode was called')
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        t.equal(response.verified, false, 'response indicates account is verified')
+        t.equal(response.verified, false, 'response indicates account is unverified')
         t.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         t.equal(response.verificationReason, 'signup', 'verificationReason is signup')
       }).then(function () {
