@@ -10,6 +10,7 @@ var sinon = require('sinon')
 var extend = require('util')._extend
 var P = require('../lib/promise')
 var crypto = require('crypto')
+var geoDB = require('fxa-geodb')
 
 var DB_METHOD_NAMES = ['account', 'createAccount', 'createDevice', 'createKeyFetchToken',
                        'createPasswordForgotToken', 'createSessionToken', 'deleteAccount',
@@ -34,6 +35,7 @@ var PUSH_METHOD_NAMES = ['notifyDeviceConnected', 'notifyDeviceDisconnected', 'n
 module.exports = {
   mockDB: mockDB,
   mockDevices: mockDevices,
+  mockGeo: mockGeo,
   mockLog: mockLog,
   spyLog: spyLog,
   mockMailer: mockObject(MAILER_METHOD_NAMES),
@@ -144,6 +146,10 @@ function mockDB (data, errors) {
   })
 }
 
+function mockGeo() {
+  return geoDB(mockLog)
+}
+
 function mockObject (methodNames) {
   return function (methods) {
     return methodNames.reduce(function (object, name) {
@@ -205,20 +211,31 @@ function spyLog (methods) {
   return mockLog(methods)
 }
 
-function mockRequest (data) {
+function mockRequest(data) {
+  if (!data) {
+    data = {
+      headers: {}
+    }
+  }
+
+  if (!data.headers) {
+    data.headers = {}
+  }
+
   return {
     app: {
       acceptLanguage: 'en-US',
-      clientAddress: '8.8.8.8'
+      clientAddress: data.ipAddress || '8.8.8.8'
     },
     auth: {
-      credentials: data.credentials
+      credentials: data.credentials || 'test@email.com'
     },
     headers: {
-      'user-agent': 'test user-agent'
+      'user-agent': data.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:51.0) Gecko/20100101 Firefox/51.0'
     },
     query: data.query,
     payload: data.payload
   }
 }
+
 

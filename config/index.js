@@ -442,6 +442,23 @@ var conf = convict({
     env: 'CLIENT_ADDRESS_DEPTH',
     default: 3
   },
+  geoProfiling: {
+    enabled: {
+      doc: 'enable geo profiling',
+      default: true,
+      env: 'GEO_PROFILING_ENABLED'
+    },
+    logOnly: {
+      doc: 'enable geo profiling',
+      default: true,
+      env: 'GEO_PROFILING_LOGONLY_ENABLED'
+    },
+    acceptRadius: {
+      doc: 'Distance(km) to consider request safe',
+      default: 100,
+      env: 'GEO_PROFILING_RADIUS'
+    }
+  },
   signinConfirmation: {
     enabled: {
       doc: 'enable signin confirmation',
