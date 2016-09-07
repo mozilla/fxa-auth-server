@@ -6,6 +6,7 @@ var test = require('tap').test
 var mocks = require('../../mocks')
 var getRoute = require('../../routes_helpers').getRoute
 var makeRoutes = require('../../routes_helpers').makeAccountRoutes
+var runTest = require('../../routes_helpers').runTest
 
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
@@ -14,15 +15,6 @@ var error = require('../../../lib/error')
 
 var TEST_EMAIL = 'foo@gmail.com'
 var TEST_EMAIL_INVALID = 'example@dotless-domain'
-
-function runTest (route, request, assertions) {
-  return new P(function (resolve) {
-    route.handler(request, function (response) {
-      resolve(response)
-    })
-  })
-  .then(assertions)
-}
 
 test('/recovery_email/status', function (t) {
   t.plan(2)

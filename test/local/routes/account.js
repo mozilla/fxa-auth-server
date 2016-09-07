@@ -8,6 +8,7 @@ var test = require('tap').test
 var mocks = require('../../mocks')
 var getRoute = require('../../routes_helpers').getRoute
 var makeRoutes = require('../../routes_helpers').makeAccountRoutes
+var runTest = require('../../routes_helpers').runTest
 
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
@@ -16,15 +17,6 @@ var error = require('../../../lib/error')
 var log = require('../../../lib/log')
 
 var TEST_EMAIL = 'foo@gmail.com'
-
-function runTest (route, request, assertions) {
-  return new P(function (resolve) {
-    route.handler(request, function (response) {
-      resolve(response)
-    })
-  })
-    .then(assertions)
-}
 
 test('/account/reset', function (t) {
   var uid = uuid.v4('binary')

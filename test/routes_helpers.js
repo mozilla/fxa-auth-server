@@ -69,3 +69,12 @@ exports.makeAccountRoutes = function (options, requireMocks) {
     options.devices || require('../lib/devices')(log, db, push)
   )
 }
+
+exports.runTest = function (route, request, assertions) {
+  return new P(function (resolve) {
+    route.handler(request, function (response) {
+      resolve(response)
+    })
+  })
+    .then(assertions)
+}
