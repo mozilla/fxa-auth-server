@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var test = require('../ptaptest')
-var mocks = require('../mocks')
-var getRoute = require('../routes_helpers').getRoute
+var test = require('../../ptaptest')
+var mocks = require('../../mocks')
+var getRoute = require('../../routes_helpers').getRoute
 
-var P = require('../../lib/promise')
+var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
 var isA = require('joi')
-var error = require('../../lib/error')
+var error = require('../../../lib/error')
 
 var TEST_EMAIL = 'foo@gmail.com'
 
@@ -23,10 +23,10 @@ var makeRoutes = function (options) {
   }
   var log = options.log || mocks.mockLog()
   var db = options.db || {}
-  var Password = require('../../lib/crypto/password')(log, config)
+  var Password = require('../../../lib/crypto/password')(log, config)
   var customs = options.customs || {}
-  var checkPassword = require('../../lib/routes/utils/password_check')(log, config, Password, customs, db)
-  return require('../../lib/routes/password')(
+  var checkPassword = require('../../../lib/routes/utils/password_check')(log, config, Password, customs, db)
+  return require('../../../lib/routes/password')(
     log,
     isA,
     error,
