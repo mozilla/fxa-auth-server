@@ -131,48 +131,48 @@ TestServer.start(config)
         })
     }
   )
-  //
-  // test(
-  //   'account login fails with invalid metricsContext flowId',
-  //   function (t) {
-  //     var email = server.uniqueEmail()
-  //     return Client.createAndVerify(config.publicUrl, email, 'foo', server.mailbox)
-  //       .then(function () {
-  //         return Client.login(config.publicUrl, email, 'foo', {
-  //           metricsContext: {
-  //             flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0',
-  //             flowBeginTime: Date.now()
-  //           }
-  //         })
-  //       })
-  //       .then(function () {
-  //         t.fail('account login should have failed')
-  //       }, function (err) {
-  //         t.ok(err, 'account login failed')
-  //       })
-  //   }
-  // )
-  //
-  // test(
-  //   'account login fails with invalid metricsContext flowBeginTime',
-  //   function (t) {
-  //     var email = server.uniqueEmail()
-  //     return Client.createAndVerify(config.publicUrl, email, 'foo', server.mailbox)
-  //       .then(function () {
-  //         return Client.login(config.publicUrl, email, 'foo', {
-  //           metricsContext: {
-  //             flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-  //             flowBeginTime: 'wibble'
-  //           }
-  //         })
-  //       })
-  //       .then(function () {
-  //         t.fail('account login should have failed')
-  //       }, function (err) {
-  //         t.ok(err, 'account login failed')
-  //       })
-  //   }
-  // )
+
+  test(
+    'account login fails with invalid metricsContext flowId',
+    function (t) {
+      var email = server.uniqueEmail()
+      return Client.createAndVerify(config.publicUrl, email, 'foo', server.mailbox)
+        .then(function () {
+          return Client.login(config.publicUrl, email, 'foo', {
+            metricsContext: {
+              flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0',
+              flowBeginTime: Date.now()
+            }
+          })
+        })
+        .then(function () {
+          t.fail('account login should have failed')
+        }, function (err) {
+          t.ok(err, 'account login failed')
+        })
+    }
+  )
+
+  test(
+    'account login fails with invalid metricsContext flowBeginTime',
+    function (t) {
+      var email = server.uniqueEmail()
+      return Client.createAndVerify(config.publicUrl, email, 'foo', server.mailbox)
+        .then(function () {
+          return Client.login(config.publicUrl, email, 'foo', {
+            metricsContext: {
+              flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+              flowBeginTime: 'wibble'
+            }
+          })
+        })
+        .then(function () {
+          t.fail('account login should have failed')
+        }, function (err) {
+          t.ok(err, 'account login failed')
+        })
+    }
+  )
 
   test(
     'teardown',

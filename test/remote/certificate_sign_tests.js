@@ -73,150 +73,150 @@ TestServer.start(config)
     }
   )
 
-  // test(
-  //   '/certificate/sign inputs',
-  //   function (t) {
-  //     var email = server.uniqueEmail()
-  //     var password = '123456'
-  //     var client = null
-  //     return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-  //       .then(
-  //         function (c) {
-  //           client = c
-  //           // string as publicKey
-  //           return client.sign('tada', 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'string as publicKey')
-  //           // empty object as publicKey
-  //           return client.sign({}, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'empty object as publicKey')
-  //           // invalid publicKey argument
-  //           return client.sign({ algorithm: 'RS', n: 'x', e: 'y', invalid: true }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'invalid publicKey argument')
-  //           // undefined duration
-  //           return client.sign({ algorithm: 'RS', n: 'x', e: 'y' }, undefined)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'undefined duration')
-  //           // missing publicKey arguments (e)
-  //           return client.sign({ algorithm: 'RS', n: 'x' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (e)')
-  //           // missing publicKey arguments (n)
-  //           return client.sign({ algorithm: 'RS', e: 'x' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (n)')
-  //           // missing publicKey arguments (y)
-  //           return client.sign({ algorithm: 'DS', p: 'p', q: 'q', g: 'g' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (y)')
-  //           // missing publicKey arguments (p)
-  //           return client.sign({ algorithm: 'DS', y: 'y', q: 'q', g: 'g' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (p)')
-  //           // missing publicKey arguments (q)
-  //           return client.sign({ algorithm: 'DS', y: 'y', p: 'p', g: 'g' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (q)')
-  //           // missing publicKey arguments (g)
-  //           return client.sign({ algorithm: 'DS', y: 'y', p: 'p', q: 'q' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'missing publicKey arguments (g)')
-  //           // invalid algorithm
-  //           return client.sign({ algorithm: 'NSA' }, 1000)
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.code, 400, 'invalid algorithm')
-  //         }
-  //       )
-  //   }
-  // )
-  //
-  // test(
-  //   'no payload',
-  //   function (t) {
-  //     var email = server.uniqueEmail()
-  //     var password = 'allyourbasearebelongtous'
-  //     var duration = 1000 * 60 * 60 * 24 // 24 hours
-  //     return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-  //       .then(
-  //         function (client) {
-  //           client.api.once(
-  //             'startRequest',
-  //             function hijackPayload(options) {
-  //               // we want the payload hash in the auth header
-  //               // but no payload in the request body
-  //               options.json = true
-  //             }
-  //           )
-  //           return client.api.Token.SessionToken.fromHex(client.sessionToken)
-  //             .then(
-  //               function (token) {
-  //                 return client.api.doRequest(
-  //                   'POST',
-  //                   client.api.baseURL + '/certificate/sign',
-  //                   token,
-  //                   {
-  //                     publicKey: publicKey,
-  //                     duration: duration
-  //                   }
-  //                 )
-  //               }
-  //             )
-  //         }
-  //       )
-  //       .then(
-  //         t.fail,
-  //         function (err) {
-  //           t.equal(err.errno, 109, 'Missing payload authentication')
-  //         }
-  //       )
-  //   }
-  // )
+  test(
+    '/certificate/sign inputs',
+    function (t) {
+      var email = server.uniqueEmail()
+      var password = '123456'
+      var client = null
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+        .then(
+          function (c) {
+            client = c
+            // string as publicKey
+            return client.sign('tada', 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'string as publicKey')
+            // empty object as publicKey
+            return client.sign({}, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'empty object as publicKey')
+            // invalid publicKey argument
+            return client.sign({ algorithm: 'RS', n: 'x', e: 'y', invalid: true }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'invalid publicKey argument')
+            // undefined duration
+            return client.sign({ algorithm: 'RS', n: 'x', e: 'y' }, undefined)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'undefined duration')
+            // missing publicKey arguments (e)
+            return client.sign({ algorithm: 'RS', n: 'x' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (e)')
+            // missing publicKey arguments (n)
+            return client.sign({ algorithm: 'RS', e: 'x' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (n)')
+            // missing publicKey arguments (y)
+            return client.sign({ algorithm: 'DS', p: 'p', q: 'q', g: 'g' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (y)')
+            // missing publicKey arguments (p)
+            return client.sign({ algorithm: 'DS', y: 'y', q: 'q', g: 'g' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (p)')
+            // missing publicKey arguments (q)
+            return client.sign({ algorithm: 'DS', y: 'y', p: 'p', g: 'g' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (q)')
+            // missing publicKey arguments (g)
+            return client.sign({ algorithm: 'DS', y: 'y', p: 'p', q: 'q' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'missing publicKey arguments (g)')
+            // invalid algorithm
+            return client.sign({ algorithm: 'NSA' }, 1000)
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.code, 400, 'invalid algorithm')
+          }
+        )
+    }
+  )
+
+  test(
+    'no payload',
+    function (t) {
+      var email = server.uniqueEmail()
+      var password = 'allyourbasearebelongtous'
+      var duration = 1000 * 60 * 60 * 24 // 24 hours
+      return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+        .then(
+          function (client) {
+            client.api.once(
+              'startRequest',
+              function hijackPayload(options) {
+                // we want the payload hash in the auth header
+                // but no payload in the request body
+                options.json = true
+              }
+            )
+            return client.api.Token.SessionToken.fromHex(client.sessionToken)
+              .then(
+                function (token) {
+                  return client.api.doRequest(
+                    'POST',
+                    client.api.baseURL + '/certificate/sign',
+                    token,
+                    {
+                      publicKey: publicKey,
+                      duration: duration
+                    }
+                  )
+                }
+              )
+          }
+        )
+        .then(
+          t.fail,
+          function (err) {
+            t.equal(err.errno, 109, 'Missing payload authentication')
+          }
+        )
+    }
+  )
 
   test(
     'teardown',

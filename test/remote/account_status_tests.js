@@ -132,30 +132,30 @@ TestServer.start(config)
         )
     }
   )
-  //
-  // test(
-  //   'account status by email with invald email',
-  //   function (t) {
-  //     var email = server.uniqueEmail()
-  //     return Client.create(config.publicUrl, email, 'password')
-  //       .then(
-  //         function (c) {
-  //           var invalidEmail = 'notAnEmail'
-  //           return c.api.accountStatusByEmail(invalidEmail)
-  //         }
-  //       )
-  //       .then(
-  //         function () {
-  //           t.fail('should not have successful request')
-  //         },
-  //         function (err) {
-  //           t.equal(err.code, 400)
-  //           t.equal(err.errno, 107)
-  //           t.equal(err.message, 'Invalid parameter in request body')
-  //         }
-  //       )
-  //   }
-  // )
+
+  test(
+    'account status by email with an invalid email',
+    function (t) {
+      var email = server.uniqueEmail()
+      return Client.create(config.publicUrl, email, 'password')
+        .then(
+          function (c) {
+            var invalidEmail = 'notAnEmail'
+            return c.api.accountStatusByEmail(invalidEmail)
+          }
+        )
+        .then(
+          function () {
+            t.fail('should not have successful request')
+          },
+          function (err) {
+            t.equal(err.code, 400)
+            t.equal(err.errno, 107)
+            t.equal(err.message, 'Invalid parameter in request body')
+          }
+        )
+    }
+  )
 
   test(
     'account status by email works with unicode email address',
