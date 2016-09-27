@@ -65,7 +65,7 @@ test(
       t.equal(mockDB.deleteAccount.callCount, 2)
       t.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
       t.equal(mockDB.emailRecord.args[1][0], 'foobar@example.com')
-      t.equal(mockLog.messages.length, 6)
+      t.equal(mockLog.messages.length, 6, 'messages logged')
       t.equal(mockLog.messages[1].level, 'increment')
       t.equal(mockLog.messages[1].args[0], 'account.email_bounced')
       t.equal(mockLog.messages[5].level, 'info')
@@ -268,6 +268,105 @@ test(
       t.equal(mockDB.emailRecord.args[1][0], 'test.@example.com')
       t.equal(mockDB.deleteAccount.callCount, 1)
       t.equal(mockDB.deleteAccount.args[0][0].email, 'test.@example.com')
+    })
+  }
+)
+
+test(
+  'can log email template name',
+  function (t) {
+    var mockLog = spyLog()
+    var mockDB = {
+      emailRecord: sinon.spy(function (email) {
+        return P.resolve({
+          uid: '123456',
+          email: email,
+          emailVerified: false
+        })
+      }),
+      deleteAccount: sinon.spy(function () {
+        return P.resolve({ })
+      })
+    }
+    var mockMsg = mockMessage({
+      bounce: {
+        bounceType: 'Permanent',
+        bouncedRecipients: [
+          {emailAddress: 'test@example.com'}
+        ]
+      },
+      mail: {
+        headers: [
+          {
+            name: 'X-Template-Name',
+            value: 'verifyLoginEmail'
+          }
+        ]
+      }
+    })
+
+    return mockedBounces(mockLog, mockDB).handleBounce(mockMsg).then(function () {
+      t.equal(mockDB.emailRecord.callCount, 1)
+      t.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+      t.equal(mockDB.deleteAccount.callCount, 1)
+      t.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
+      t.equal(mockLog.messages.length, 3)
+      t.equal(mockLog.messages[0].args[0].op, 'handleBounce')
+      t.equal(mockLog.messages[0].args[0].email, 'test@example.com')
+      t.equal(mockLog.messages[0].args[0].template, 'verifyLoginEmail')
+      t.equal(mockLog.messages[1].args[0], 'account.email_bounced')
+    })
+  }
+)
+
+test(
+  'can log account.confirmation.bounced flow event',
+  function (t) {
+    var mockLog = spyLog()
+    var mockDB = {
+      emailRecord: sinon.spy(function (email) {
+        return P.resolve({
+          uid: '123456',
+          email: email,
+          emailVerified: false
+        })
+      }),
+      deleteAccount: sinon.spy(function () {
+        return P.resolve({ })
+      })
+    }
+    var mockMsg = mockMessage({
+      bounce: {
+        bounceType: 'Permanent',
+        bouncedRecipients: [
+          {emailAddress: 'test@example.com'}
+        ]
+      },
+      mail: {
+        headers: [
+          {
+            name: 'X-Uid',
+            value: '123456'
+          },
+          {
+            name: 'X-Verify-Code',
+            value: '0123456'
+          }
+        ]
+      }
+    })
+
+    return mockedBounces(mockLog, mockDB).handleBounce(mockMsg).then(function () {
+      t.equal(mockDB.emailRecord.callCount, 1)
+      t.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+      t.equal(mockDB.deleteAccount.callCount, 1)
+      t.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
+      t.equal(mockLog.messages.length, 4)
+      t.equal(mockLog.messages[0].args[0].op, 'handleBounce')
+      t.equal(mockLog.messages[0].args[0].email, 'test@example.com')
+      t.equal(mockLog.messages[3].level, 'activityEvent')
+      t.equal(mockLog.messages[3].args[0], 'account.confirmation.bounced')
+      t.equal(mockLog.messages[3].args[2].uid, '123456')
     })
   }
 )
