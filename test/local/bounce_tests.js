@@ -291,6 +291,7 @@ test(
     var mockMsg = mockMessage({
       bounce: {
         bounceType: 'Permanent',
+        bounceSubType: 'General',
         bouncedRecipients: [
           {emailAddress: 'test@example.com'}
         ]
