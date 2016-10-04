@@ -273,7 +273,7 @@ test(
 )
 
 test(
-  'can log email template name',
+  'can log email template name and bounceType',
   function (t) {
     var mockLog = spyLog()
     var mockDB = {
@@ -314,6 +314,8 @@ test(
       t.equal(mockLog.messages[0].args[0].op, 'handleBounce')
       t.equal(mockLog.messages[0].args[0].email, 'test@example.com')
       t.equal(mockLog.messages[0].args[0].template, 'verifyLoginEmail')
+      t.equal(mockLog.messages[0].args[0].bounceType, 'Permanent')
+      t.equal(mockLog.messages[0].args[0].bounceSubType, 'General')
       t.equal(mockLog.messages[1].args[0], 'account.email_bounced')
     })
   }
