@@ -498,6 +498,43 @@ var conf = convict({
       default: /.+@mozilla\.com$/,
       env: 'LASTACCESSTIME_UPDATES_EMAIL_ADDRESSES'
     }
+  },
+  hpkpConfig: {
+    enabled: {
+      default: false,
+      doc: 'Feature flag for appending HPKP headers',
+      env: 'HPKP_ENABLE'
+    },
+    reportOnly: {
+      default: true,
+      doc: 'Enable report only mode',
+      env: 'HPKP_REPORT_ONLY'
+    },
+    reportUri: {
+      default: '',
+      doc: 'Enable report only mode',
+      env: 'HPKP_REPORT_URI'
+    },
+    includeSubDomains: {
+      default: true,
+      doc: 'Include Sub-Domains',
+      env: 'HPKP_INCLUDE_SUBDOMAINS'
+    },
+    max_age: {
+      default: 1,
+      doc: 'Max age for HPKP headers (milliseconds)',
+      env: 'HPKP_MAX_AGE'
+    },
+    pin_sha256: {
+      default: [
+        '5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w=',
+        'PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw=',
+        'r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E='
+      ],
+      doc: 'Supported pin-sha256s',
+      env: 'HPKP_PIN_SHA256',
+      format: Array
+    }
   }
 })
 

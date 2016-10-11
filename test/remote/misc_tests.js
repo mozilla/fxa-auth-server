@@ -12,6 +12,8 @@ var request = require('request')
 
 var config = require('../../config').getProperties()
 
+process.env.HPKP_ENABLE = true
+
 TestServer.start(config)
 .then(function main(server) {
 
@@ -277,6 +279,21 @@ TestServer.start(config)
       )
     }
   )
+
+  test('returns correct HPKP header', function (t) {
+    var options = {
+      url: config.publicUrl + '/'
+    }
+
+    var headerValue = 'pin-sha256="5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w="; ' +
+      'pin-sha256="PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw="; ' +
+      'pin-sha256="r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E="; ' +
+      'max-age=1; includeSubdomains'
+    request(options, function (err, res, body) {
+      t.equal(res.headers['public-key-pins-report-only'], headerValue, 'HPKP header was set correctly')
+      t.end()
+    })
+  })
 
   test(
     'teardown',
