@@ -503,37 +503,38 @@ var conf = convict({
     enabled: {
       default: false,
       doc: 'Feature flag for appending HPKP headers',
+      format: Boolean,
       env: 'HPKP_ENABLE'
     },
     reportOnly: {
       default: true,
       doc: 'Enable report only mode',
+      format: Boolean,
       env: 'HPKP_REPORT_ONLY'
     },
     reportUri: {
       default: '',
       doc: 'Enable report only mode',
+      format: String,
       env: 'HPKP_REPORT_URI'
     },
     includeSubDomains: {
       default: true,
       doc: 'Include Sub-Domains',
+      format: Boolean,
       env: 'HPKP_INCLUDE_SUBDOMAINS'
     },
-    max_age: {
+    maxAge: {
       default: 1,
-      doc: 'Max age for HPKP headers (milliseconds)',
+      doc: 'Max age for HPKP headers (seconds)',
+      format: Number,
       env: 'HPKP_MAX_AGE'
     },
-    pin_sha256: {
-      default: [
-        '5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w=',
-        'PZXN3lRAy+8tBKk2Ox6F7jIlnzr2Yzmwqc3JnyfXoCw=',
-        'r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E='
-      ],
+    sha256s: {
+      default: [],
       doc: 'Supported pin-sha256s',
-      env: 'HPKP_PIN_SHA256',
-      format: Array
+      format: Array,
+      env: 'HPKP_PIN_SHA256'
     }
   }
 })
