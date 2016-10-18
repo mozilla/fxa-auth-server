@@ -29,7 +29,7 @@ test(
 
     t.equal(typeof metricsContext, 'object', 'metricsContext is object')
     t.notEqual(metricsContext, null, 'metricsContext is not null')
-    t.equal(Object.keys(metricsContext).length, 3, 'metricsContext has 3 properties')
+    t.equal(Object.keys(metricsContext).length, 4, 'metricsContext has 4 properties')
 
     t.equal(typeof metricsContext.stash, 'function', 'metricsContext.stash is function')
     t.equal(metricsContext.stash.length, 1, 'metricsContext.stash expects 1 argument')
@@ -39,6 +39,9 @@ test(
 
     t.equal(typeof metricsContext.validate, 'function', 'metricsContext.validate is function')
     t.equal(metricsContext.validate.length, 0, 'metricsContext.validate expects no arguments')
+
+    t.equal(typeof metricsContext.setFlowCompleteSignal, 'function', 'metricsContext.setFlowCompleteSignal is function')
+    t.equal(metricsContext.setFlowCompleteSignal.length, 1, 'metricsContext.setFlowCompleteSignal expects 1 argument')
 
     t.end()
   }
@@ -181,6 +184,7 @@ test(
         metricsContext: {
           flowId: 'mock flow id',
           flowBeginTime: time,
+          flowCompleteSignal: 'mock flow complete signal',
           context: 'mock context',
           entrypoint: 'mock entry point',
           migration: 'mock migration',
@@ -196,11 +200,12 @@ test(
     }, {}).then(function (result) {
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
-      t.equal(Object.keys(result).length, 12, 'result has 12 properties')
+      t.equal(Object.keys(result).length, 13, 'result has 13 properties')
       t.ok(result.time > time, 'result.time seems correct')
       t.equal(result.flow_id, 'mock flow id', 'result.flow_id is correct')
       t.ok(result.flow_time > 0, 'result.flow_time is greater than zero')
       t.ok(result.flow_time < time, 'result.flow_time is less than the current time')
+      t.equal(result.flowCompleteSignal, 'mock flow complete signal', 'result.flowCompleteSignal is correct')
       t.equal(result.context, 'mock context', 'result.context is correct')
       t.equal(result.entrypoint, 'mock entry point', 'result.entrypoint is correct')
       t.equal(result.migration, 'mock migration', 'result.migration is correct')
@@ -254,6 +259,7 @@ test(
         metricsContext: {
           flowId: 'mock flow id',
           flowBeginTime: time,
+          flowCompleteSignal: 'mock flow complete signal',
           context: 'mock context',
           entrypoint: 'mock entry point',
           migration: 'mock migration',
@@ -267,7 +273,7 @@ test(
         }
       }
     }, {}).then(function (result) {
-      t.equal(Object.keys(result).length, 7, 'result has 7 properties')
+      t.equal(Object.keys(result).length, 8, 'result has 8 properties')
       t.equal(result.utm_campaign, undefined, 'result.utm_campaign is undefined')
       t.equal(result.utm_content, undefined, 'result.utm_content is undefined')
       t.equal(result.utm_medium, undefined, 'result.utm_medium is undefined')
@@ -294,6 +300,7 @@ test(
       return P.resolve({
         flowId: 'flowId',
         flowBeginTime: time,
+        flowCompleteSignal: 'flowCompleteSignal',
         context: 'context',
         entrypoint: 'entrypoint',
         migration: 'migration',
@@ -320,11 +327,12 @@ test(
 
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
-      t.equal(Object.keys(result).length, 12, 'result has 12 properties')
+      t.equal(Object.keys(result).length, 13, 'result has 13 properties')
       t.ok(result.time > time, 'result.time seems correct')
       t.equal(result.flow_id, 'flowId', 'result.flow_id is correct')
       t.ok(result.flow_time > 0, 'result.flow_time is greater than zero')
       t.ok(result.flow_time < time, 'result.flow_time is less than the current time')
+      t.equal(result.flowCompleteSignal, 'flowCompleteSignal', 'result.flowCompleteSignal is correct')
       t.equal(result.context, 'context', 'result.context is correct')
       t.equal(result.entrypoint, 'entrypoint', 'result.entry point is correct')
       t.equal(result.migration, 'migration', 'result.migration is correct')
@@ -371,7 +379,7 @@ test(
 
       t.equal(typeof result, 'object', 'result is object')
       t.notEqual(result, null, 'result is not null')
-      t.equal(Object.keys(result).length, 12, 'result has 12 properties')
+      t.equal(Object.keys(result).length, 13, 'result has 13 properties')
       t.ok(result.time > time, 'result.time seems correct')
       t.equal(result.flow_id, 'flowId', 'result.flow_id is correct')
       t.ok(result.flow_time > 0, 'result.flow_time is greater than zero')
@@ -921,3 +929,30 @@ test(
     t.end()
   }
 )
+
+test(
+  'setFlowCompleteSignal',
+  t => {
+    const request = {
+      payload: {
+        metricsContext: {}
+      }
+    }
+    metricsContext.setFlowCompleteSignal.call(request, 'wibble')
+    t.deepEqual(request.payload.metricsContext, { flowCompleteSignal: 'wibble' }, 'flowCompleteSignal was set correctly')
+    t.end()
+  }
+)
+
+test(
+  'setFlowCompleteSignal without metricsContext',
+  t => {
+    const request = {
+      payload: {}
+    }
+    metricsContext.setFlowCompleteSignal.call(request, 'wibble')
+    t.deepEqual(request.payload, {}, 'flowCompleteSignal was not set')
+    t.end()
+  }
+)
+
