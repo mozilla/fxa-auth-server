@@ -29,13 +29,16 @@ test(
 
     t.equal(typeof metricsContext, 'object', 'metricsContext is object')
     t.notEqual(metricsContext, null, 'metricsContext is not null')
-    t.equal(Object.keys(metricsContext).length, 4, 'metricsContext has 4 properties')
+    t.equal(Object.keys(metricsContext).length, 5, 'metricsContext has 5 properties')
 
     t.equal(typeof metricsContext.stash, 'function', 'metricsContext.stash is function')
     t.equal(metricsContext.stash.length, 1, 'metricsContext.stash expects 1 argument')
 
     t.equal(typeof metricsContext.gather, 'function', 'metricsContext.gather is function')
     t.equal(metricsContext.gather.length, 1, 'metricsContext.gather expects 1 argument')
+
+    t.equal(typeof metricsContext.clear, 'function', 'metricsContext.clear is function')
+    t.equal(metricsContext.clear.length, 0, 'metricsContext.gather expects no arguments')
 
     t.equal(typeof metricsContext.validate, 'function', 'metricsContext.validate is function')
     t.equal(metricsContext.validate.length, 0, 'metricsContext.validate expects no arguments')
@@ -589,6 +592,87 @@ test(
       log.error.reset()
 
       t.end()
+    })
+  }
+)
+
+test(
+  'metricsContext.clear with token',
+  t => {
+    const uid = Buffer.alloc(32, '77')
+    const id = 'wibble'
+    const hash = crypto.createHash('sha256')
+    hash.update(uid)
+    hash.update(id)
+    sinon.stub(Memcached.prototype, 'delAsync', () => P.resolve())
+    return metricsContext.clear.call({
+      auth: {
+        credentials: {
+          uid: uid,
+          id: id
+        }
+      }
+    }).then(function () {
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+      t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
+      t.equal(Memcached.prototype.delAsync.args[0][0], hash.digest('base64'), 'memcached.delAsync argument was correct')
+
+      Memcached.prototype.delAsync.restore()
+    })
+  }
+)
+
+test(
+  'metricsContext.clear with fake token',
+  t => {
+    const uid = Buffer.alloc(32, '66')
+    const id = 'blee'
+    const hash = crypto.createHash('sha256')
+    hash.update(uid)
+    hash.update(id)
+    sinon.stub(Memcached.prototype, 'delAsync', () => P.resolve())
+    return metricsContext.clear.call({
+      payload: {
+        uid: uid.toString('hex'),
+        code: id
+      }
+    }).then(function () {
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
+      t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
+      t.equal(Memcached.prototype.delAsync.args[0][0], hash.digest('base64'), 'memcached.delAsync argument was correct')
+
+      Memcached.prototype.delAsync.restore()
+    })
+  }
+)
+
+test(
+  'metricsContext.clear with config.memcached.address === "none"',
+  t => {
+    const metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      memcached: {
+        address: 'none',
+        idle: 500,
+        lifetime: 30
+      }
+    })
+    const uid = Buffer.alloc(32, '77')
+    const id = 'wibble'
+    const hash = crypto.createHash('sha256')
+    hash.update(uid)
+    hash.update(id)
+    sinon.stub(Memcached.prototype, 'delAsync', () => P.resolve())
+    return metricsContextWithoutMemcached.clear.call({
+      auth: {
+        credentials: {
+          uid: uid,
+          id: id
+        }
+      }
+    }).then(function () {
+      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
+
+      Memcached.prototype.delAsync.restore()
     })
   }
 )

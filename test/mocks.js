@@ -279,6 +279,7 @@ function mockRequest (data) {
     auth: {
       credentials: data.credentials
     },
+    clearMetricsContext: metricsContext.clear,
     emitMetricsEvent: events.emit,
     gatherMetricsContext: metricsContext.gather,
     headers: data.headers || {

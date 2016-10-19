@@ -20,14 +20,15 @@ var statsd = {
   init: sinon.spy(),
   write: sinon.spy()
 }
-var metricsContext = {
+const metricsContext = {
   gather: sinon.spy(function (data) {
     return P.resolve(this.payload && {
       flow_id: this.payload.metricsContext.flowId,
       flowCompleteSignal: this.payload.metricsContext.flowCompleteSignal,
       service: this.payload.metricsContext.service
     })
-  })
+  }),
+  clear: sinon.spy()
 }
 var mocks = {
   mozlog: sinon.spy(function () {
@@ -60,6 +61,7 @@ test(
 
     t.equal(statsd.write.callCount, 0, 'statsd.write was not called')
     t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
+    t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
     t.equal(logger.debug.callCount, 0, 'logger.debug was not called')
     t.equal(logger.error.callCount, 0, 'logger.error was not called')
     t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
@@ -304,6 +306,7 @@ test(
   'log.flowEvent with bad event name',
   t => {
     return log.flowEvent(undefined, {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -325,6 +328,7 @@ test(
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
       t.equal(logger.info.callCount, 0, 'logger.info was not called')
       t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
 
       logger.error.reset()
     })
@@ -335,6 +339,7 @@ test(
   'log.flowEvent with a bad request',
   t => {
     return log.flowEvent('account.signed', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       payload: {
         metricsContext: {
@@ -354,6 +359,7 @@ test(
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
       t.equal(logger.info.callCount, 0, 'logger.info was not called')
       t.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
 
       logger.error.reset()
     })
@@ -364,6 +370,7 @@ test(
   'log.flowEvent properly logs with no errors',
   t => {
     return log.flowEvent('account.signed', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -389,6 +396,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
       t.equal(logger.error.callCount, 0, 'logger.error was not called')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
 
       metricsContext.gather.reset()
       logger.info.reset()
@@ -400,6 +408,7 @@ test(
   'log.flowEvent with matching flowCompleteSignal',
   t => {
     return log.flowEvent('account.login', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -414,6 +423,9 @@ test(
       }
     }).then(() => {
       t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+
+      t.equal(metricsContext.clear.callCount, 1, 'metricsContext.clear was called once')
+      t.equal(metricsContext.clear.args[0].length, 0, 'metricsContext.clear was passed no arguments')
 
       t.equal(logger.info.callCount, 2, 'logger.info was called twice')
       let args = logger.info.args[0]
@@ -433,6 +445,7 @@ test(
       t.equal(logger.error.callCount, 0, 'logger.error was not called')
 
       metricsContext.gather.reset()
+      metricsContext.clear.reset()
       logger.info.reset()
     })
   }
@@ -442,6 +455,7 @@ test(
   'log.flowEvent with non-matching flowCompleteSignal',
   t => {
     return log.flowEvent('account.login', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -462,6 +476,7 @@ test(
       t.equal(logger.critical.callCount, 0, 'logger.critical was not called')
       t.equal(logger.warn.callCount, 0, 'logger.warn was not called')
       t.equal(logger.error.callCount, 0, 'logger.error was not called')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
 
       metricsContext.gather.reset()
       logger.info.reset()
@@ -473,6 +488,7 @@ test(
   'log.flowEvent with flow event and missing flowId',
   t => {
     return log.flowEvent('account.login', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -494,6 +510,7 @@ test(
         event: 'account.login',
         missingFlowId: true
       }, 'error data was correct')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
 
       metricsContext.gather.reset()
       logger.error.reset()
@@ -505,6 +522,7 @@ test(
   'log.flowEvent with optional flow event and missing flowId',
   t => {
     return log.flowEvent('account.keyfetch', {
+      clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
         'user-agent': 'foo'
@@ -514,6 +532,7 @@ test(
       }
     }).then(() => {
       t.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+      t.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
       t.equal(logger.info.callCount, 0, 'logger.info was not called')
       t.equal(logger.error.callCount, 0, 'logger.error was not called')
 
