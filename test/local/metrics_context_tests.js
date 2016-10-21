@@ -450,7 +450,7 @@ test(
       t.equal(log.error.callCount, 1, 'log.error was called once')
       t.equal(log.error.args[0].length, 1, 'log.error was passed one argument')
       t.equal(log.error.args[0][0].op, 'metricsContext.gather', 'op property was correct')
-      t.equal(log.error.args[0][0].err.message, 'Invalid credentials', 'err.message property was correct')
+      t.equal(log.error.args[0][0].err.message, 'Missing token', 'err.message property was correct')
       t.equal(log.error.args[0][0].token, undefined, 'token property was correct')
 
       Memcached.prototype.getAsync.restore()
@@ -612,7 +612,7 @@ test(
           id: id
         }
       }
-    }).then(function () {
+    }).then(() => {
       t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
       t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
       t.equal(Memcached.prototype.delAsync.args[0][0], hash.digest('base64'), 'memcached.delAsync argument was correct')
@@ -636,10 +636,49 @@ test(
         uid: uid.toString('hex'),
         code: id
       }
-    }).then(function () {
+    }).then(() => {
       t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
       t.equal(Memcached.prototype.delAsync.args[0].length, 1, 'memcached.delAsync was passed one argument')
       t.equal(Memcached.prototype.delAsync.args[0][0], hash.digest('base64'), 'memcached.delAsync argument was correct')
+
+      Memcached.prototype.delAsync.restore()
+    })
+  }
+)
+
+test(
+  'metricsContext.clear with no token',
+  t => {
+    sinon.stub(Memcached.prototype, 'delAsync', () => P.resolve())
+    return metricsContext.clear.call({}).then(() => {
+      t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
+
+      Memcached.prototype.delAsync.restore()
+    }).catch(err => t.fail(err))
+  }
+)
+
+test(
+  'metricsContext.clear with memcached error',
+  t => {
+    const uid = Buffer.alloc(32, '77')
+    const id = 'wibble'
+    const hash = crypto.createHash('sha256')
+    hash.update(uid)
+    hash.update(id)
+    sinon.stub(Memcached.prototype, 'delAsync', () => P.reject('blee'))
+    return metricsContext.clear.call({
+      auth: {
+        credentials: {
+          uid: uid,
+          id: id
+        }
+      }
+    })
+    .then(() => t.fail('call to metricsContext.clear should have failed'))
+    .catch(err => {
+      t.equal(err, 'blee', 'metricsContext.clear should have rejected with memcached error')
+      t.equal(Memcached.prototype.delAsync.callCount, 1, 'memcached.delAsync was called once')
 
       Memcached.prototype.delAsync.restore()
     })
@@ -669,7 +708,7 @@ test(
           id: id
         }
       }
-    }).then(function () {
+    }).then(() => {
       t.equal(Memcached.prototype.delAsync.callCount, 0, 'memcached.delAsync was not called')
 
       Memcached.prototype.delAsync.restore()
