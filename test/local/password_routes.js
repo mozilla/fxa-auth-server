@@ -99,8 +99,9 @@ test(
       t.equal(args[0].createdAt, undefined, 'db.createPasswordForgotToken was not passed a createdAt timestamp')
 
       t.equal(mockRequest.validateMetricsContext.callCount, 1, 'validateMetricsContext was called')
-      t.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent was called once')
-      t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.send_code', 'password.forgot.send_code event was logged')
+      t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
+      t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.send_code.start', 'password.forgot.send_code.start event was logged')
+      t.equal(mockLog.flowEvent.args[1][0], 'password.forgot.send_code.completed', 'password.forgot.send_code.completed event was logged')
     })
   }
 )
@@ -157,8 +158,9 @@ test(
         t.equal(mockMailer.sendRecoveryCode.callCount, 1, 'mailer.sendRecoveryCode was called once')
 
         t.equal(mockRequest.validateMetricsContext.callCount, 1, 'validateMetricsContext was called')
-        t.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent was called once')
-        t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.resend_code', 'password.forgot.resend_code event was logged')
+        t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
+        t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.resend_code.start', 'password.forgot.resend_code.start event was logged')
+        t.equal(mockLog.flowEvent.args[1][0], 'password.forgot.resend_code.completed', 'password.forgot.resend_code.completed event was logged')
       })
   }
 )
@@ -229,8 +231,9 @@ test(
       t.deepEqual(args[0].uid, uid, 'db.forgotPasswordVerified was passed the correct token')
 
       t.equal(mockRequest.validateMetricsContext.callCount, 1, 'validateMetricsContext was called')
-      t.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent was called once')
-      t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.verify_code', 'password.forgot.verify_code event was logged')
+      t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
+      t.equal(mockLog.flowEvent.args[0][0], 'password.forgot.verify_code.start', 'password.forgot.verify_code.start event was logged')
+      t.equal(mockLog.flowEvent.args[1][0], 'password.forgot.verify_code.completed', 'password.forgot.verify_code.completed event was logged')
     })
   }
 )
