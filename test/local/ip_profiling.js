@@ -92,10 +92,7 @@ var config = {
     }
   },
   signinConfirmation: {
-    forcedEmailAddresses: /.+@mozilla\.com$/,
-    enabled: true,
-    sample_rate: 1,
-    supportedClients: ['fx_desktop_v3']
+    forcedEmailAddresses: /.+@mozilla\.com$/
   },
   signinUnblock: {
     enabled: false
