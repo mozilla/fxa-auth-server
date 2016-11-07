@@ -330,7 +330,10 @@ test('/account/reset', function (t) {
   var accountRoutes = makeRoutes({
     config: {
       securityHistory: {
-        enabled: true
+        enabled: true,
+        ipProfiling: {
+          enabled: false
+        }
       }
     },
     customs: mockCustoms,
@@ -735,7 +738,10 @@ test('/account/create', function (t) {
   var accountRoutes = makeRoutes({
     config: {
       securityHistory: {
-        enabled: true
+        enabled: true,
+        ipProfiling: {
+          enabled: false
+        }
       }
     },
     db: mockDB,
@@ -816,7 +822,10 @@ test('/account/login', function (t) {
   var config = {
     newLoginNotificationEnabled: true,
     securityHistory: {
-      enabled: true
+      enabled: true,
+      ipProfiling: {
+        enabled: false
+      }
     },
     signinConfirmation: {},
     signinUnblock: {

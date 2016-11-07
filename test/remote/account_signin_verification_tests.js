@@ -18,6 +18,7 @@ var publicKey = {
 
 process.env.SIGNIN_CONFIRMATION_ENABLED = true
 process.env.SIGNIN_CONFIRMATION_RATE = 1.0
+process.env.IP_PROFILING_ENABLED = false
 
 TestServer.start(config)
   .then(function main(server) {
