@@ -477,6 +477,13 @@ var conf = convict({
       doc: 'enable security history',
       default: true,
       env: 'SECURITY_HISTORY_ENABLED'
+    },
+    ipProfiling: {
+      enabled: {
+        doc: 'enable ip profiling',
+        default: true,
+        env: 'IP_PROFILING_ENABLED'
+      }
     }
   },
   lastAccessTimeUpdates: {
