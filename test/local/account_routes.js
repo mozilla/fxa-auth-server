@@ -51,7 +51,7 @@ var makeRoutes = function (options, requireMocks) {
   var push = options.push || require('../../lib/push')(log, db, {})
   return proxyquire('../../lib/routes/account', requireMocks || {})(
     log,
-    crypto,
+    require('../../lib/crypto/random'),
     P,
     uuid,
     isA,
@@ -466,7 +466,7 @@ test('/account/device', function (t) {
 })
 
 test('/account/devices/notify', function (t) {
-  t.plan(5)
+  t.plan(6)
   var config = {}
   var uid = uuid.v4('binary')
   var mockRequest = mocks.mockRequest({
@@ -597,6 +597,33 @@ test('/account/devices/notify', function (t) {
     .catch(function (err) {
       t.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
       t.equal(err.message, 'Client has sent too many requests')
+    })
+  })
+
+  t.test('logs error if no devices found', function (t) {
+    t.plan(1)
+    mockRequest.payload = {
+      to: ['bogusid1', 'bogusid2'],
+      TTL: 60,
+      payload: pushPayload
+    }
+
+    var mockLog = mocks.spyLog()
+    var mockPush = mocks.mockPush({
+      pushToDevices: () => P.reject('Devices ids not found in devices')
+    })
+    var mockCustoms = {
+      checkAuthenticated: () => P.resolve()
+    }
+
+    route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush
+    }), '/account/devices/notify')
+
+    return runTest(route, mockRequest, function (response) {
+      t.equal(JSON.stringify(response), '{}', 'response should not throw push errors')
     })
   })
 })
@@ -885,7 +912,8 @@ test('/account/login', function (t) {
   var mockMailer = mocks.mockMailer()
   var mockPush = mocks.mockPush()
   var mockCustoms = {
-    check: () => P.resolve()
+    check: () => P.resolve(),
+    flag: () => P.resolve()
   }
   var accountRoutes = makeRoutes({
     checkPassword: function () {
@@ -1437,38 +1465,52 @@ test('/account/login', function (t) {
       t.plan(2)
       mockCustoms.check = () => P.reject(error.requestBlocked(true))
       t.test('signin unblock disabled', (t) => {
-        t.plan(4)
+        t.plan(6)
         config.signinUnblock.enabled = false
+        mockLog.flowEvent.reset()
         return runTest(route, mockRequest, (err) => {
           t.equal(err.errno, error.ERRNO.REQUEST_BLOCKED, 'correct errno is returned')
           t.equal(err.output.statusCode, 400, 'correct status code is returned')
           t.equal(err.output.payload.verificationMethod, undefined, 'no verificationMethod')
           t.equal(err.output.payload.verificationReason, undefined, 'no verificationReason')
+          t.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent called once')
+          t.equal(mockLog.flowEvent.args[0][0], 'account.login.blocked', 'first event is blocked')
+
+          mockLog.flowEvent.reset()
         })
       })
 
       t.test('signin unblock enabled', (t) => {
         t.plan(2)
         config.signinUnblock.enabled = true
+        mockLog.flowEvent.reset()
 
         t.test('without unblock code', (t) => {
-          t.plan(4)
+          t.plan(6)
           return runTest(route, mockRequest, (err) => {
             t.equal(err.errno, error.ERRNO.REQUEST_BLOCKED, 'correct errno is returned')
             t.equal(err.output.statusCode, 400, 'correct status code is returned')
             t.equal(err.output.payload.verificationMethod, 'email-captcha', 'with verificationMethod')
             t.equal(err.output.payload.verificationReason, 'login', 'with verificationReason')
+            t.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent called once')
+            t.equal(mockLog.flowEvent.args[0][0], 'account.login.blocked', 'first event is blocked')
+            mockLog.flowEvent.reset()
           })
         })
 
         t.test('with unblock code', (t) => {
           t.plan(3)
+          mockLog.flowEvent.reset()
+
           t.test('invalid code', (t) => {
-            t.plan(2)
             mockDB.consumeUnblockCode = () => P.reject(error.invalidUnblockCode())
             return runTest(route, mockRequestWithUnblockCode, (err) => {
               t.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               t.equal(err.output.statusCode, 400, 'correct status code is returned')
+              t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent called twice')
+              t.equal(mockLog.flowEvent.args[1][0], 'account.login.invalidUnblockCode', 'second event is invalid')
+
+              mockLog.flowEvent.reset()
             })
           })
 
@@ -1478,19 +1520,23 @@ test('/account/login', function (t) {
               t.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               t.equal(err.output.statusCode, 400, 'correct status code is returned')
 
+              t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent called twice')
+              t.equal(mockLog.flowEvent.args[1][0], 'account.login.invalidUnblockCode', 'second event is invalid')
+
               mockLog.activityEvent.reset()
               mockLog.flowEvent.reset()
             })
           })
 
           t.test('valid code', (t) => {
-            t.plan(4)
+            t.plan(5)
             mockDB.consumeUnblockCode = () => P.resolve({ createdAt: Date.now() })
             return runTest(route, mockRequestWithUnblockCode, (res) => {
               t.ok(!(res instanceof Error), 'successful login')
-              t.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
-              t.equal(mockLog.flowEvent.args[0][0], 'account.login.confirmedUnblockCode', 'first event was account.login.confirmedUnblockCode')
-              t.equal(mockLog.flowEvent.args[1][0], 'account.login', 'second event was account.login')
+              t.equal(mockLog.flowEvent.callCount, 3, 'log.flowEvent was called three times')
+              t.equal(mockLog.flowEvent.args[0][0], 'account.login.blocked', 'first event was account.login.blocked')
+              t.equal(mockLog.flowEvent.args[1][0], 'account.login.confirmedUnblockCode', 'second event was account.login.confirmedUnblockCode')
+              t.equal(mockLog.flowEvent.args[2][0], 'account.login', 'third event was account.login')
 
               mockLog.flowEvent.reset()
             })

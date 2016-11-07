@@ -36,7 +36,7 @@ function main() {
   var error = require('../lib/error')
   var Token = require('../lib/tokens')(log, config)
   var Password = require('../lib/crypto/password')(log, config)
-  var UnblockCode = require('../lib/crypto/base36')(config.signinUnblock.codeLength)
+  var UnblockCode = require('../lib/crypto/base32')(config.signinUnblock.codeLength)
 
   var signer = require('../lib/signer')(config.secretKeyFile, config.domain)
   var serverPublicKeys = {
@@ -113,7 +113,7 @@ function main() {
                 function (err) {
                   if (err) {
                     log.error({ op: 'server.start.1', msg: 'failed startup with error',
-                                err: { message: err.message } })
+                      err: { message: err.message } })
                     process.exit(1)
                   } else {
                     log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
