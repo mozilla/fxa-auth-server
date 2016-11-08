@@ -19,6 +19,7 @@ var error = require('../../lib/error')
 var log = require('../../lib/log')
 
 var TEST_EMAIL = 'foo@gmail.com'
+var MS_ONE_DAY = 1000 * 60 * 60 * 24
 
 var makeRoutes = function (options, requireMocks) {
   options = options || {}
@@ -199,13 +200,15 @@ test('IP Profiling', function (t) {
 
     return runTest(route, mockRequest, function (response) {
       t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+      t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+
     }).then(function () {
       mockMailer.sendVerifyLoginEmail.reset()
     })
   })
 
   t.test('enabled', function (t) {
-    t.plan(2)
+    t.plan(3)
     config.securityHistory.ipProfiling.enabled = true
 
     var accountRoutes = makeRoutes({
@@ -234,6 +237,7 @@ test('IP Profiling', function (t) {
       var route = getRoute(accountRoutes, '/account/login')
       return runTest(route, mockRequest, function (response) {
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         t.equal(response.verified, false, 'session not verified')
 
       }).then(function () {
@@ -257,6 +261,29 @@ test('IP Profiling', function (t) {
         t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
         t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
         t.equal(response.verified, true, 'session verified')
+
+      }).then(function () {
+        mockMailer.sendNewDeviceLoginNotification.reset()
+      })
+    })
+
+    t.test('previously verified session more than a day', function (t) {
+
+      mockDB.securityEvents = function () {
+        return P.resolve([
+          {
+            name: 'account.login',
+            createdAt: (Date.now() - MS_ONE_DAY), // Created one day ago
+            verified: true
+          }
+        ])
+      }
+
+      var route = getRoute(accountRoutes, '/account/login')
+      return runTest(route, mockRequest, function (response) {
+        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+        t.equal(response.verified, false, 'session verified')
 
       }).then(function () {
         mockMailer.sendVerifyLoginEmail.reset()
