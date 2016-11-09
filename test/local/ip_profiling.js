@@ -6,7 +6,7 @@
 
 var sinon = require('sinon')
 
-var test = require('tap').test
+const assert = require('insist')
 var mocks = require('../mocks')
 var getRoute = require('../routes_helpers').getRoute
 var proxyquire = require('proxyquire')
@@ -79,173 +79,100 @@ function runTest(route, request, assertions) {
     .then(assertions)
 }
 
-test('IP Profiling', function (t) {
-  t.plan(2)
-  var config = {
-    newLoginNotificationEnabled: true,
-    securityHistory: {
-      enabled: true,
-      ipProfiling: {
-        enabled: true
-      }
-    },
-    signinConfirmation: {
-      enabledEmailAddresses: /^.*$/,
+var config = {
+  newLoginNotificationEnabled: true,
+  securityHistory: {
+    enabled: true,
+    ipProfiling: {
       enabled: true
-    },
-    signinUnblock: {
-      enabled: false
     }
+  },
+  signinConfirmation: {
+    enabledEmailAddresses: /^.*$/,
+    enabled: true
+  },
+  signinUnblock: {
+    enabled: false
   }
-  // We want to test what's actually written to stdout by the logger.
-  const mockLog = log('ERROR', 'test', {
-    stdout: {
-      on: sinon.spy(),
-      write: sinon.spy()
-    },
-    stderr: {
-      on: sinon.spy(),
-      write: sinon.spy()
+}
+// We want to test what's actually written to stdout by the logger.
+const mockLog = log('ERROR', 'test', {
+  stdout: {
+    on: sinon.spy(),
+    write: sinon.spy()
+  },
+  stderr: {
+    on: sinon.spy(),
+    write: sinon.spy()
+  }
+})
+const mockRequest = mocks.mockRequest({
+  payload: {
+    authPW: crypto.randomBytes(32).toString('hex'),
+    email: TEST_EMAIL,
+    service: 'sync',
+    reason: 'signin',
+    metricsContext: {
+      context: 'fx_desktop_v3',
+      flowBeginTime: Date.now(),
+      flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
+      entrypoint: 'preferences',
+      utmContent: 'some-content-string'
     }
-  })
-  mockLog.activityEvent = sinon.spy(() => {
-    return P.resolve()
-  })
-  mockLog.flowEvent = sinon.spy(() => {
-    return P.resolve()
-  })
-  const mockMetricsContext = mocks.mockMetricsContext({
-    gather: sinon.spy(function (data) {
-      return P.resolve(this.payload && this.payload.metricsContext)
-    })
-  })
-  const mockRequest = mocks.mockRequest({
-    log: mockLog,
-    metricsContext: mockMetricsContext,
-    payload: {
-      authPW: crypto.randomBytes(32).toString('hex'),
-      email: TEST_EMAIL,
-      service: 'sync',
-      reason: 'signin',
-      metricsContext: {
-        context: 'fx_desktop_v3',
-        flowBeginTime: Date.now(),
-        flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
-        entrypoint: 'preferences',
-        utmContent: 'some-content-string'
-      }
-    },
-    query: {
-      keys: 'true'
-    }
-  })
-  var keyFetchTokenId = crypto.randomBytes(16)
-  var sessionTokenId = crypto.randomBytes(16)
-  var uid = uuid.v4('binary')
-  var mockDB = mocks.mockDB({
+  },
+  query: {
+    keys: 'true'
+  }
+})
+var keyFetchTokenId = crypto.randomBytes(16)
+var sessionTokenId = crypto.randomBytes(16)
+var uid = uuid.v4('binary')
+var mockDB = mocks.mockDB({
+  email: TEST_EMAIL,
+  emailVerified: true,
+  keyFetchTokenId: keyFetchTokenId,
+  sessionTokenId: sessionTokenId,
+  uid: uid
+})
+var mockMailer = mocks.mockMailer()
+var mockPush = mocks.mockPush()
+var mockCustoms = {
+  check: () => P.resolve(),
+  flag: () => P.resolve()
+}
+
+mockDB.emailRecord = function () {
+  return P.resolve({
+    authSalt: crypto.randomBytes(32),
+    data: crypto.randomBytes(32),
     email: TEST_EMAIL,
     emailVerified: true,
-    keyFetchTokenId: keyFetchTokenId,
-    sessionTokenId: sessionTokenId,
-    uid: uid
+    kA: crypto.randomBytes(32),
+    lastAuthAt: function () {
+      return Date.now()
+    },
+    uid: uid,
+    wrapWrapKb: crypto.randomBytes(32)
   })
-  var mockMailer = mocks.mockMailer()
-  var mockPush = mocks.mockPush()
-  var mockCustoms = {
-    check: () => P.resolve(),
-    flag: () => P.resolve()
-  }
+}
 
-  mockDB.emailRecord = function () {
-    return P.resolve({
-      authSalt: crypto.randomBytes(32),
-      data: crypto.randomBytes(32),
-      email: TEST_EMAIL,
-      emailVerified: true,
-      kA: crypto.randomBytes(32),
-      lastAuthAt: function () {
-        return Date.now()
-      },
-      uid: uid,
-      wrapWrapKb: crypto.randomBytes(32)
-    })
-  }
-
-  t.test('disabled', function (t) {
-    config.securityHistory.ipProfiling.enabled = false
-
-    var accountRoutes = makeRoutes({
-      checkPassword: function () {
-        return P.resolve(true)
-      },
-      config: config,
-      customs: mockCustoms,
-      db: mockDB,
-      log: mockLog,
-      mailer: mockMailer,
-      push: mockPush
-    })
-
-    mockDB.securityEvents = function () {
-      return P.resolve([
-        {
-          name: 'account.login',
-          createdAt: Date.now(),
-          verified: true
-        }
-      ])
-    }
-
-    var route = getRoute(accountRoutes, '/account/login')
-
-    return runTest(route, mockRequest, function (response) {
-      t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
-      t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-
-    }).then(function () {
-      mockMailer.sendVerifyLoginEmail.reset()
-    })
-  })
-
-  t.test('enabled', function (t) {
-    t.plan(3)
-    config.securityHistory.ipProfiling.enabled = true
-
-    var accountRoutes = makeRoutes({
-      checkPassword: function () {
-        return P.resolve(true)
-      },
-      config: config,
-      customs: mockCustoms,
-      db: mockDB,
-      log: mockLog,
-      mailer: mockMailer,
-      push: mockPush
-    })
-
-    t.test('no previously verified session', function (t) {
-      mockDB.securityEvents = function () {
-        return P.resolve([
-          {
-            name: 'account.login',
-            createdAt: Date.now(),
-            verified: false
-          }
-        ])
-      }
-
-      var route = getRoute(accountRoutes, '/account/login')
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        t.equal(response.verified, false, 'session not verified')
-
-      }).then(function () {
-        mockMailer.sendVerifyLoginEmail.reset()
+describe('IP Profiling', () => {
+  it(
+    'disabled',
+    () => {
+      config.securityHistory.ipProfiling.enabled = false
+      var accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        config: config,
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
       })
-    })
 
-    t.test('previously verified session', function (t) {
       mockDB.securityEvents = function () {
         return P.resolve([
           {
@@ -258,36 +185,99 @@ test('IP Profiling', function (t) {
 
       var route = getRoute(accountRoutes, '/account/login')
       return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
-        t.equal(response.verified, true, 'session verified')
+        assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+        assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
 
       }).then(function () {
+        mockMailer.sendVerifyLoginEmail.reset()
+      })
+    })
+
+  describe(
+    'enabled',
+    () => {
+      var route, accountRoutes
+
+      beforeEach(() => {
+        config.securityHistory.ipProfiling.enabled = true
+        accountRoutes = makeRoutes({
+          checkPassword: function () {
+            return P.resolve(true)
+          },
+          config: config,
+          customs: mockCustoms,
+          db: mockDB,
+          log: mockLog,
+          mailer: mockMailer,
+          push: mockPush
+        })
+        route = getRoute(accountRoutes, '/account/login')
+      })
+
+      it(
+        'no previously verified session',
+        () => {
+          mockDB.securityEvents = function () {
+            return P.resolve([
+              {
+                name: 'account.login',
+                createdAt: Date.now(),
+                verified: false
+              }
+            ])
+          }
+
+          return runTest(route, mockRequest, function (response) {
+            assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+            assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+            assert.equal(response.verified, false, 'session not verified')
+          })
+        })
+
+      it(
+        'previously verified session',
+        () => {
+          mockDB.securityEvents = function () {
+            return P.resolve([
+              {
+                name: 'account.login',
+                createdAt: Date.now(),
+                verified: true
+              }
+            ])
+          }
+
+          return runTest(route, mockRequest, function (response) {
+            assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+            assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+            assert.equal(response.verified, true, 'session verified')
+          })
+        })
+
+      it(
+        'previously verified session more than a day',
+        () => {
+
+          mockDB.securityEvents = function () {
+            return P.resolve([
+              {
+                name: 'account.login',
+                createdAt: (Date.now() - MS_ONE_DAY), // Created one day ago
+                verified: true
+              }
+            ])
+          }
+
+          return runTest(route, mockRequest, function (response) {
+            assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
+            assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
+            assert.equal(response.verified, false, 'session verified')
+          })
+        })
+
+      afterEach(() => {
+        mockMailer.sendVerifyLoginEmail.reset()
         mockMailer.sendNewDeviceLoginNotification.reset()
       })
     })
-
-    t.test('previously verified session more than a day', function (t) {
-
-      mockDB.securityEvents = function () {
-        return P.resolve([
-          {
-            name: 'account.login',
-            createdAt: (Date.now() - MS_ONE_DAY), // Created one day ago
-            verified: true
-          }
-        ])
-      }
-
-      var route = getRoute(accountRoutes, '/account/login')
-      return runTest(route, mockRequest, function (response) {
-        t.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
-        t.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        t.equal(response.verified, false, 'session verified')
-
-      }).then(function () {
-        mockMailer.sendVerifyLoginEmail.reset()
-      })
-    })
-  })
 })
