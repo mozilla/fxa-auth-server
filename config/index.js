@@ -480,7 +480,7 @@ var conf = convict({
     },
     ipProfiling: {
       enabled: {
-        doc: 'enable ip profiling, bypass sign-in confirmation if login is coming from a previously verified address.',
+        doc: 'enable ip profiling, bypass sign-in confirmation if login is coming from a previously verified ip address.',
         default: true,
         env: 'IP_PROFILING_ENABLED'
       }
