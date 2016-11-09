@@ -20,7 +20,8 @@ const crypto = {
 const config = {
   lastAccessTimeUpdates: {},
   signinConfirmation: {},
-  signinUnblock: {}
+  signinUnblock: {},
+  securityHistory: {}
 }
 
 const features = proxyquire('../../lib/features', {
@@ -31,11 +32,12 @@ test(
   'interface is correct',
   t => {
     t.equal(typeof features, 'object', 'object type should be exported')
-    t.equal(Object.keys(features).length, 4, 'object should have four properties')
+    t.equal(Object.keys(features).length, 5, 'object should have four properties')
     t.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
     t.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
     t.equal(typeof features.isSigninConfirmationEnabledForUser, 'function', 'isSigninConfirmationEnabledForUser should be function')
     t.equal(typeof features.isSigninUnblockEnabledForUser, 'function', 'isSigninUnblockEnabledForUser should be function')
+    t.equal(typeof features.canBypassSiginConfirmation, 'function', 'canBypassSiginConfirmation should be function')
 
     t.equal(crypto.createHash.callCount, 1, 'crypto.createHash should have been called once on require')
     let args = crypto.createHash.args[0]
@@ -279,3 +281,33 @@ test(
   }
 )
 
+test(
+  'canBypassSiginConfirmation',
+  t => {
+    const request = {}
+    const securityEvents = []
+
+    config.securityHistory.enabled = true
+    config.securityHistory.ipProfiling = {
+      enabled: true
+    }
+    t.equal(features.canBypassSiginConfirmation(true, 'day', securityEvents, request), true, 'should return true if verified and regency within day')
+
+    config.securityHistory.enabled = true
+    config.securityHistory.ipProfiling = {
+      enabled: false
+    }
+    t.equal(features.canBypassSiginConfirmation(true, 'day', securityEvents, request), false, 'should return false if profiling disabled')
+
+    config.securityHistory.enabled = true
+    config.securityHistory.ipProfiling = {
+      enabled: true
+    }
+    t.equal(features.canBypassSiginConfirmation(true, 'week', securityEvents, request), false, 'should return false if verified but not within day')
+
+    config.securityHistory.enabled = false
+    t.equal(features.canBypassSiginConfirmation(true, 'day', securityEvents, request), false, 'should return false if security events disabled')
+
+    t.end()
+  }
+)
