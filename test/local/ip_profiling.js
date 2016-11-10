@@ -71,9 +71,13 @@ var makeRoutes = function (options, requireMocks) {
 }
 
 function runTest(route, request, assertions) {
-  return new P(function (resolve) {
+  return new P(function (resolve, reject) {
     route.handler(request, function (response) {
-      resolve(response)
+      if (response instanceof Error) {
+        reject(response)
+      } else {
+        resolve(response)
+      }
     })
   })
     .then(assertions)
