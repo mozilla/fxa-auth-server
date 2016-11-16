@@ -66,6 +66,13 @@ describe('remote db', function() {
       })
   })
 
+  beforeEach(() => {
+    return db.createAccount(ACCOUNT)
+      .then(function(account) {
+        assert.deepEqual(account.uid, ACCOUNT.uid, 'account.uid is the same as the input ACCOUNT.uid')
+      })
+  })
+
   it(
     'ping',
     () => {
@@ -76,13 +83,7 @@ describe('remote db', function() {
   it(
     'account creation',
     () => {
-      return db.createAccount(ACCOUNT)
-        .then(function(account) {
-          assert.deepEqual(account.uid, ACCOUNT.uid, 'account.uid is the same as the input ACCOUNT.uid')
-        })
-        .then(function() {
-          return db.accountExists(ACCOUNT.email)
-        })
+      return db.accountExists(ACCOUNT.email)
         .then(function(exists) {
           assert.ok(exists, 'account exists for this email address')
         })
@@ -660,6 +661,16 @@ describe('remote db', function() {
         })
     }
   )
+
+  afterEach(() => {
+    return db.emailRecord(ACCOUNT.email)
+      .then(function (emailRecord) {
+        return db.deleteAccount(emailRecord)
+      })
+      .catch(function (err) {
+        //
+      })
+  })
 
   after(() => {
     return TestServer.stop(dbServer)
