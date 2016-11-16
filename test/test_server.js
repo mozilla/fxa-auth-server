@@ -84,10 +84,21 @@ TestServer.start = function (config, printLogs) {
   return d.promise
 }
 
+function isDebug(){
+  return global.v8debug ? true : false
+}
+
 TestServer.prototype.start = function () {
+  var spawnOptions = ['./key_server_stub.js']
+
+  var nextDebugPort = process.debugPort + 2
+  if (isDebug()) {
+    spawnOptions.unshift('--debug-brk=' + nextDebugPort)
+  }
+
   this.server = cp.spawn(
     'node',
-    ['./key_server_stub.js'],
+    spawnOptions,
     {
       cwd: __dirname,
       stdio: this.printLogs ? 'pipe' : 'ignore'
