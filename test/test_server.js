@@ -17,6 +17,13 @@ let currentServer
 function TestServer(config, printLogs) {
   currentServer = this
   if (printLogs === undefined) {
+
+    // Issue where debugger does not attach if
+    // child process output is not piped to console
+    if (isDebug()) {
+      process.env.REMOTE_TEST_LOGS = 'true'
+    }
+
     printLogs = (process.env.REMOTE_TEST_LOGS === 'true')
   }
   this.printLogs = printLogs
