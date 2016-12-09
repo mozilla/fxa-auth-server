@@ -491,7 +491,10 @@ var conf = convict({
       env: 'SIGNIN_UNBLOCK_CODE_LIFETIME'
     },
     enabled: {
-      default: true
+      doc: 'Is signin unblock enabled?',
+      format: Boolean,
+      default: false,
+      env: 'SIGNIN_UNBLOCK_ENABLED'
     },
     allowedEmailAddresses: {
       doc: 'If feature enabled, allow sign-in unblock for email addresses matching this regex.',
