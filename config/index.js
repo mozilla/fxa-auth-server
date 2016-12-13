@@ -442,6 +442,19 @@ var conf = convict({
       format: RegExp,
       default: /.+@mozilla\.com$/,
       env: 'SIGNIN_CONFIRMATION_FORCE_EMAIL_REGEX'
+    },
+    bypassAccountWithAge: {
+      enabled :{
+        doc: 'Bypass sign-in confirmation for accounts with an age of at least X.',
+        default: false,
+        env: 'BYPASS_ACCOUNT_AGE_ENABLED'
+      },
+      accountCreatedSinceMS: {
+        doc: 'Account age in MS. Default 1 day.',
+        format: Number,
+        default: 86400000,
+        env: 'BYPASS_ACCOUNT_AGE_MS'
+      }
     }
   },
   securityHistory: {
