@@ -447,13 +447,13 @@ var conf = convict({
       enabled :{
         doc: 'Bypass sign-in confirmation for accounts with an age of at least X.',
         default: false,
-        env: 'BYPASS_ACCOUNT_AGE_ENABLED'
+        env: 'SIGNIN_CONFIRMATION_BYPASS_ACCOUNT_AGE_ENABLED'
       },
       accountCreatedSinceMS: {
-        doc: 'Account age in MS. Default 1 day.',
-        format: Number,
-        default: 86400000,
-        env: 'BYPASS_ACCOUNT_AGE_MS'
+        doc: 'Account age in MS.',
+        format: 'duration',
+        default: '1 day',
+        env: 'SIGNIN_CONFIRMATION_BYPASS_ACCOUNT_AGE_MS'
       }
     }
   },

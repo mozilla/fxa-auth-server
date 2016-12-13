@@ -33,13 +33,12 @@ describe('features', () => {
     'interface is correct',
     () => {
       assert.equal(typeof features, 'object', 'object type should be exported')
-      assert.equal(Object.keys(features).length, 6, 'object should have four properties')
+      assert.equal(Object.keys(features).length, 5, 'object should have four properties')
       assert.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
       assert.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
       assert.equal(typeof features.isSigninUnblockEnabledForUser, 'function', 'isSigninUnblockEnabledForUser should be function')
       assert.equal(typeof features.isSecurityHistoryTrackingEnabled, 'function', 'isSecurityHistoryTrackingEnabled should be function')
       assert.equal(typeof features.isSecurityHistoryProfilingEnabled, 'function', 'isSecurityHistoryProfilingEnabled should be function')
-      assert.equal(typeof features.isSigninBypassAccountWithAgeEnabled, 'function', 'isSigninBypassAccountWithAgeEnabled should be function')
 
       assert.equal(crypto.createHash.callCount, 1, 'crypto.createHash should have been called once on require')
       let args = crypto.createHash.args[0]
@@ -212,26 +211,6 @@ describe('features', () => {
       unblock.allowedEmailAddresses = /.+@notmozilla.com$/
       unblock.sampleRate = 0.03
       assert.equal(features.isSigninUnblockEnabledForUser(uid, email, request), true, 'should return when uid is sampled')
-    }
-  )
-
-  it(
-    'isSigninBypassAccountWithAgeEnabled',
-    () => {
-      config.signinConfirmation.bypassAccountWithAge = {
-        enabled: false,
-        accountCreatedSinceMS: 10
-      }
-      const account = {
-        createdAt: Date.now()
-      }
-      assert.equal(features.isSigninBypassAccountWithAgeEnabled(account), false, 'should return false when disabled')
-
-      config.signinConfirmation.bypassAccountWithAge.enabled = true
-      assert.equal(features.isSigninBypassAccountWithAgeEnabled(account), true, 'should return true if account created at least 10ms ago')
-
-      config.signinConfirmation.bypassAccountWithAge.accountCreatedSinceMS = 0
-      assert.equal(features.isSigninBypassAccountWithAgeEnabled(account), false, 'should return false if account was not just created')
     }
   )
 
