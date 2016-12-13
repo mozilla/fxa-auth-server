@@ -452,7 +452,7 @@ var conf = convict({
       accountCreatedSinceMS: {
         doc: 'Account age in MS.',
         format: 'duration',
-        default: '1 day',
+        default: '4 hours',
         env: 'SIGNIN_CONFIRMATION_BYPASS_ACCOUNT_AGE_MS'
       }
     }
