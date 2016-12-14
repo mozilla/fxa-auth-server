@@ -443,17 +443,17 @@ var conf = convict({
       default: /.+@mozilla\.com$/,
       env: 'SIGNIN_CONFIRMATION_FORCE_EMAIL_REGEX'
     },
-    bypassAccountWithAge: {
+    skipForNewAccounts: {
       enabled :{
-        doc: 'Bypass sign-in confirmation for accounts with an age of at least X.',
+        doc: 'Skip sign-in confirmation for newly-created accounts.',
         default: false,
-        env: 'SIGNIN_CONFIRMATION_BYPASS_ACCOUNT_AGE_ENABLED'
+        env: 'SIGNIN_CONFIRMATION_SKIP_FOR_NEW_ACCOUNTS'
       },
-      accountCreatedSinceMS: {
-        doc: 'Account age in MS.',
+      maxAge: {
+        doc: 'Maximum age at which an account is considered "new".',
         format: 'duration',
         default: '4 hours',
-        env: 'SIGNIN_CONFIRMATION_BYPASS_ACCOUNT_AGE_MS'
+        env: 'SIGNIN_CONFIRMATION_MAX_AGE_OF_NEW_ACCOUNTS'
       }
     }
   },

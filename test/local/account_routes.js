@@ -1172,11 +1172,11 @@ describe('/account/login', function () {
       })
     })
 
-    describe('bypass with account age', function () {
+    describe('skip for new accounts', function () {
       function setup(enabled, accountCreatedSince) {
-        config.signinConfirmation.bypassAccountWithAge = {
+        config.signinConfirmation.skipForNewAccounts = {
           enabled: enabled,
-          accountCreatedSinceMS: 5
+          maxAge: 5
         }
 
         mockDB.emailRecord = function () {
