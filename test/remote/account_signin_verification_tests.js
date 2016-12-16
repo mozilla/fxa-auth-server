@@ -114,6 +114,13 @@ describe('remote account signin verification', function() {
       var client = null
       var uid
       var code
+      var loginOpts = {
+        keys: true,
+        metricsContext: {
+          flowId: 'deadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00d',
+          flowBeginTime: 1
+        }
+      }
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
         .then(
           function (x) {
@@ -133,7 +140,7 @@ describe('remote account signin verification', function() {
         )
         .then(
           function () {
-            return client.login({keys:true})
+            return client.login(loginOpts)
           }
         )
         .then(
@@ -155,6 +162,9 @@ describe('remote account signin verification', function() {
             assert.equal(emailData.subject, 'Confirm new sign-in to Firefox')
             assert.ok(uid, 'sent uid')
             assert.ok(code, 'sent verify code')
+
+            assert.equal(emailData.headers['x-flow-begin-time'], loginOpts.metricsContext.flowBeginTime, 'flow begin time set')
+            assert.equal(emailData.headers['x-flow-id'], loginOpts.metricsContext.flowId, 'flow id set')
           }
         )
         .then(
