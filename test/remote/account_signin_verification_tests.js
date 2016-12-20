@@ -18,6 +18,11 @@ var publicKey = {
   'e': '65537'
 }
 
+const validMetricsContext = {
+  flowBeginTime: 1482250921551,
+  flowId: '03e291ca903f1247a15558fc1592199c93326eb829dfaa4a1aa00ec7807583b5'
+}
+
 describe('remote account signin verification', function() {
   this.timeout(30000)
   let server
@@ -116,10 +121,7 @@ describe('remote account signin verification', function() {
       var code
       var loginOpts = {
         keys: true,
-        metricsContext: {
-          flowId: 'deadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00d',
-          flowBeginTime: 1
-        }
+        metricsContext: validMetricsContext
       }
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
         .then(

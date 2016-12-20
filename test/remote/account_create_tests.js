@@ -10,6 +10,11 @@ var crypto = require('crypto')
 const Client = require('../client')()
 var config = require('../../config').getProperties()
 
+const validMetricsContext = {
+  flowBeginTime: 1482250921551,
+  flowId: '03e291ca903f1247a15558fc1592199c93326eb829dfaa4a1aa00ec7807583b5'
+}
+
 describe('remote account create', function() {
   this.timeout(15000)
   let server
@@ -484,10 +489,7 @@ describe('remote account create', function() {
     () => {
       var email = server.uniqueEmail()
       var opts = {
-        metricsContext: {
-          flowId: 'deadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00ddeadbeefbaadf00d',
-          flowBeginTime: 1
-        }
+        metricsContext: validMetricsContext
       }
       return Client.create(config.publicUrl, email, 'foo', opts).then(function (client) {
         assert.ok(client, 'created account')

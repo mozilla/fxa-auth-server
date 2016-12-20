@@ -324,7 +324,7 @@ describe('bounce messages', () => {
     }
   )
 
-  it.only(
+  it(
     'should emit flow metrics',
     () => {
       var mockLog = spyLog()
