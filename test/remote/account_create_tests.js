@@ -53,12 +53,12 @@ describe('remote account create', function() {
   )
 
   it(
-    'create and verify account',
+    'create and verify sync account',
     () => {
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
       var client = null
-      return Client.create(config.publicUrl, email, password)
+      return Client.create(config.publicUrl, email, password, {service: 'sync'})
         .then(
           function (x) {
             client = x
@@ -77,7 +77,14 @@ describe('remote account create', function() {
         )
         .then(
           function () {
-            return server.mailbox.waitForCode(email)
+            return server.mailbox.waitForEmail(email)
+          }
+        )
+        .then(
+          function (emailData) {
+            assert.equal(emailData.headers['x-template-name'], 'verifySyncEmail')
+            assert.equal(emailData.html.indexOf('IP address') > -1, true) // Ensure some location data is present
+            return emailData.headers['x-verify-code']
           }
         )
         .then(
@@ -586,7 +593,7 @@ describe('remote account create', function() {
   )
 
   it(
-    'create account for unspecified service does not get post-verify email',
+    'create account for unspecified service does not get create sync email and no post-verify email',
     () => {
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
@@ -600,7 +607,14 @@ describe('remote account create', function() {
         )
         .then(
           function () {
-            return server.mailbox.waitForCode(email)
+            return server.mailbox.waitForEmail(email)
+          }
+        )
+        .then(
+          function (emailData) {
+            assert.equal(emailData.headers['x-template-name'], 'verifyEmail')
+            assert.equal(emailData.html.indexOf('IP address') === -1, true) // Does not contain location data
+            return emailData.headers['x-verify-code']
           }
         )
         .then(
