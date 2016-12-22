@@ -9,11 +9,7 @@ var TestServer = require('../test_server')
 var crypto = require('crypto')
 const Client = require('../client')()
 var config = require('../../config').getProperties()
-
-const validMetricsContext = {
-  flowBeginTime: 1482250921551,
-  flowId: '03e291ca903f1247a15558fc1592199c93326eb829dfaa4a1aa00ec7807583b5'
-}
+const mocks = require('../mocks')
 
 describe('remote account create', function() {
   this.timeout(15000)
@@ -489,7 +485,7 @@ describe('remote account create', function() {
     () => {
       var email = server.uniqueEmail()
       var opts = {
-        metricsContext: validMetricsContext
+        metricsContext: mocks.generateMetricsContext()
       }
       return Client.create(config.publicUrl, email, 'foo', opts).then(function (client) {
         assert.ok(client, 'created account')

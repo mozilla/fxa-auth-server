@@ -12,11 +12,7 @@ var crypto = require('crypto')
 var base64url = require('base64url')
 
 var config = require('../../config').getProperties()
-
-const validMetricsContext = {
-  flowBeginTime: 1482250921551,
-  flowId: '03e291ca903f1247a15558fc1592199c93326eb829dfaa4a1aa00ec7807583b5'
-}
+const mocks = require('../mocks')
 
 describe('remote password forgot', function() {
   this.timeout(15000)
@@ -39,7 +35,7 @@ describe('remote password forgot', function() {
       var client = null
       var opts = {
         keys: true,
-        metricsContext: validMetricsContext
+        metricsContext: mocks.generateMetricsContext()
       }
       return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, opts)
         .then(
