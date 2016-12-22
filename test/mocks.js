@@ -284,8 +284,8 @@ function spyLog (methods) {
 }
 
 function generateMetricsContext(){
-  const randomBytes = crypto.randomBytes(16).toString('hex');
-  const flowBeginTime = Date.now();
+  const randomBytes = crypto.randomBytes(16).toString('hex')
+  const flowBeginTime = Date.now()
   const flowSignature = crypto.createHmac('sha256', config.metrics.flow_id_key)
     .update([
       randomBytes,
@@ -293,7 +293,7 @@ function generateMetricsContext(){
       undefined
     ].join('\n'))
     .digest('hex')
-    .substr(0, 32);
+    .substr(0, 32)
 
   return {
     flowBeginTime: flowBeginTime,
