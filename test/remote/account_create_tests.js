@@ -539,7 +539,7 @@ describe('remote account create', function() {
   )
 
   it(
-    'create account for non-sync service does not get post-verify email',
+    'create account for non-sync service, gets generic sign-up email and does not get post-verify email',
     () => {
       var email = server.uniqueEmail()
       var password = 'allyourbasearebelongtous'
@@ -553,7 +553,13 @@ describe('remote account create', function() {
         )
         .then(
           function () {
-            return server.mailbox.waitForCode(email)
+            return server.mailbox.waitForEmail(email)
+          }
+        )
+        .then(
+          function (emailData) {
+            assert.equal(emailData.headers['x-template-name'], 'verifyEmail')
+            return emailData.headers['x-verify-code']
           }
         )
         .then(
