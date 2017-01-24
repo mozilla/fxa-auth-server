@@ -7,11 +7,11 @@
 const assert = require('insist')
 var crypto = require('crypto')
 var uuid = require('uuid')
-var error = require('../../lib/error')
-var getRoute = require('../routes_helpers').getRoute
+var error = require('../../../lib/error')
+var getRoute = require('../../routes_helpers').getRoute
 var isA = require('joi')
-var mocks = require('../mocks')
-var P = require('../../lib/promise')
+var mocks = require('../../mocks')
+var P = require('../../../lib/promise')
 
 describe('/certificate/sign', () => {
   var deviceId = crypto.randomBytes(16)
@@ -142,7 +142,7 @@ describe('/certificate/sign', () => {
 
     var log = options.log || mocks.mockLog()
 
-    return require('../../lib/routes/sign')(
+    return require('../../../lib/routes/sign')(
       log,
       P,
       isA,

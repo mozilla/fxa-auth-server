@@ -11,8 +11,8 @@ const log = {
   error: sinon.spy(),
   flowEvent: sinon.spy()
 }
-const events = require('../../lib/metrics/events')(log)
-const mocks = require('../mocks')
+const events = require('../../../lib/metrics/events')(log)
+const mocks = require('../../mocks')
 
 describe('metrics/events', () => {
   it('interface is correct', () => {

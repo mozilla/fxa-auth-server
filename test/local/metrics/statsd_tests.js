@@ -5,8 +5,8 @@
 'use strict'
 
 const assert = require('insist')
-var StatsDCollector = require('../../lib/metrics/statsd')
-var mockLog = require('../mocks').mockLog()
+var StatsDCollector = require('../../../lib/metrics/statsd')
+var mockLog = require('../../mocks').mockLog()
 
 describe('metrics/statsd', () => {
   it(
@@ -118,7 +118,7 @@ describe('metrics/statsd', () => {
       var statsd = new StatsDCollector(mockLog)
       statsd.init()
       statsd.client = new StatsDMock()
-      var log = require('../../lib/log')('info')
+      var log = require('../../../lib/log')('info')
       log.statsd = statsd
       log.increment('some-event')
       assert.equal(count, 1)
@@ -182,7 +182,7 @@ describe('metrics/statsd', () => {
       var statsd = new StatsDCollector(mockLog)
       statsd.init()
       statsd.client = new StatsDMock()
-      var log = require('../../lib/log')('info')
+      var log = require('../../../lib/log')('info')
       log.statsd = statsd
       log.timing('foo', 1)
       assert.equal(count, 1)

@@ -5,14 +5,14 @@
 'use strict'
 
 const assert = require('insist')
-var promise = require('../../lib/promise')
+var promise = require('../../../lib/promise')
 var config = { scrypt: { maxPending: 5 } }
 var log = {
   buffer: [],
   warn: function(obj){ log.buffer.push(obj) },
 }
 
-var scrypt = require('../../lib/crypto/scrypt')(log, config)
+var scrypt = require('../../../lib/crypto/scrypt')(log, config)
 
 describe('scrypt', () => {
   it(

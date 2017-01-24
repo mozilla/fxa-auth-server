@@ -5,7 +5,7 @@
 'use strict'
 
 const assert = require('insist')
-const hkdf = require('../../lib/crypto/hkdf')
+const hkdf = require('../../../lib/crypto/hkdf')
 
 describe('hkdf', () => {
 

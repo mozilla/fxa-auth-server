@@ -5,16 +5,16 @@
 'use strict'
 
 const assert = require('insist')
-var mocks = require('../mocks')
-var getRoute = require('../routes_helpers').getRoute
+var mocks = require('../../mocks')
+var getRoute = require('../../routes_helpers').getRoute
 
-var P = require('../../lib/promise')
+var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
 var isA = require('joi')
-var error = require('../../lib/error')
+var error = require('../../../lib/error')
 const sinon = require('sinon')
-const log = require('../../lib/log')
+const log = require('../../../lib/log')
 
 var TEST_EMAIL = 'foo@gmail.com'
 
@@ -27,10 +27,10 @@ function makeRoutes(options) {
   }
   var log = options.log || mocks.mockLog()
   var db = options.db || {}
-  var Password = require('../../lib/crypto/password')(log, config)
+  var Password = require('../../../lib/crypto/password')(log, config)
   var customs = options.customs || {}
-  var checkPassword = require('../../lib/routes/utils/password_check')(log, config, Password, customs, db)
-  return require('../../lib/routes/password')(
+  var checkPassword = require('../../../lib/routes/utils/password_check')(log, config, Password, customs, db)
+  return require('../../../lib/routes/password')(
     log,
     isA,
     error,

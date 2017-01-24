@@ -5,7 +5,7 @@
 'use strict'
 
 const assert = require('insist')
-const pbkdf2 = require('../../lib/crypto/pbkdf2')
+const pbkdf2 = require('../../../lib/crypto/pbkdf2')
 const ITERATIONS = 20000
 const LENGTH = 32
 

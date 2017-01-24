@@ -8,7 +8,7 @@ const assert = require('insist')
 const crypto = require('crypto')
 const log = { trace() {} }
 
-const tokens = require('../../lib/tokens')(log)
+const tokens = require('../../../lib/tokens/index')(log)
 const KeyFetchToken = tokens.KeyFetchToken
 
 const ACCOUNT = {

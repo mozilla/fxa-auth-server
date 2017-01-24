@@ -6,9 +6,9 @@
 
 const assert = require('insist')
 var crypto = require('crypto')
-var hkdf = require('../../lib/crypto/hkdf')
-var mocks = require('../mocks')
-var P = require('../../lib/promise')
+var hkdf = require('../../../lib/crypto/hkdf')
+var mocks = require('../../mocks')
+var P = require('../../../lib/promise')
 var sinon = require('sinon')
 
 var Bundle = {
@@ -16,7 +16,7 @@ var Bundle = {
   unbundle: sinon.spy()
 }
 var log = mocks.spyLog()
-var modulePath = '../../lib/tokens/token'
+var modulePath = '../../../lib/tokens/token'
 
 describe('Token', () => {
 
@@ -24,7 +24,7 @@ describe('Token', () => {
     let Token
     before(() => {
       delete require.cache[require.resolve(modulePath)]
-      delete require.cache[require.resolve('../../config')]
+      delete require.cache[require.resolve('../../../config')]
       process.env.NODE_ENV = 'dev'
       Token = require(modulePath)(log, crypto, P, hkdf, Bundle, null)
     })
@@ -61,7 +61,7 @@ describe('Token', () => {
     let Token
     before(() => {
       delete require.cache[require.resolve(modulePath)]
-      delete require.cache[require.resolve('../../config')]
+      delete require.cache[require.resolve('../../../config')]
       process.env.NODE_ENV = 'prod'
       Token = require(modulePath)(log, crypto, P, hkdf, Bundle, null)
     })

@@ -7,7 +7,7 @@
 const assert = require('insist')
 
 const log = { trace() {} }
-const tokens = require('../../lib/tokens')(log)
+const tokens = require('../../../lib/tokens/index')(log)
 const AccountResetToken = tokens.AccountResetToken
 
 const ACCOUNT = {

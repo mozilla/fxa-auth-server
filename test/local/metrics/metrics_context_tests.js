@@ -7,10 +7,10 @@
 const assert = require('insist')
 const crypto = require('crypto')
 const sinon = require('sinon')
-const mocks = require('../mocks')
+const mocks = require('../../mocks')
 const log = mocks.spyLog()
 const Memcached = require('memcached')
-const metricsContextModule = require('../../lib/metrics/context')
+const metricsContextModule = require('../../../lib/metrics/context')
 const metricsContext = metricsContextModule(log, {
   memcached: {
     address: '127.0.0.1:1121',
@@ -18,7 +18,7 @@ const metricsContext = metricsContextModule(log, {
     lifetime: 30
   }
 })
-const P = require('../../lib/promise')
+const P = require('../../../lib/promise')
 
 describe('metricsConext', () => {
 
@@ -455,7 +455,7 @@ describe('metricsConext', () => {
   it(
     'metricsContext.stash with config.memcached.address === "none"',
     () => {
-      var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      var metricsContextWithoutMemcached = require('../../../lib/metrics/context')(log, {
         memcached: {
           address: 'none',
           idle: 500,
@@ -487,7 +487,7 @@ describe('metricsConext', () => {
   it(
     'metricsContext.gather with config.memcached.address === "none"',
     () => {
-      var metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      var metricsContextWithoutMemcached = require('../../../lib/metrics/context')(log, {
         memcached: {
           address: 'none',
           idle: 500,
@@ -611,7 +611,7 @@ describe('metricsConext', () => {
   it(
     'metricsContext.clear with config.memcached.address === "none"',
     () => {
-      const metricsContextWithoutMemcached = require('../../lib/metrics/context')(log, {
+      const metricsContextWithoutMemcached = require('../../../lib/metrics/context')(log, {
         memcached: {
           address: 'none',
           idle: 500,
@@ -666,7 +666,7 @@ describe('metricsConext', () => {
         }
       }
 
-      const metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      const metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       const result = metricsContext.validate.call(mockRequest)
 
       assert.strictEqual(result, true, 'result was true')
@@ -704,7 +704,7 @@ describe('metricsConext', () => {
         }
       }
 
-      var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       var valid = metricsContext.validate.call(mockRequest)
 
       assert(!valid, 'the data is treated as invalid')
@@ -740,7 +740,7 @@ describe('metricsConext', () => {
         }
       }
 
-      var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       var valid = metricsContext.validate.call(mockRequest)
 
       assert(!valid, 'the data is treated as invalid')
@@ -777,7 +777,7 @@ describe('metricsConext', () => {
         }
       }
 
-      var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       var valid = metricsContext.validate.call(mockRequest)
 
       assert(!valid, 'the data is treated as invalid')
@@ -815,7 +815,7 @@ describe('metricsConext', () => {
         }
       }
 
-      var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       var valid = metricsContext.validate.call(mockRequest)
 
       assert(!valid, 'the data is treated as invalid')
@@ -853,7 +853,7 @@ describe('metricsConext', () => {
         }
       }
 
-      var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+      var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
       var valid = metricsContext.validate.call(mockRequest)
 
       assert(!valid, 'the data is treated as invalid')
@@ -898,7 +898,7 @@ describe('metricsConext', () => {
       })
 
       try {
-        var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+        var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
         var valid = metricsContext.validate.call(mockRequest)
       } finally {
         Date.now.restore()
@@ -946,7 +946,7 @@ describe('metricsConext', () => {
       })
 
       try {
-        var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+        var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
         var valid = metricsContext.validate.call(mockRequest)
       } finally {
         Date.now.restore()
@@ -994,7 +994,7 @@ describe('metricsConext', () => {
       })
 
       try {
-        var metricsContext = require('../../lib/metrics/context')(mockLog, mockConfig)
+        var metricsContext = require('../../../lib/metrics/context')(mockLog, mockConfig)
         var valid = metricsContext.validate.call(mockRequest)
       } finally {
         Date.now.restore()

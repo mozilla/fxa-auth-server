@@ -12,10 +12,10 @@ var crypto = require('crypto')
 const config = {
   lastAccessTimeUpdates: {}
 }
-const tokens = require('../../lib/tokens')(log, config)
+const tokens = require('../../../lib/tokens/index')(log, config)
 var SessionToken = tokens.SessionToken
 
-var TOKEN_FRESHNESS_THRESHOLD = require('../../lib/tokens/session_token').TOKEN_FRESHNESS_THREADHOLD
+var TOKEN_FRESHNESS_THRESHOLD = require('../../../lib/tokens/session_token').TOKEN_FRESHNESS_THREADHOLD
 
 var ACCOUNT = {
   createdAt: Date.now(),

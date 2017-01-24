@@ -9,11 +9,11 @@ const log = { trace() {} }
 
 const timestamp = Date.now()
 
-const PasswordForgotToken = require('../../lib/tokens/password_forgot_token')(
+const PasswordForgotToken = require('../../../lib/tokens/password_forgot_token')(
   log,
   require('util').inherits,
-  require('../../lib/tokens')(log),
-  require('../../lib/crypto/random'),
+  require('../../../lib/tokens/index')(log),
+  require('../../../lib/crypto/random'),
   1000 * 60 * 15 // 15 minutes
 )
 
