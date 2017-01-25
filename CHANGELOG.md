@@ -1,3 +1,13 @@
+<a name="1.78.5"></a>
+## [1.78.5](https://github.com/mozilla/fxa-auth-server/compare/v1.78.4...v1.78.5) (2017-01-25)
+
+
+### Bug Fixes
+
+* **routes:** Allow hyphen in service name query parameter. (#52); r=stomlinson ([184c434](https://github.com/mozilla/fxa-auth-server/commit/184c434))
+
+
+
 <a name="1.78.4"></a>
 ## [1.78.4](https://github.com/mozilla/fxa-auth-server/compare/v1.78.3...v1.78.4) (2017-01-25)
 
