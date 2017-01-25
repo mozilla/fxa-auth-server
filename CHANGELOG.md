@@ -1,3 +1,13 @@
+<a name="1.78.3"></a>
+## [1.78.3](https://github.com/mozilla/fxa-auth-server/compare/v1.78.0...v1.78.3) (2017-01-20)
+
+
+### Bug Fixes
+
+* **logging:** Log templates that don't have flow event data (#1618), r=@philbooth ([f8cccaa](https://github.com/mozilla/fxa-auth-server/commit/f8cccaa))
+
+
+
 <a name="1.78.0"></a>
 # [1.78.0](https://github.com/mozilla/fxa-auth-server/compare/v1.77.0...v1.78.0) (2017-01-11)
 
