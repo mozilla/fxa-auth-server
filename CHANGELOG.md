@@ -1,3 +1,14 @@
+<a name="1.78.4"></a>
+## [1.78.4](https://github.com/mozilla/fxa-auth-server/compare/v1.78.3...v1.78.4) (2017-01-25)
+
+
+### Bug Fixes
+
+* **routes:** sanitize service parameter to be only alphanumeric (#51); r=rfk ([10ce949](https://github.com/mozilla/fxa-auth-server/commit/10ce949))
+* **tokens:** Do not override the `createdAt` field on existing tokens. ([fbcee16](https://github.com/mozilla/fxa-auth-server/commit/fbcee16))
+
+
+
 <a name="1.78.3"></a>
 ## [1.78.3](https://github.com/mozilla/fxa-auth-server/compare/v1.78.0...v1.78.3) (2017-01-20)
 
