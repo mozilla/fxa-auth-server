@@ -7,8 +7,8 @@ var log = require('../lib/log')(config.log.level, 'fxa-email-bouncer')
 var error = require('../lib/error')
 var Token = require('../lib/tokens')(log, config)
 var SQSReceiver = require('../lib/sqs')(log)
-var bounces = require('../lib/email-bounces')(log, error)
-var delivery = require('../lib/email-delivery')(log)
+var bounces = require('../lib/email/bounces')(log, error)
+var delivery = require('../lib/email/delivery')(log)
 
 var DB = require('../lib/db')(
   config,

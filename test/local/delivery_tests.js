@@ -7,7 +7,7 @@ const assert = require('insist')
 const EventEmitter = require('events').EventEmitter
 const sinon = require('sinon')
 const spyLog = require('../mocks').spyLog
-const delivery = require('../../lib/email-delivery')
+const delivery = require('../../lib/email/delivery')
 
 const mockDeliveryQueue = new EventEmitter()
 mockDeliveryQueue.start = function start() {
