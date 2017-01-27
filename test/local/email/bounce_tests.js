@@ -6,10 +6,10 @@ const assert = require('insist')
 
 var EventEmitter = require('events').EventEmitter
 var sinon = require('sinon')
-var spyLog = require('../mocks').spyLog
-var error = require('../../lib/error')
-var P = require('../../lib/promise')
-var bounces = require('../../lib/email/bounces')
+var spyLog = require('../../mocks').spyLog
+var error = require('../../../lib/error')
+var P = require('../../../lib/promise')
+var bounces = require('../../../lib/email/bounces')
 
 var mockBounceQueue = new EventEmitter()
 mockBounceQueue.start = function start() {}
