@@ -9,7 +9,7 @@ var sinon = require('sinon')
 var spyLog = require('../mocks').spyLog
 var error = require('../../lib/error')
 var P = require('../../lib/promise')
-var bounces = require('../../lib/bounces')
+var bounces = require('../../lib/email/bounces')
 
 var mockBounceQueue = new EventEmitter()
 mockBounceQueue.start = function start() {}
@@ -96,6 +96,7 @@ describe('bounce messages', () => {
       }
       return mockedBounces(mockLog, mockDB).handleBounce(mockMessage({
         complaint: {
+          userAgent: 'AnyCompany Feedback Loop (V0.01)',
           complaintFeedbackType: 'abuse',
           complainedRecipients: [
             { emailAddress: 'test@example.com' },
@@ -107,7 +108,10 @@ describe('bounce messages', () => {
         assert.equal(mockDB.deleteAccount.callCount, 2)
         assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
         assert.equal(mockDB.emailRecord.args[1][0], 'foobar@example.com')
-        assert.equal(mockLog.messages.length, 8)
+        assert.equal(mockLog.messages.length, 8, 'messages logged')
+        assert.equal(mockLog.messages[1].args[0].complaintFeedbackType, 'abuse')
+        assert.equal(mockLog.messages[1].args[0].complaint, true)
+        assert.equal(mockLog.messages[1].args[0].complaintUserAgent, 'AnyCompany Feedback Loop (V0.01)')
       })
     }
   )
