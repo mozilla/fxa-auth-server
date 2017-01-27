@@ -5,7 +5,7 @@
 'use strict'
 
 const assert = require('insist')
-const requestHelper = require('../../lib/routes/utils/request_helper')
+const requestHelper = require('../../../lib/routes/utils/request_helper')
 
 describe('requestHelper', () => {
   it(

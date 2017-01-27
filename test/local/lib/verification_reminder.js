@@ -8,10 +8,12 @@ const assert = require('insist')
 var proxyquire = require('proxyquire')
 var uuid = require('uuid')
 
-var P = require('../../lib/promise')
-var mockLog = require('../mocks').mockLog
+var P = require('../../../lib/promise')
+var mockLog = require('../../mocks').mockLog
 
 var zeroBuffer16 = Buffer('00000000000000000000000000000000', 'hex')
+
+const verificationModulePath = '../../../lib/verification-reminders'
 
 var ACCOUNT = {
   uid: uuid.v4('binary'),
@@ -55,7 +57,7 @@ describe('verification reminders', () => {
         }
       })
 
-      var verificationReminder = proxyquire('../../lib/verification-reminders', moduleMocks)(thisMockLog, mockDb)
+      var verificationReminder = proxyquire(verificationModulePath, moduleMocks)(thisMockLog, mockDb)
 
       return P.all([
         verificationReminder.create(reminderData),
@@ -84,7 +86,7 @@ describe('verification reminders', () => {
         }
       }
 
-      var verificationReminder = proxyquire('../../lib/verification-reminders', moduleMocks)(mockLog, mockDb)
+      var verificationReminder = proxyquire(verificationModulePath, moduleMocks)(mockLog, mockDb)
       verificationReminder.create(reminderData)
         .then(function (result) {
           assert.equal(result, false)
@@ -111,7 +113,7 @@ describe('verification reminders', () => {
         }
       }
 
-      var verificationReminder = proxyquire('../../lib/verification-reminders', {})(thisMockLog, thisMockDb)
+      var verificationReminder = proxyquire(verificationModulePath, {})(thisMockLog, thisMockDb)
       return verificationReminder.delete(reminderData).then(() => {
         assert.equal(count, 1)
       })
@@ -135,7 +137,7 @@ describe('verification reminders', () => {
         }
       }
 
-      var verificationReminder = proxyquire('../../lib/verification-reminders', {})(thisMockLog, thisMockDb)
+      var verificationReminder = proxyquire(verificationModulePath, {})(thisMockLog, thisMockDb)
       return verificationReminder.delete(reminderData).then(() => {
         assert.equal(count, 1)
       })

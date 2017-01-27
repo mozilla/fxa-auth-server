@@ -5,7 +5,7 @@
 'use strict'
 
 const assert = require('insist')
-const server = require('../../lib/server')
+const server = require('../../../lib/server')
 
 describe('lib/server', () => {
   describe('trimLocale', () => {

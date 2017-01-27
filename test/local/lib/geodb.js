@@ -6,7 +6,8 @@
 
 const assert = require('insist')
 const proxyquire = require('proxyquire')
-const mockLog = require('../mocks').mockLog
+const mockLog = require('../../mocks').mockLog
+const modulePath = '../../../lib/geodb'
 
 describe('geodb', () => {
   it(
@@ -25,7 +26,7 @@ describe('geodb', () => {
       }
       const thisMockLog = mockLog({})
 
-      const getGeoData = proxyquire('../../lib/geodb', moduleMocks)(thisMockLog)
+      const getGeoData = proxyquire(modulePath, moduleMocks)(thisMockLog)
       return getGeoData('63.245.221.32') // MTV
       .then(function (geoData) {
         assert.equal(geoData.location.city, 'Mountain View')
@@ -53,7 +54,7 @@ describe('geodb', () => {
       }
       const thisMockLog = mockLog({})
 
-      const getGeoData = proxyquire('../../lib/geodb', moduleMocks)(thisMockLog)
+      const getGeoData = proxyquire(modulePath, moduleMocks)(thisMockLog)
       return getGeoData('8.8.8.8')
       .then(function (geoData) {
         assert.deepEqual(geoData, {})

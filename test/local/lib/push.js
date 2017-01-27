@@ -11,13 +11,14 @@ var ajv = require('ajv')()
 var fs = require('fs')
 var path = require('path')
 
-var P = require('../../lib/promise')
-var mockLog = require('../mocks').mockLog
+var P = require('../../../lib/promise')
+var mockLog = require('../../mocks').mockLog
 var mockUid = new Buffer('foo')
 var mockConfig = {}
 
-var PUSH_PAYLOADS_SCHEMA_PATH = '../../docs/pushpayloads.schema.json'
+var PUSH_PAYLOADS_SCHEMA_PATH = '../../../docs/pushpayloads.schema.json'
 var TTL = '42'
+const pushModulePath = '../../../lib/push'
 
 var mockDbEmpty = {
   devices: function () {
@@ -58,7 +59,7 @@ describe('push', () => {
   it(
     'pushToDevices throws on device not found',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbEmpty, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbEmpty, mockConfig)
       sinon.spy(push, 'sendPush')
 
       return push.pushToDevices([mockUid], 'bogusid').then(function () {
@@ -80,7 +81,7 @@ describe('push', () => {
         }
       })
 
-      var push = require('../../lib/push')(thisMockLog, mockDbEmpty, mockConfig)
+      var push = require(pushModulePath)(thisMockLog, mockDbEmpty, mockConfig)
       return push.pushToAllDevices(mockUid, 'accountVerify')
     }
   )
@@ -96,7 +97,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(mockLog(), mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
       var options = { excludedDeviceIds: [mockDevices[0].id] }
       return push.pushToAllDevices(mockUid, 'accountVerify', options)
     }
@@ -105,7 +106,7 @@ describe('push', () => {
   it(
     'pushToAllDevices calls sendPush',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbResult, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbResult, mockConfig)
       sinon.stub(push, 'sendPush')
       var excluded = [mockDevices[0].id]
       var data = new Buffer('foobar')
@@ -125,7 +126,7 @@ describe('push', () => {
   it(
     'pushToDevices calls sendPush',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbResult, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbResult, mockConfig)
       sinon.stub(push, 'sendPush')
       var data = new Buffer('foobar')
       var options = { data: data, TTL: TTL }
@@ -144,7 +145,7 @@ describe('push', () => {
   it(
     'pushToDevice calls pushToDevices',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbResult, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbResult, mockConfig)
       sinon.stub(push, 'pushToDevices')
       var data = new Buffer('foobar')
       var options = { data: data, TTL: TTL }
@@ -181,7 +182,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, mockDevices, 'accountVerify')
         .then(() => {
           assert.equal(successCalled, 2)
@@ -211,7 +212,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       var options = { TTL: TTL }
       return push.sendPush(mockUid, mockDevices, 'accountVerify', options)
         .then(() => {
@@ -237,7 +238,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(mockLog(), mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
       var options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'accountVerify', options)
         .then(() => {
@@ -266,7 +267,7 @@ describe('push', () => {
         'pushAuthKey': 'bogus'
       }]
 
-      var push = require('../../lib/push')(thisMockLog, mockDbResult, mockConfig)
+      var push = require(pushModulePath)(thisMockLog, mockDbResult, mockConfig)
       var options = { data: new Buffer('foobar') }
       return push.sendPush(mockUid, devices, 'accountVerify', options)
         .then(() => {
@@ -293,7 +294,7 @@ describe('push', () => {
         'name': 'My Phone'
       }]
 
-      var push = require('../../lib/push')(thisMockLog, mockDbResult, mockConfig)
+      var push = require(pushModulePath)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, devices, 'accountVerify')
         .then(() => {
           assert.equal(count, 1)
@@ -322,7 +323,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, [mockDevices[0]], 'accountVerify')
         .then(() => {
           assert.equal(count, 1)
@@ -350,7 +351,7 @@ describe('push', () => {
           }
         }
       }
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
 
       return push.sendPush(mockUid, devices, 'accountVerify').then(function () {
         assert.equal(thisMockLog.error.callCount, 0, 'log.error was not called')
@@ -398,7 +399,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDb, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDb, mockConfig)
       return push.sendPush(mockUid, [mockDevices[0]], 'accountVerify')
         .then(() => {
           assert.equal(count, 1)
@@ -409,7 +410,7 @@ describe('push', () => {
   it(
     'notifyUpdate calls pushToAllDevices',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbEmpty, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbEmpty, mockConfig)
       sinon.spy(push, 'pushToAllDevices')
       return push.notifyUpdate(mockUid, 'passwordReset')
       .then(function() {
@@ -424,7 +425,7 @@ describe('push', () => {
   it(
     'notifyUpdate without a 2nd arg calls pushToAllDevices with a accountVerify reason',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbEmpty, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbEmpty, mockConfig)
       sinon.spy(push, 'pushToAllDevices')
       return push.notifyUpdate(mockUid)
       .then(function() {
@@ -439,7 +440,7 @@ describe('push', () => {
   it(
     'notifyDeviceConnected calls pushToAllDevices',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbEmpty, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbEmpty, mockConfig)
       sinon.spy(push, 'pushToAllDevices')
       var deviceId = 'gjfkd5434jk5h5fd'
       var deviceName = 'My phone'
@@ -473,7 +474,7 @@ describe('push', () => {
   it(
     'notifyDeviceDisconnected calls pushToDevice',
     () => {
-      var push = require('../../lib/push')(mockLog(), mockDbResult, mockConfig)
+      var push = require(pushModulePath)(mockLog(), mockDbResult, mockConfig)
       sinon.spy(push, 'pushToDevice')
       var idToDisconnect = mockDevices[0].id
       var expectedData = {
@@ -514,7 +515,7 @@ describe('push', () => {
           }
         }
       }
-      var push = proxyquire('../../lib/push', mocks)(mockLog(), mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
       sinon.spy(push, 'sendPush')
       var expectedData = {
         version: 1,
@@ -550,7 +551,7 @@ describe('push', () => {
           }
         }
       }
-      var push = proxyquire('../../lib/push', mocks)(mockLog(), mockDbEmpty, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbEmpty, mockConfig)
       sinon.spy(push, 'sendPush')
       var expectedData = {
         version: 1,
@@ -590,7 +591,7 @@ describe('push', () => {
 
       var mockConfig = {
         publicUrl: 'https://example.com',
-        vapidKeysFile: path.join(__dirname, '..', 'config', 'mock-vapid-keys.json')
+        vapidKeysFile: path.join(__dirname, '../../', 'config', 'mock-vapid-keys.json')
       }
 
       var mocks = {
@@ -605,7 +606,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, mockDevices, 'accountVerify')
         .then(() => {
           assert.equal(count, 1)
@@ -627,7 +628,7 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire('../../lib/push', mocks)(thisMockLog, mockDbResult, mockConfig)
+      var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, mockDevices, 'anUnknownReasonString').then(
         function () {
           assert(false, 'calling sendPush should have failed')

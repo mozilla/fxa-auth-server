@@ -7,9 +7,9 @@
 const assert = require('insist')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var mocks = require('../mocks')
+var mocks = require('../../mocks')
 
-var modulePath = '../../lib/devices'
+var modulePath = '../../../lib/devices'
 
 describe('devices', () => {
   it('should be an exported function', () => {

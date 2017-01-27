@@ -5,14 +5,14 @@
 'use strict'
 
 const assert = require('insist')
-var config = require('../../config').getProperties()
+var config = require('../../../config/index').getProperties()
 var log = {}
 
 describe('mailer locales', () => {
 
   let mailer
   before(() => {
-    return require('../../lib/mailer')(config, log)
+    return require('../../../lib/mailer')(config, log)
       .then(m => {
         mailer = m
       })
