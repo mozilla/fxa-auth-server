@@ -45,7 +45,7 @@ describe('metrics/statsd', () => {
             assert.ok(sampleRate)
             assert.equal(Array.isArray(tags), true)
             assert.equal(tags.length, 0)
-            count++
+            count ++
           }
         }
       }
@@ -80,7 +80,7 @@ describe('metrics/statsd', () => {
               'agent_os_family:Mac OS X',
               'agent_os_major:10'
             ])
-            count++
+            count ++
           }
         }
       }
@@ -110,7 +110,7 @@ describe('metrics/statsd', () => {
             assert.ok(sampleRate)
             assert.equal(Array.isArray(tags), true)
             assert.equal(tags.length, 0)
-            count++
+            count ++
           }
         }
       }
@@ -133,7 +133,7 @@ describe('metrics/statsd', () => {
         error: function (log) {
           assert.equal(log.op, 'statsd.increment')
           assert.equal(log.err.message, 'Failed to send message')
-          count++
+          count ++
         }
       }
 
@@ -174,7 +174,7 @@ describe('metrics/statsd', () => {
             assert.equal(typeof arguments[2], 'number', 'statsd.timing received the correct timing argument')
             assert.equal(arguments[3], undefined, 'statsd.timing received the correct tags argument')
             assert.equal(typeof arguments[4], 'function', 'statsd.timing received the correct callback argument')
-            count++
+            count ++
           }
         }
       }
@@ -197,7 +197,7 @@ describe('metrics/statsd', () => {
         error: function (log) {
           assert.equal(log.op, 'statsd.timing')
           assert.equal(log.err, 'foo')
-          count++
+          count ++
         }
       }
 

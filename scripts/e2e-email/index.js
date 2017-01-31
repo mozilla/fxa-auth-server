@@ -216,7 +216,7 @@ function main() {
         output.push('  ' + lang + ':')
         var errorList = errors[lang]
         errorList.forEach(function(err) {
-          errorCount++
+          errorCount ++
           output.push('    ' + err)
         })
       })

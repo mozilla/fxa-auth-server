@@ -65,7 +65,7 @@ describe('push', () => {
       return push.pushToDevices([mockUid], 'bogusid').then(function () {
         assert(false, 'must throw')
       }, function(err) {
-        assert(!push.sendPush.called)
+        assert(! push.sendPush.called)
       })
     }
   )
@@ -168,7 +168,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.success') {
             // notification sent
-            successCalled++
+            successCalled ++
           }
         }
       })
@@ -198,7 +198,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.success') {
             // notification sent
-            successCalled++
+            successCalled ++
           }
         }
       })
@@ -229,7 +229,7 @@ describe('push', () => {
       var mocks = {
         'web-push': {
           sendNotification: function (sub, payload, options) {
-            count++
+            count ++
             assert.ok(sub.keys.p256dh)
             assert.ok(sub.keys.auth)
             assert.deepEqual(payload, data)
@@ -255,7 +255,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.data_but_no_keys') {
             // data detected but device had no keys
-            count++
+            count ++
           }
         }
       })
@@ -284,7 +284,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.no_push_callback') {
             // device had no push callback
-            count++
+            count ++
           }
         }
       })
@@ -310,7 +310,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.failed') {
             // web-push failed
-            count++
+            count ++
           }
         }
       })
@@ -339,7 +339,7 @@ describe('push', () => {
       })
 
       var devices = []
-      for (var i = 0; i < 200; i++) {
+      for (var i = 0; i < 200; i ++) {
         devices.push(mockDevices[0])
       }
 
@@ -384,7 +384,7 @@ describe('push', () => {
             var args = mockDb.updateDevice.args[0]
             assert.equal(args.length, 3, 'db.updateDevice was passed three arguments')
             assert.equal(args[1], null, 'sessionTokenId argument was null')
-            count++
+            count ++
           }
         }
       })
@@ -584,7 +584,7 @@ describe('push', () => {
       var thisMockLog = mockLog({
         info: function (log) {
           if (log.name === 'push.account_verify.success') {
-            count++
+            count ++
           }
         }
       })

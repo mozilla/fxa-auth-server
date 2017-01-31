@@ -52,7 +52,7 @@ describe('e2e/push', () => {
         var thisSpyLog = spyLog({
           info: function (log) {
             if (log.name === 'push.account_verify.success') {
-              count++
+              count ++
             }
           }
         })

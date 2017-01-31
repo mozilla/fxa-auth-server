@@ -100,7 +100,7 @@ function normalizeRecords(records) {
     // real emails are replaced by fake emails by default.
     if (! commandLineOptions.real) {
       record.email = 'fake_email' + fakeEmailCount + '@fakedomain.com'
-      fakeEmailCount++
+      fakeEmailCount ++
     }
 
     // The Chinese translations were handed to us as "zh" w/o a country
@@ -173,7 +173,7 @@ function sendBatch(batch) {
     batch.map(function (emailConfig) {
       return mailer[mailerFunctionName](emailConfig)
         .then(function () {
-          successCount++
+          successCount ++
           log.info({
             op: 'send.success',
             email: emailConfig.email
@@ -187,7 +187,7 @@ function sendBatch(batch) {
 
 var erroredEmailConfigs = []
 function handleEmailError(emailConfig, error) {
-  errorCount++
+  errorCount ++
 
   emailConfig.error = String(error)
   erroredEmailConfigs.push(emailConfig)

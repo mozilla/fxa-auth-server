@@ -52,7 +52,7 @@ describe('verification reminders', () => {
       var thisMockLog = mockLog({
         increment: function (name) {
           if (name === 'verification-reminders.created') {
-            addedTimes++
+            addedTimes ++
           }
         }
       })
@@ -101,7 +101,7 @@ describe('verification reminders', () => {
       var thisMockLog = mockLog({
         increment: function (name) {
           if (name === 'verification-reminders.deleted') {
-            count++
+            count ++
           }
         }
       })
@@ -128,7 +128,7 @@ describe('verification reminders', () => {
         error: function (logErr) {
           assert.equal(logErr.op, 'verification-reminder.delete')
           assert.ok(logErr.err.message)
-          count++
+          count ++
         }
       })
       var thisMockDb = {

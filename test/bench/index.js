@@ -42,9 +42,9 @@ server.stderr
           console.log(json)
         }
         if (json.op && json.op === 'request.summary') {
-          if (!start) start = Date.now()
-          requests++
-          if (json.code === 200) { pass++ } else { fail++ }
+          if (! start) start = Date.now()
+          requests ++
+          if (json.code === 200) { pass ++ } else { fail ++ }
           var stat = pathStats[json.path] || {}
           stat.count = stat.count + 1 || 1
           stat.max = Math.max(stat.max || 0, json.t)
@@ -73,7 +73,7 @@ function startClient() {
 }
 
 function clientExit() {
-  clientCount--
+  clientCount --
   if (clientCount === 0) {
     var seconds = (Date.now() - start) / 1000
     var rps = Math.floor(requests / seconds)
@@ -84,7 +84,7 @@ function clientExit() {
 }
 
 function startClients() {
-  for (var i = 0; i < clientCount; i++) {
+  for (var i = 0; i < clientCount; i ++) {
     var c = startClient()
     c.on('exit', clientExit)
   }
