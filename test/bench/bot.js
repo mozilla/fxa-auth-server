@@ -28,7 +28,7 @@ function times(fn, n) {
   return function () {
     var args = arguments
     var p = fn.apply(null, args)
-    for (var i = 1; i < n; i++) {
+    for (var i = 1; i < n; i ++) {
       p = p.then(bindApply(fn, args))
     }
     return p

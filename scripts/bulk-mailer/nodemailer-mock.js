@@ -26,7 +26,7 @@ module.exports = function (config) {
       }
 
       if (Math.random() > config.failureRate) {
-        messageId++
+        messageId ++
         callback(null, {
           message: 'good',
           messageId: messageId

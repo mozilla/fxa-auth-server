@@ -94,7 +94,7 @@ describe('remote db', function() {
           assert.equal(account.emailVerified, ACCOUNT.emailVerified, 'emailVerified')
           assert.deepEqual(account.kA, ACCOUNT.kA, 'kA')
           assert.deepEqual(account.wrapWrapKb, ACCOUNT.wrapWrapKb, 'wrapWrapKb')
-          assert(!account.verifyHash, 'verifyHash')
+          assert(! account.verifyHash, 'verifyHash')
           assert.deepEqual(account.authSalt, ACCOUNT.authSalt, 'authSalt')
           assert.equal(account.verifierVersion, ACCOUNT.verifierVersion, 'verifierVersion')
           assert.ok(account.createdAt, 'createdAt')
@@ -222,7 +222,7 @@ describe('remote db', function() {
         name: '',
         type: 'mobile',
         pushCallback: 'https://foo/bar',
-        pushPublicKey: base64url(Buffer.concat([new Buffer('\x04'), crypto.randomBytes(64)])),
+        pushPublicKey: base64url(Buffer.concat([Buffer.from('\x04'), crypto.randomBytes(64)])),
         pushAuthKey: base64url(crypto.randomBytes(16))
       }
       return db.emailRecord(ACCOUNT.email)

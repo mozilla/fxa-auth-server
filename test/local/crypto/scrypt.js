@@ -40,7 +40,7 @@ describe('scrypt', () => {
       // Send many concurrent requests.
       // Not yielding the event loop ensures they will pile up quickly.
       var promises = []
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i ++) {
         promises.push(scrypt.hash(K1, salt, 65536, 8, 1, 32))
       }
       return promise.all(promises).then(

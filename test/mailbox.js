@@ -45,11 +45,11 @@ module.exports = function (host, port, printLogs) {
           return cb(e)
         }
 
-        if(!json) {
+        if(! json) {
           if (tries === 0) {
             return cb(new Error('could not get mail for ' + url))
           }
-          return setTimeout(loop.bind(null, name, --tries, cb), 1000)
+          return setTimeout(loop.bind(null, name, -- tries, cb), 1000)
         }
         log('deleting mail', url)
         request({ url: url, method: 'DELETE' },
