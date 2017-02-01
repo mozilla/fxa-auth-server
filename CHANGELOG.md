@@ -1,3 +1,13 @@
+<a name="1.79.2"></a>
+## [1.79.2](https://github.com/mozilla/fxa-auth-server/compare/v1.79.0...v1.79.2) (2017-02-01)
+
+
+### Bug Fixes
+
+* **server:** disallow any query or payload params without validation ([ef9369f](https://github.com/mozilla/fxa-auth-server/commit/ef9369f))
+
+
+
 <a name="1.79.0"></a>
 # [1.79.0](https://github.com/mozilla/fxa-auth-server/compare/v1.78.0...v1.79.0) (2017-01-30)
 
