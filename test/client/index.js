@@ -117,7 +117,7 @@ module.exports = config => {
   }
 
   Client.loginAndVerify = function (origin, email, password, mailbox, options) {
-    if (! options ) {
+    if (! options) {
       options = {}
     }
 
@@ -415,7 +415,7 @@ module.exports = config => {
   }
 
   Client.prototype.resetPassword = function (newPassword, headers, options) {
-    if (!this.accountResetToken) {
+    if (! this.accountResetToken) {
       throw new Error('call verifyPasswordResetCode before calling resetPassword')
     }
     // this will generate a new wrapKb on the server
