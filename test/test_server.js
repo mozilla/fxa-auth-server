@@ -44,7 +44,7 @@ function waitLoop(testServer, url, cb) {
           console.log(err)
           return cb(err)
         }
-        if (!testServer.server) {
+        if (! testServer.server) {
           if (testServer.printLogs) {
             console.log('starting...')
           }
@@ -160,7 +160,7 @@ TestServer.prototype.stop = function () {
   currentServer = undefined
   try { this.db.close() } catch (e) {}
   if (this.server) {
-    let doomed = [
+    const doomed = [
       processKill(this.server, 'server', 'SIGINT'),
       processKill(this.mail, 'mail')
     ]

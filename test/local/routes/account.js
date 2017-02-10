@@ -224,6 +224,7 @@ describe('/account/create', function () {
       email: TEST_EMAIL,
       emailCode: emailCode,
       emailVerified: false,
+      locale: 'en',
       keyFetchTokenId: keyFetchTokenId,
       sessionTokenId: sessionTokenId,
       uaBrowser: 'Firefox',
@@ -283,6 +284,7 @@ describe('/account/create', function () {
       assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
       assert.deepEqual(args[0], {
         event: 'account.created',
+        locale: 'en',
         service: 'sync',
         userAgent: 'test user-agent',
         uid: uid.toString('hex')
@@ -296,8 +298,9 @@ describe('/account/create', function () {
         flowCompleteSignal: 'account.signed',
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
-        service: 'sync',
+        locale: 'en',
         time: now,
+        uid: uid.toString('hex'),
         userAgent: 'test user-agent'
       }, 'flow event data was correct')
 
@@ -521,8 +524,9 @@ describe('/account/login', function () {
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         flowCompleteSignal: 'account.signed',
-        service: 'sync',
+        locale: 'en-US',
         time: now,
+        uid: uid.toString('hex'),
         userAgent: 'test user-agent'
       }, 'first flow event was correct')
       args = mockLog.flowEvent.args[1]
@@ -532,8 +536,9 @@ describe('/account/login', function () {
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         flowCompleteSignal: 'account.signed',
-        service: 'sync',
+        locale: 'en-US',
         time: now,
+        uid: undefined,
         userAgent: 'test user-agent'
       }, 'second flow event was correct')
 
@@ -577,7 +582,7 @@ describe('/account/login', function () {
       assert.equal(args[2].uaDeviceType, 'mobile')
 
       assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-      assert.ok(!response.verified, 'response indicates account is not verified')
+      assert.ok(! response.verified, 'response indicates account is not verified')
       assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
       assert.equal(response.verificationReason, 'login', 'verificationReason is login')
     }).finally(() => Date.now.restore())
@@ -649,7 +654,7 @@ describe('/account/login', function () {
         assert.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         assert.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyCode was not called')
         assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-        assert.ok(!response.verified, 'response indicates account is not verified')
+        assert.ok(! response.verified, 'response indicates account is not verified')
         assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         assert.equal(response.verificationReason, 'login', 'verificationReason is login')
 
@@ -679,7 +684,7 @@ describe('/account/login', function () {
       return runTest(route, mockRequestNoKeys, function (response) {
         assert.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
         var tokenData = mockDB.createSessionToken.getCall(0).args[0]
-        assert.ok(!tokenData.mustVerify, 'sessionToken does not have to be verified')
+        assert.ok(! tokenData.mustVerify, 'sessionToken does not have to be verified')
         assert.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
         // Note that *neither* email is sent in this case,
         // since it can't have been a new device connection.
@@ -690,8 +695,8 @@ describe('/account/login', function () {
         assert.deepEqual(mockMetricsContext.setFlowCompleteSignal.args[0][0], 'account.login', 'argument was event name')
 
         assert.ok(response.verified, 'response indicates account is verified')
-        assert.ok(!response.verificationMethod, 'verificationMethod doesn\'t exist')
-        assert.ok(!response.verificationReason, 'verificationReason doesn\'t exist')
+        assert.ok(! response.verificationMethod, 'verificationMethod doesn\'t exist')
+        assert.ok(! response.verificationReason, 'verificationReason doesn\'t exist')
       })
     })
 
@@ -720,7 +725,7 @@ describe('/account/login', function () {
         assert.equal(mockMailer.sendVerifyCode.callCount, 1, 'mailer.sendVerifyCode was called')
         assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
         assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
-        assert.ok(!response.verified, 'response indicates account is not verified')
+        assert.ok(! response.verified, 'response indicates account is not verified')
         assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         assert.equal(response.verificationReason, 'signup', 'verificationReason is signup')
         assert.equal(response.emailSent, true, 'response indicates an email was sent')
@@ -775,7 +780,7 @@ describe('/account/login', function () {
           assert.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
           assert.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyCode was not called')
           assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-          assert.ok(!response.verified, 'response indicates account is not verified')
+          assert.ok(! response.verified, 'response indicates account is not verified')
           assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
           assert.equal(response.verificationReason, 'login', 'verificationReason is login')
 
@@ -810,7 +815,7 @@ describe('/account/login', function () {
           assert.ok(tokenData.tokenVerificationId, 'sessionToken was created unverified')
           assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
           assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
-          assert.ok(!response.verified, 'response indicates account is unverified')
+          assert.ok(! response.verified, 'response indicates account is unverified')
         })
       })
     })
@@ -868,7 +873,7 @@ describe('/account/login', function () {
         assert.equal(securityQuery.uid, uid)
         assert.equal(securityQuery.ipAddr, clientAddress)
 
-        assert.equal(!!record, true, 'log.info was called for Account.history')
+        assert.equal(!! record, true, 'log.info was called for Account.history')
         assert.equal(record.op, 'Account.history.verified')
         assert.equal(record.uid, uid.toString('hex'))
         assert.equal(record.events, 1)
@@ -894,7 +899,7 @@ describe('/account/login', function () {
         assert.equal(securityQuery.uid, uid)
         assert.equal(securityQuery.ipAddr, clientAddress)
 
-        assert.equal(!!record, true, 'log.info was called for Account.history')
+        assert.equal(!! record, true, 'log.info was called for Account.history')
         assert.equal(record.op, 'Account.history.unverified')
         assert.equal(record.uid, uid.toString('hex'))
         assert.equal(record.events, 1)
