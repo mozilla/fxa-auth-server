@@ -33,6 +33,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "ajv": "4.1.7",
+    "amplitude": "^3.4.0",
     "aws-sdk": "2.2.10",
     "base64url": "1.0.6",
     "binary-split": "0.1.2",
