@@ -1,0 +1,164 @@
+# Firefox Accounts authentication server API
+<!--begin-abstract-->
+{{{abstract}}}
+<!--end-abstract-->
+* [Overview](#overview)
+  * [URL structure](#url-structure)
+  * [Request format](#request-format)
+  * [Response format](#response-format)
+    * [Defined errors](#defined-errors)
+    * [Responses from intermediary servers](#responses-from-intermediary-servers)
+  * [Validation](#validation)
+* [API endpoints](#api-endpoints)
+{{#modules}}
+  * [{{moduleName}}](#{{slug}})
+{{#routes}}
+    * [{{method}} {{{path}}}{{#authentication}} {{emojis}} {{token}}{{/authentication}}](#{{slug}})
+{{/routes}}
+{{/modules}}
+* [Example flows](#example-flows)
+* [Back-off protocol](#back-off-protocol)
+* [Reference client](#reference-client)
+* [This document](#this-document)
+
+## Overview
+
+### URL structure
+<!--begin-url-structure-->
+{{{urlStructure}}}
+<!--end-url-structure-->
+
+### Request format
+<!--begin-request-format-->
+{{{requestFormat}}}
+<!--end-request-format-->
+
+### Response format
+<!--begin-response-format-->
+{{{responseFormat}}}
+<!--end-response-format-->
+
+#### Defined errors
+
+The currently-defined values
+for `code` and `errno` are:
+
+{{#errors}}
+* `code: {{code}}, errno: {{errno}}`:
+  {{definition}}
+{{/errors}}
+
+The following errors
+include additional response properties:
+
+{{#additionalErrorParams}}
+* `errno: {{errno}}`{{#hasParams}}: {{params}}{{/hasParams}}
+{{/additionalErrorParams}}
+
+#### Responses from intermediary servers
+<!--begin-responses-from-intermediary-servers-->
+{{{responsesFromIntermediaryServers}}}
+<!--end-responses-from-intermediary-servers-->
+
+### Validation
+
+In the documentation that follows,
+some properties of requests and responses
+are validated by common code
+that has been refactored and extracted.
+For reference,
+those common validations are defined here.
+
+#### lib/routes/validators
+
+{{#validators}}
+* `{{key}}`: `{{{value}}}`
+{{/validators}}
+
+#### lib/metrics/context
+
+{{#metricsContext}}
+* `{{key}}`: {{{value}}}
+{{/metricsContext}}
+
+## API endpoints
+{{#modules}}
+
+### {{moduleName}}
+{{#routes}}
+
+#### {{method}} {{{path}}}
+{{#authentication}}
+
+{{emojis}} {{summary}}
+{{/authentication}}
+<!--begin-route-{{slug}}-->
+{{{routeDescription}}}
+<!--end-route-{{slug}}-->
+
+{{#hasQueryParameters}}
+##### Query parameters
+
+{{/hasQueryParameters}}
+{{#queryParameters}}
+* `{{paramName}}`: {{{validation}}}
+
+  <!--begin-query-param-{{slug}}-{{paramName}}-->
+  {{{paramDescription}}}
+  <!--end-query-param-{{slug}}-{{paramName}}-->
+
+{{/queryParameters}}
+{{#hasRequestBody}}
+##### Request body
+
+{{/hasRequestBody}}
+{{#requestBody}}
+* `{{paramName}}`: {{{validation}}}
+
+  <!--begin-request-body-{{slug}}-{{paramName}}-->
+  {{{paramDescription}}}
+  <!--end-request-body-{{slug}}-{{paramName}}-->
+
+{{/requestBody}}
+{{#hasResponseBody}}
+##### Response body
+
+{{/hasResponseBody}}
+{{#responseBody}}
+* `{{paramName}}`: {{{validation}}}
+
+  <!--begin-response-body-{{slug}}-{{paramName}}-->
+  {{{paramDescription}}}
+  <!--end-response-body-{{slug}}-{{paramName}}-->
+
+{{/responseBody}}
+{{#hasErrorResponses}}
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+{{/hasErrorResponses}}
+{{#errorResponses}}
+* `code: {{code}}, errno: {{errno}}`:
+  {{definition}}
+
+{{/errorResponses}}
+{{/routes}}
+{{/modules}}
+
+## Back-off protocol
+<!--begin-back-off-protocol-->
+{{{backOffProtocol}}}
+<!--end-back-off-protocol-->
+
+## Reference client
+<!--begin-reference-client-->
+{{{referenceClient}}}
+<!--end-reference-client-->
+
+## This document
+<!--begin-this-document-->
+{{{thisDocument}}}
+<!--end-this-document-->
