@@ -1,3 +1,13 @@
+<a name="1.80.2"></a>
+## [1.80.2](https://github.com/mozilla/fxa-auth-server/compare/v1.80.0...v1.80.2) (2017-02-21)
+
+
+### Bug Fixes
+
+* **mail:** include the latest fxa-auth-mailer fix ([3e15921](https://github.com/mozilla/fxa-auth-server/commit/3e15921))
+
+
+
 <a name="1.80.1"></a>
 ## [1.80.1](https://github.com/mozilla/fxa-auth-server/compare/v1.80.0...v1.80.1) (2017-02-07)
 
