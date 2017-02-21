@@ -575,7 +575,7 @@ module.exports = config => {
   }
 
   function getQueryString (options) {
-    let qs = []
+    const qs = []
 
     if (options.keys) {
       qs.push('keys=true')
