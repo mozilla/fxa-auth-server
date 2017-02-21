@@ -2,6 +2,9 @@
 ## [1.80.1](https://github.com/mozilla/fxa-auth-server/compare/v1.80.0...v1.80.1) (2017-02-21)
 
 
+### Bug Fixes
+
+* **email:** update fxa-auth-mailer SHA to include the email header fix
 
 
 <a name="1.80.0"></a>
