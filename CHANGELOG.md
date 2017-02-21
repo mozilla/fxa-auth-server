@@ -1,3 +1,9 @@
+<a name="1.80.1"></a>
+## [1.80.1](https://github.com/mozilla/fxa-auth-server/compare/v1.80.0...v1.80.1) (2017-02-21)
+
+
+
+
 <a name="1.80.0"></a>
 # [1.80.0](https://github.com/mozilla/fxa-auth-server/compare/v1.78.0...v1.80.0) (2017-02-07)
 
