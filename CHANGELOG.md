@@ -1,3 +1,13 @@
+<a name="1.81.1"></a>
+## [1.81.1](https://github.com/mozilla/fxa-auth-server/compare/v1.81.0...v1.81.1) (2017-02-23)
+
+
+### Bug Fixes
+
+* **email:** reshrink to get release 81 of fxa-auth-mysql-db ([b3bee6a](https://github.com/mozilla/fxa-auth-server/commit/b3bee6a))
+
+
+
 <a name="1.81.0"></a>
 # [1.81.0](https://github.com/mozilla/fxa-auth-server/compare/v1.80.0...v1.81.0) (2017-02-22)
 
