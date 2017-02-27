@@ -593,6 +593,20 @@ var conf = convict({
       default: 'https://mzl.la/1HOd4ec',
       env: 'SMS_INSTALL_FIREFOX_LINK'
     }
+  },
+  amplitude: {
+    apiKey: {
+      doc: 'API key for amplitude metrics tracking',
+      default: 'b63fd23a7571e9aaa9970788d376f389',
+      format: String,
+      env: 'AMPLITUDE_API_KEY'
+    },
+    hmacKey: {
+      doc: 'HMAC key used to anonymize amplitude metrics data',
+      default: 'ac1ff145570fa39109ee5f4649eb5a84',
+      format: String,
+      env: 'AMPLITUDE_HMAC_KEY'
+    }
   }
 })
 
