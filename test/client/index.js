@@ -416,6 +416,18 @@ module.exports = config => {
     return this.api.accountUnlockVerifyCode(uid, code)
   }
 
+  Client.prototype.accountEmails = function () {
+    return this.api.accountEmails(this.sessionToken)
+  }
+
+  Client.prototype.createEmail = function (email) {
+    return this.api.createEmail(this.sessionToken, email)
+  }
+
+  Client.prototype.deleteEmail = function (email) {
+    return this.api.deleteEmail(this.sessionToken, email)
+  }
+
   Client.prototype.resetPassword = function (newPassword, headers, options) {
     if (! this.accountResetToken) {
       throw new Error('call verifyPasswordResetCode before calling resetPassword')

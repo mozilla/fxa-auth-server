@@ -244,6 +244,11 @@ var conf = convict({
       format: String,
       default: 'https://support.mozilla.org/kb/password-manager-remember-delete-change-and-import#w_viewing-and-deleting-passwords'
     },
+    accountSettingsUrl: {
+      doc: 'url to Firefox account settings page',
+      format: String,
+      default: 'https://accounts.firefox.com/settings'
+    },
     sesConfigurationSet: {
       doc: ('AWS SES Configuration Set for SES Event Publishing. If defined, ' +
             'X-SES-MESSAGE-TAGS headers will be added to emails. Only ' +
