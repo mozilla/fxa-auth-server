@@ -18,6 +18,7 @@ var isA = require('joi')
 var error = require('../../../lib/error')
 
 var TEST_EMAIL = 'foo@gmail.com'
+var TEST_EMAIL_ADDITIONAL = 'foo2@gmail.com'
 var TEST_EMAIL_INVALID = 'example@dotless-domain'
 
 var makeRoutes = function (options, requireMocks) {
@@ -504,3 +505,144 @@ describe('/recovery_email/verify_code', function () {
     })
   })
 })
+
+describe('/recovery_email/emails', function () {
+  var uid = uuid.v4('binary').toString('hex')
+  const mockLog = mocks.spyLog()
+  var dbData, accountRoutes, mockDB, mockRequest, route
+  var mockMailer = mocks.mockMailer()
+  const mockPush = mocks.mockPush()
+  var mockCustoms = mocks.mockCustoms()
+
+  describe('should create email to account', function () {
+    before(function () {
+      mockRequest = mocks.mockRequest({
+        log: mockLog,
+        payload: {
+          uid: uid,
+          email: TEST_EMAIL_ADDITIONAL
+        }
+      })
+      dbData = {
+        email: TEST_EMAIL,
+        uid: uid,
+        createEmailRecord: {
+          email: TEST_EMAIL_ADDITIONAL,
+          isVerified: false,
+          isPrimary: false
+        }
+      }
+      mockDB = mocks.mockDB(dbData)
+      accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        config: {},
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
+      })
+      route = getRoute(accountRoutes, '/recovery_email/create')
+    })
+
+    it('creates new email', function () {
+      return runTest(route, mockRequest, function (response) {
+        assert.ok(response, 'two emails should be return')
+      })
+    })
+  })
+
+  describe('should get all emails for an account', function () {
+    before(function () {
+      mockRequest = mocks.mockRequest({
+        log: mockLog,
+        query: {
+          uid: uid
+        },
+        payload: {
+          uid: uid,
+          email: TEST_EMAIL_ADDITIONAL
+        }
+      })
+      dbData = {
+        email: TEST_EMAIL,
+        uid: uid,
+        createEmailRecord: {
+          email: TEST_EMAIL_ADDITIONAL,
+          isVerified: false,
+          isPrimary: false
+        }
+      }
+      mockDB = mocks.mockDB(dbData)
+      accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        config: {},
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
+      })
+      route = getRoute(accountRoutes, '/recovery_email/emails')
+    })
+
+    it('get all emails', function () {
+      return runTest(route, mockRequest, function (response) {
+        assert.equal(response.length, 2, 'two emails should be return')
+        assert.equal(response[0].email, dbData.email, 'first email should be account email')
+        assert.equal(response[0].isVerified, dbData.emailVerified, 'first email should equal account email verified')
+        assert.equal(response[0].isPrimary, true, 'first email should be primary')
+
+        assert.equal(response[1].email, dbData.createEmailRecord.email, 'equal second email')
+        assert.equal(response[1].isVerified, dbData.createEmailRecord.isVerified, 'equal second email verified')
+        assert.equal(response[1].isPrimary, false, 'second email should not be primary')
+      })
+    })
+  })
+
+  describe('should delete email to account', function () {
+    before(function () {
+      mockRequest = mocks.mockRequest({
+        log: mockLog,
+        payload: {
+          uid: uid,
+          email: TEST_EMAIL_ADDITIONAL
+        }
+      })
+      dbData = {
+        email: TEST_EMAIL,
+        uid: uid,
+        createEmailRecord: {
+          email: TEST_EMAIL_ADDITIONAL,
+          isVerified: false,
+          isPrimary: false
+        }
+      }
+      mockDB = mocks.mockDB(dbData)
+      accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        config: {},
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
+      })
+      route = getRoute(accountRoutes, '/recovery_email/destroy')
+    })
+
+    it('deletes new email', function () {
+      return runTest(route, mockRequest, function (response) {
+        assert.ok(response, 'response should be ok')
+      })
+    })
+  })
+
+})
+

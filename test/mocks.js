@@ -21,11 +21,13 @@ const CUSTOMS_METHOD_NAMES = [
 
 const DB_METHOD_NAMES = [
   'account',
+  'accountEmails',
   'accountResetToken',
   'consumeUnblockCode',
   'createAccount',
   'createDevice',
   'createEmailBounce',
+  'createEmail',
   'createKeyFetchToken',
   'createPasswordForgotToken',
   'createSessionToken',
@@ -33,6 +35,7 @@ const DB_METHOD_NAMES = [
   'createVerificationReminder',
   'deleteAccount',
   'deleteDevice',
+  'deleteEmail',
   'deleteKeyFetchToken',
   'deletePasswordChangeToken',
   'deleteVerificationReminder',
@@ -129,6 +132,20 @@ function mockDB (data, errors) {
         wrapWrapKb: data.wrapWrapKb
       })
     }),
+    accountEmails: sinon.spy(() => {
+      return P.resolve([
+        {
+          email: data.email,
+          isPrimary: true,
+          isVerified: data.emailVerified
+        },
+        {
+          email: data.createEmailRecord.email,
+          isVerified: !! data.createEmailRecord.isVerified,
+          isPrimary: false
+        }
+      ])
+    }),
     createAccount: sinon.spy(() => {
       return P.resolve({
         uid: data.uid,
@@ -139,6 +156,8 @@ function mockDB (data, errors) {
         wrapWrapKb: data.wrapWrapKb
       })
     }),
+    createEmail: sinon.spy(() => { return P.resolve({})}),
+    deleteEmail: sinon.spy(() => { return P.resolve({})}),
     createDevice: sinon.spy(() => {
       return P.resolve(Object.keys(data.device).reduce((result, key) => {
         result[key] = data.device[key]
