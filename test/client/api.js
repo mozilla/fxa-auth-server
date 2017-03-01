@@ -551,6 +551,19 @@ module.exports = config => {
       )
   }
 
+  ClientApi.prototype.sessions = function (sessionTokenHex) {
+    return tokens.SessionToken.fromHex(sessionTokenHex)
+      .then(
+        function (token) {
+          return this.doRequest(
+            'GET',
+            this.baseURL + '/account/sessions',
+            token
+          )
+        }.bind(this)
+      )
+  }
+
   ClientApi.prototype.sessionStatus = function (sessionTokenHex) {
     return tokens.SessionToken.fromHex(sessionTokenHex)
       .then(

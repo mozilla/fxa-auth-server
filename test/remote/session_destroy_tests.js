@@ -63,49 +63,82 @@ describe('remote session destroy', function() {
     () => {
       var email = server.uniqueEmail()
       var password = 'foobar'
-      var client1 = null
-      var client2 = null
+      var client = null
+      var tokenId = null
+      var sessionTokenCreate = null
+      var sessionTokenLogin = null
       return Client.create(config.publicUrl, email, password)
         .then((x) => {
-          client1 = x
-          return Client.create(config.publicUrl, email, password)
+          client = x
+          sessionTokenCreate = client.sessionToken
+          return client.api.sessions(sessionTokenCreate)
         })
-        .then((x) => {
-          client2 = x
-          return client1.login()
+        .then((sessions) => {
+          tokenId = sessions[0].id
+          return client.login()
         })
-        .then(() => {
-          return client2.login()
-        })
-        .then(() => {
-          return client1.api.sessionStatus(client1.sessionToken)
+        .then((c) => {
+          sessionTokenLogin = c.sessionToken
+          return client.api.sessionStatus(sessionTokenCreate)
         })
         .then((status) => {
           assert.ok(status.uid, 'got valid session')
 
-          return client2.api.sessionDestroy(client2.sessionToken, {
-            customSessionToken: client1.sessionToken
+          return client.api.sessionDestroy(sessionTokenLogin, {
+            customSessionToken: tokenId
           })
-        }, (err) => {
-          assert.fail(err)
         })
-        .then((res) => {
-          return client1.api.sessionStatus(client1.sessionToken)
-        }, (err) => {
-          assert.fail(err)
+        .then(() => {
+          return client.api.sessionStatus(sessionTokenCreate)
         })
-        .then((status) => {
-          assert(false, 'got status with destroyed session')
-        }, (err) => {
-          assert.equal(err.errno, 110, 'session is invalid')
-        })
+        .then(
+          function (status) {
+            assert(false, 'got status with destroyed session')
+          },
+          function (err) {
+            assert.equal(err.errno, 110, 'session is invalid')
+          }
+        )
     }
   )
 
   it(
     'session destroy fails with a bad custom token',
     () => {
-
+      var email = server.uniqueEmail()
+      var password = 'foobar'
+      var client = null
+      var sessionTokenCreate = null
+      var sessionTokenLogin = null
+      return Client.create(config.publicUrl, email, password)
+        .then((x) => {
+          client = x
+          sessionTokenCreate = client.sessionToken
+          return client.login()
+        })
+        .then((c) => {
+          sessionTokenLogin = c.sessionToken
+          return client.api.sessionStatus(sessionTokenCreate)
+        })
+        .then(() => {
+          return client.api.sessionDestroy(sessionTokenLogin, {
+            customSessionToken: 'eff779f59ab974f800625264145306ce53185bb22ee01fe80280964ff2766504'
+          })
+        })
+        .then(() => {
+          return client.api.sessionStatus(sessionTokenCreate)
+        })
+        .then(
+          function (status) {
+            assert(false, 'got status with destroyed session')
+          },
+          function (err) {
+            assert.equal(err.code, 401)
+            assert.equal(err.errno, 110, 'session is invalid')
+            assert.equal(err.error, 'Unauthorized')
+            assert.equal(err.message, 'The authentication token could not be found')
+          }
+        )
     }
   )
 
