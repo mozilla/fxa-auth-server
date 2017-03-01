@@ -59,6 +59,57 @@ describe('remote session destroy', function() {
   )
 
   it(
+    'session destroy a custom token',
+    () => {
+      var email = server.uniqueEmail()
+      var password = 'foobar'
+      var client1 = null
+      var client2 = null
+      return Client.create(config.publicUrl, email, password)
+        .then((x) => {
+          client1 = x
+          return Client.create(config.publicUrl, email, password)
+        })
+        .then((x) => {
+          client2 = x
+          return client1.login()
+        })
+        .then(() => {
+          return client2.login()
+        })
+        .then(() => {
+          return client1.api.sessionStatus(client1.sessionToken)
+        })
+        .then((status) => {
+          assert.ok(status.uid, 'got valid session')
+
+          return client2.api.sessionDestroy(client2.sessionToken, {
+            customSessionToken: client1.sessionToken
+          })
+        }, (err) => {
+          assert.fail(err)
+        })
+        .then((res) => {
+          return client1.api.sessionStatus(client1.sessionToken)
+        }, (err) => {
+          assert.fail(err)
+        })
+        .then((status) => {
+          assert(false, 'got status with destroyed session')
+        }, (err) => {
+          assert.equal(err.errno, 110, 'session is invalid')
+        })
+    }
+  )
+
+  it(
+    'session destroy fails with a bad custom token',
+    () => {
+
+    }
+  )
+
+  it(
     'session status with valid token',
     () => {
       var email = server.uniqueEmail()
