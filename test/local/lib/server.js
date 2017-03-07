@@ -10,6 +10,7 @@ const error = require('../../../lib/error')
 const hapi = require('hapi')
 const mocks = require('../../mocks')
 const server = require('../../../lib/server')
+const sinon = require('sinon')
 
 describe('lib/server', () => {
   describe('trimLocale', () => {
@@ -60,14 +61,18 @@ describe('lib/server', () => {
   })
 
   describe('create:', () => {
-    let log, config, routes, db, instance, response
+    let log, config, routes, db, instance, response, translator
 
     beforeEach(() => {
       log = mocks.spyLog()
       config = getConfig()
       routes = getRoutes()
       db = mocks.mockDB()
-      instance = server.create(log, error, config, routes, db)
+      translator = {
+        getTranslator: sinon.spy(() => ({ en: { format: () => {}, language: 'en' } })),
+        getLocale: sinon.spy(() => 'en')
+      }
+      instance = server.create(log, error, config, routes, db, translator)
     })
 
     it('returned a hapi Server instance', () => {
@@ -103,6 +108,7 @@ describe('lib/server', () => {
           assert.equal(args[0], 'server.onRequest')
           assert.ok(args[1])
           assert.equal(args[1].path, '/account/create')
+          assert.equal(args[1].app.locale, 'en')
         })
 
         it('called log.summary correctly', () => {

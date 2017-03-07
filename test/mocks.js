@@ -353,6 +353,7 @@ function mockRequest (data) {
   return {
     app: {
       acceptLanguage: 'en-US',
+      locale: data.locale || 'en-US',
       clientAddress: data.clientAddress || '63.245.221.32' // MTV
     },
     auth: {

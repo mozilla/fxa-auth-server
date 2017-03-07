@@ -170,7 +170,7 @@ describe('metrics/events', () => {
     const metricsContext = mocks.mockMetricsContext()
     const request = {
       app: {
-        acceptLanguage: 'en'
+        locale: 'en'
       },
       auth: {
         credentials: {
@@ -224,6 +224,9 @@ describe('metrics/events', () => {
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
     const request = {
+      app: {
+        locale: 'fr'
+      },
       clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
@@ -247,7 +250,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
-          locale: 'baz',
+          locale: 'fr',
           time,
           uid: 'qux',
           userAgent: 'foo'
@@ -257,7 +260,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
-          locale: 'baz',
+          locale: 'fr',
           time,
           uid: 'qux',
           userAgent: 'foo'
