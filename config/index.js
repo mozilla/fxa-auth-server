@@ -568,6 +568,13 @@ var conf = convict({
       env: 'HPKP_PIN_SHA256'
     }
   },
+  push: {
+    allowedServerRegex: {
+      doc: 'RegExp that validates the URI format of the Push Server',
+      format: RegExp,
+      default: /^https:\/\/[a-zA-Z0-9._-]+\.services\.mozilla\.com(\/.*)?$/
+    }
+  },
   sms: {
     enabled: {
       doc: 'Indicates whether POST /sms is enabled',
@@ -604,6 +611,12 @@ var conf = convict({
       default: 'https://mzl.la/1HOd4ec',
       format: 'url',
       env: 'SMS_INSTALL_FIREFOX_LINK'
+    },
+    throttleWaitTime: {
+      doc: 'The number of seconds to wait if throttled by the SMS service provider',
+      default: 2,
+      format: Number,
+      env: 'SMS_THROTTLE_WAIT_TIME'
     }
   }
 })

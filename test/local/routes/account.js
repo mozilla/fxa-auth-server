@@ -38,6 +38,9 @@ var makeRoutes = function (options, requireMocks) {
   config.lastAccessTimeUpdates = {}
   config.signinConfirmation = config.signinConfirmation || {}
   config.signinUnblock = config.signinUnblock || {}
+  config.push = {
+    allowedServerRegex: /^https:\/\/updates\.push\.services\.mozilla\.com(\/.*)?$/
+  }
 
   var log = options.log || mocks.mockLog()
   var Password = options.Password || require('../../../lib/crypto/password')(log, config)
@@ -1190,4 +1193,70 @@ describe('/account/destroy', function () {
       }, 'event data was correct')
     })
   })
+})
+
+
+describe('/account/sessions', function () {
+  var testSession = {
+    tokenId: 'foo',
+    uid: '010',
+    createdAt: Date.now(),
+    uaOS: 'Windows',
+    uaOSVersion: '10',
+    uaDeviceType: 'desktop',
+    lastAccessTime: Date.now(),
+
+    uaBrowser: 'Firefox',
+    uaBrowserVersion: '50',
+
+    deviceId: 'deviceId',
+    deviceName: 'deviceName',
+    deviceType: 'desktop',
+    deviceCreatedAt: Date.now(),
+    devicePushCallback: 'foo',
+    devicePushPublicKey: 'bar',
+    devicePushAuthKey: 'authKey',
+  }
+  var mockDB = mocks.mockDB()
+  mockDB.sessions = sinon.spy(function () {
+    return P.resolve([
+      Object.assign({}, testSession)
+    ])
+  })
+
+  var mockRequest = mocks.mockRequest({
+    credentials: {
+      uid: crypto.randomBytes(16),
+      tokenId: crypto.randomBytes(16)
+    },
+    payload: {}
+  })
+
+  var accountRoutes = makeRoutes({
+    db: mockDB
+  })
+
+
+  it('should list account sessions', () => {
+    var route = getRoute(accountRoutes, '/account/sessions')
+
+    return runTest(route, mockRequest, function (res) {
+      assert.equal(res.length, 1)
+      assert.equal(Object.keys(res[0]).length, 12)
+      var s = res[0]
+      assert.equal(s.id, testSession.tokenId)
+      assert.equal(s.deviceName, testSession.deviceName)
+      assert.equal(s.deviceType, testSession.deviceType)
+      assert.equal(s.devicePushCallback, testSession.devicePushCallback)
+      assert.equal(s.devicePushPublicKey, testSession.devicePushPublicKey)
+      assert.equal(s.devicePushAuthKey, testSession.devicePushAuthKey)
+      assert.equal(s.id, testSession.tokenId)
+      assert.equal(s.isCurrentDevice, false)
+      assert.equal(s.isDevice, true)
+      assert.equal(s.lastAccessTimeFormatted, 'a few seconds ago')
+      assert.equal(s.userAgent, 'Firefox 50')
+    })
+
+  })
+
 })
