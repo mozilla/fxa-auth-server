@@ -361,7 +361,7 @@ describe('/recovery_email/verify_code', function () {
   var route = getRoute(accountRoutes, '/recovery_email/verify_code')
   describe('verifyTokens rejects with INVALID_VERIFICATION_CODE', function () {
 
-    it('without a reminder payload', function () {
+    it.only('without a reminder payload', function () {
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyTokens.callCount, 1, 'calls verifyTokens')
         assert.equal(mockDB.verifyEmail.callCount, 1, 'calls verifyEmail')

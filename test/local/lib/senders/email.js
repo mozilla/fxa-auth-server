@@ -30,7 +30,8 @@ var messageTypes = [
   'unblockCodeEmail',
   'verificationReminderEmail',
   'verifyEmail',
-  'verifyLoginEmail'
+  'verifyLoginEmail',
+  'verifySecondaryEmail'
 ]
 
 var typesContainSupportLinks = [
@@ -76,7 +77,8 @@ var typesContainLocationData = [
   'unblockCodeEmail',
   'recoveryEmail',
   'verifyEmail',
-  'verifyLoginEmail'
+  'verifyLoginEmail',
+  'verifySecondaryEmail'
 ]
 
 var typesContainPasswordManagerInfoLinks = [
@@ -343,6 +345,23 @@ describe(
             city: 'Mountain View',
             country: 'USA',
             stateCode: 'CA'
+          }
+
+          if (type === 'verifySecondaryEmail') {
+            it(
+              'original user email data is in template for ' + type,
+              function () {
+                var message = getLocationMessage(defaultLocation)
+                message.userEmail = 'user@email.com'
+                mailer.mailer.sendMail = function (emailConfig) {
+                  assert.ok(includes(emailConfig.html, message.userEmail))
+                  assert.ok(includes(emailConfig.html, message.email))
+                  assert.ok(includes(emailConfig.text, message.userEmail))
+                  assert.ok(includes(emailConfig.text, message.email))
+                }
+                mailer[type](message)
+              }
+            )
           }
 
           it(
