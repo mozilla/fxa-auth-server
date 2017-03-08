@@ -170,6 +170,7 @@ describe('metrics/events', () => {
     const metricsContext = mocks.mockMetricsContext()
     const request = {
       app: {
+        isLocaleAcceptable: false,
         locale: 'en'
       },
       auth: {
@@ -203,7 +204,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en',
+          locale: 'en.default',
           time,
           uid: 'deadbeef',
           userAgent: 'foo'
@@ -225,6 +226,7 @@ describe('metrics/events', () => {
     const metricsContext = mocks.mockMetricsContext()
     const request = {
       app: {
+        isLocaleAcceptable: true,
         locale: 'fr'
       },
       clearMetricsContext: metricsContext.clear,
