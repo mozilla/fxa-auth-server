@@ -340,8 +340,7 @@ describe('/recovery_email/verify_code', function () {
   var dbData = {
     email: TEST_EMAIL,
     emailCode: Buffer(mockRequest.payload.code, 'hex'),
-    emailVerified: false,
-    uid: uid
+    emailVerified: false
   }
   var dbErrors = {
     verifyTokens: error.invalidVerificationCode({})
@@ -364,7 +363,7 @@ describe('/recovery_email/verify_code', function () {
   var route = getRoute(accountRoutes, '/recovery_email/verify_code')
   describe('verifyTokens rejects with INVALID_VERIFICATION_CODE', function () {
 
-    it.only('without a reminder payload', function () {
+    it('without a reminder payload', function () {
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyTokens.callCount, 1, 'calls verifyTokens')
         assert.equal(mockDB.verifyEmail.callCount, 1, 'calls verifyEmail')
@@ -478,6 +477,7 @@ describe('/recovery_email/verify_code', function () {
 
     it('sign-in confirmation', function () {
       dbData.emailCode = crypto.randomBytes(16)
+      dbData.secondEmailCode = crypto.randomBytes(16)
 
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyTokens.callCount, 1, 'call db.verifyTokens')
@@ -517,135 +517,75 @@ describe('/recovery_email/emails', function () {
   const mockPush = mocks.mockPush()
   var mockCustoms = mocks.mockCustoms()
 
+  mockRequest = mocks.mockRequest({
+    credentials: {
+      uid: uuid.v4('binary').toString('hex'),
+      email: TEST_EMAIL
+    },
+    log: mockLog,
+    payload: {
+      email: TEST_EMAIL_ADDITIONAL
+    }
+  })
+  dbData = {
+    email: TEST_EMAIL,
+    uid: uid,
+    secondEmail: TEST_EMAIL_ADDITIONAL
+  }
+  mockDB = mocks.mockDB(dbData)
+  accountRoutes = makeRoutes({
+    checkPassword: function () {
+      return P.resolve(true)
+    },
+    config: {},
+    customs: mockCustoms,
+    db: mockDB,
+    log: mockLog,
+    mailer: mockMailer,
+    push: mockPush
+  })
+
   describe('should create email to account', function () {
-    before(function () {
-      mockRequest = mocks.mockRequest({
-        log: mockLog,
-        payload: {
-          uid: uid,
-          email: TEST_EMAIL_ADDITIONAL
-        }
-      })
-      dbData = {
-        email: TEST_EMAIL,
-        uid: uid,
-        createEmailRecord: {
-          email: TEST_EMAIL_ADDITIONAL,
-          isVerified: false,
-          isPrimary: false
-        }
-      }
-      mockDB = mocks.mockDB(dbData)
-      accountRoutes = makeRoutes({
-        checkPassword: function () {
-          return P.resolve(true)
-        },
-        config: {},
-        customs: mockCustoms,
-        db: mockDB,
-        log: mockLog,
-        mailer: mockMailer,
-        push: mockPush
-      })
-      route = getRoute(accountRoutes, '/recovery_email/create')
-    })
-
     it('creates new email', function () {
+      route = getRoute(accountRoutes, '/recovery_email/create')
+
       return runTest(route, mockRequest, function (response) {
-        assert.ok(response, 'two emails should be return')
+        assert.ok(response)
+        assert.equal(mockDB.createEmail.callCount, 1, 'call db.createEmail')
+        assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1, 'does not call db.verifyEmail')
       })
+        .then(function () {
+          mockDB.createEmail.reset()
+        })
     })
   })
 
-  describe('should get all emails for an account', function () {
-    before(function () {
-      mockRequest = mocks.mockRequest({
-        log: mockLog,
-        query: {
-          uid: uid
-        },
-        payload: {
-          uid: uid,
-          email: TEST_EMAIL_ADDITIONAL
-        }
-      })
-      dbData = {
-        email: TEST_EMAIL,
-        uid: uid,
-        createEmailRecord: {
-          email: TEST_EMAIL_ADDITIONAL,
-          isVerified: false,
-          isPrimary: false
-        }
-      }
-      mockDB = mocks.mockDB(dbData)
-      accountRoutes = makeRoutes({
-        checkPassword: function () {
-          return P.resolve(true)
-        },
-        config: {},
-        customs: mockCustoms,
-        db: mockDB,
-        log: mockLog,
-        mailer: mockMailer,
-        push: mockPush
-      })
+  describe('should get all emails to account', function () {
+    it('creates new email', function () {
       route = getRoute(accountRoutes, '/recovery_email/emails')
-    })
-
-    it('get all emails', function () {
       return runTest(route, mockRequest, function (response) {
-        assert.equal(response.length, 2, 'two emails should be return')
-        assert.equal(response[0].email, dbData.email, 'first email should be account email')
-        assert.equal(response[0].isVerified, dbData.emailVerified, 'first email should equal account email verified')
-        assert.equal(response[0].isPrimary, true, 'first email should be primary')
-
-        assert.equal(response[1].email, dbData.createEmailRecord.email, 'equal second email')
-        assert.equal(response[1].isVerified, dbData.createEmailRecord.isVerified, 'equal second email verified')
-        assert.equal(response[1].isPrimary, false, 'second email should not be primary')
+        assert.equal(response.length, 2, 'should return two emails')
+        assert.equal(response[0].email, dbData.email, 'should return users email')
+        assert.equal(response[1].email, dbData.secondEmail, 'should return users email')
+        assert.equal(mockDB.accountEmails.callCount, 1, 'call db.accountEmails')
       })
+        .then(function () {
+          mockDB.accountEmails.reset()
+        })
     })
   })
 
-  describe('should delete email to account', function () {
-    before(function () {
-      mockRequest = mocks.mockRequest({
-        log: mockLog,
-        payload: {
-          uid: uid,
-          email: TEST_EMAIL_ADDITIONAL
-        }
-      })
-      dbData = {
-        email: TEST_EMAIL,
-        uid: uid,
-        createEmailRecord: {
-          email: TEST_EMAIL_ADDITIONAL,
-          isVerified: false,
-          isPrimary: false
-        }
-      }
-      mockDB = mocks.mockDB(dbData)
-      accountRoutes = makeRoutes({
-        checkPassword: function () {
-          return P.resolve(true)
-        },
-        config: {},
-        customs: mockCustoms,
-        db: mockDB,
-        log: mockLog,
-        mailer: mockMailer,
-        push: mockPush
-      })
+  describe('should delete email from account', function () {
+    it('creates new email', function () {
       route = getRoute(accountRoutes, '/recovery_email/destroy')
-    })
-
-    it('deletes new email', function () {
       return runTest(route, mockRequest, function (response) {
-        assert.ok(response, 'response should be ok')
+        assert.ok(response)
+        assert.equal(mockDB.deleteEmail.callCount, 1, 'call db.deleteEmail')
       })
+        .then(function () {
+          mockDB.deleteEmail.reset()
+        })
     })
   })
-
 })
 

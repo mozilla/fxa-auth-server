@@ -84,6 +84,7 @@ const MAILER_METHOD_NAMES = [
   'sendUnblockCode',
   'sendVerifyCode',
   'sendVerifyLoginEmail',
+  'sendVerifySecondaryEmail',
   'sendRecoveryCode'
 ]
 
@@ -137,12 +138,14 @@ function mockDB (data, errors) {
       return P.resolve([
         {
           email: data.email,
+          emailCode: data.emailCode,
           isPrimary: true,
           isVerified: data.emailVerified
         },
         {
-          email: data.createEmailRecord.email,
-          isVerified: !! data.createEmailRecord.isVerified,
+          email: data.secondEmail || 'secondEmail@email.com',
+          emailCode: data.secondEmailCode || crypto.randomBytes(16),
+          isVerified: data.secondEmailisVerified,
           isPrimary: false
         }
       ])
