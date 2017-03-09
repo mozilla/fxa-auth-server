@@ -96,7 +96,9 @@ describe('remote session destroy', function() {
         .then((status) => {
           assert(false, 'got status with destroyed session')
         },(err) => {
+          assert.equal(err.code, 401)
           assert.equal(err.errno, 110, 'session is invalid')
+
         })
     }
   )
