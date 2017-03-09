@@ -592,6 +592,52 @@ module.exports = config => {
       )
   }
 
+  ClientApi.prototype.accountEmails = function (sessionTokenHex) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'GET',
+          this.baseURL + '/recovery_email/emails',
+          token,
+          undefined
+        )
+      }.bind(this)
+    )
+  }
+
+  ClientApi.prototype.createEmail = function (sessionTokenHex, email) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/recovery_email/create',
+          token,
+          {
+            email: email
+          }
+        )
+      }.bind(this)
+    )
+  }
+
+  ClientApi.prototype.deleteEmail = function (sessionTokenHex, email) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/recovery_email/destroy',
+          token,
+          {
+            email: email
+          }
+        )
+      }.bind(this)
+    )
+  }
+
   ClientApi.heartbeat = function (origin) {
     return (new ClientApi(origin)).doRequest('GET', origin + '/__heartbeat__')
   }
