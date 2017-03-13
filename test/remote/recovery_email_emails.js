@@ -183,6 +183,44 @@ describe('remote emails', function () {
           })
       }
     )
+
+    it(
+      'can resend verify email code',
+      () => {
+        var emailCode
+        return server.mailbox.waitForEmail(secondEmail)
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            emailCode = emailData['headers']['x-verify-code']
+            assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
+            assert.ok(emailCode, 'emailCode set')
+            client.options.email = secondEmail
+            return client.requestVerifyEmail()
+          })
+          .then((res) => {
+            assert.ok(res, 'ok response')
+            return server.mailbox.waitForEmail(secondEmail)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            const resendEmailCode = emailData['headers']['x-verify-code']
+            assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
+            assert.equal(resendEmailCode, emailCode, 'emailCode matches')
+            return client.verifyEmail(emailCode)
+          })
+          .then((res) => {
+            assert.ok(res, 'ok response')
+            return client.accountEmails()
+          })
+          .then((res) => {
+            assert.equal(res.length, 2, 'returns number of emails')
+            assert.equal(res[1].email, secondEmail, 'returns correct email')
+            assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
+            assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+          })
+
+      }
+    )
   })
 
   describe('delete additional email', () => {

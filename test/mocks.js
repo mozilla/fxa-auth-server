@@ -145,7 +145,7 @@ function mockDB (data, errors) {
         {
           email: data.secondEmail || 'secondEmail@email.com',
           emailCode: data.secondEmailCode || crypto.randomBytes(16),
-          isVerified: data.secondEmailisVerified,
+          isVerified: data.secondEmailisVerified || false,
           isPrimary: false
         }
       ])

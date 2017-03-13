@@ -221,7 +221,8 @@ describe('/recovery_email/status', function () {
 
 describe('/recovery_email/resend_code', () => {
   const config = {}
-  const mockDB = mocks.mockDB()
+  const secondEmailCode = crypto.randomBytes(16)
+  const mockDB = mocks.mockDB({secondEmailCode: secondEmailCode})
   const mockLog = mocks.mockLog()
   mockLog.flowEvent = sinon.spy(() => {
     return P.resolve()
@@ -258,7 +259,6 @@ describe('/recovery_email/resend_code', () => {
         }
       }
     })
-    mockLog.flowEvent.reset()
 
     return runTest(route, mockRequest, response => {
       assert.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent called once')
@@ -272,6 +272,44 @@ describe('/recovery_email/resend_code', () => {
       assert.equal(args[2].uaOSVersion, '10.10')
       assert.strictEqual(args[2].uaDeviceType, undefined)
     })
+      .then(() => {
+        mockMailer.sendVerifyCode.reset()
+        mockLog.flowEvent.reset()
+      })
+  })
+
+  it('verification additional email', () => {
+    const mockRequest = mocks.mockRequest({
+      log: mockLog,
+      metricsContext: mockMetricsContext,
+      credentials: {
+        uid: uuid.v4('binary').toString('hex'),
+        email: TEST_EMAIL,
+        emailVerified: true,
+        tokenVerified: false,
+        uaBrowser: 'Firefox',
+        uaBrowserVersion: '50',
+        uaOS: 'Android',
+        uaOSVersion: '6',
+        uaDeviceType: 'tablet'
+      },
+      query: {},
+      payload: {
+        email : 'secondEmail@email.com'
+      }
+    })
+
+    return runTest(route, mockRequest, response => {
+      assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1)
+      assert.equal(mockMailer.sendVerifyCode.callCount, 0)
+      assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 0)
+      const args = mockMailer.sendVerifySecondaryEmail.args[0]
+      assert.equal(args[1], secondEmailCode, 'email code set')
+    })
+      .then(() => {
+        mockMailer.sendVerifySecondaryEmail.reset()
+        mockLog.flowEvent.reset()
+      })
   })
 
   it('confirmation', () => {
