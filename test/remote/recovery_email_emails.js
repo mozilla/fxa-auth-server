@@ -44,11 +44,6 @@ describe('remote emails', function () {
           assert.equal(status.verified, true, 'account is verified')
         }
       )
-      .then(
-        function () {
-          return client.login({keys: true})
-        }
-      )
   })
 
   describe('create and get additional email', () => {
@@ -185,7 +180,7 @@ describe('remote emails', function () {
     )
 
     it(
-      'can resend verify email code',
+      'can resend verify email code for added address',
       () => {
         var emailCode
         return server.mailbox.waitForEmail(secondEmail)
@@ -278,6 +273,82 @@ describe('remote emails', function () {
             assert.equal(err.code, 400, 'correct error code')
             assert.equal(err.message, 'Can not delete primary email', 'correct error message')
           })
+      }
+    )
+  })
+
+  describe('receives email notifications and confirmations on added email', () => {
+    let secondEmail
+    beforeEach(() => {
+      secondEmail = server.uniqueEmail()
+      return client.createEmail(secondEmail)
+        .then((res) => {
+          assert.ok(res, 'ok response')
+          return server.mailbox.waitForEmail(secondEmail)
+        })
+        .then((emailData) => {
+          const templateName = emailData['headers']['x-template-name']
+          const emailCode = emailData['headers']['x-verify-code']
+          assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
+          assert.ok(emailCode, 'emailCode set')
+          return client.verifyEmail(emailCode)
+        })
+        .then((res) => {
+          assert.ok(res, 'ok response')
+          return client.accountEmails()
+        })
+        .then((res) => {
+          assert.equal(res.length, 2, 'returns number of emails')
+          assert.equal(res[1].email, secondEmail, 'returns correct email')
+          assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
+          assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+        })
+    })
+
+    it(
+      'receives sign-in confirmation email',
+      () => {
+        let emailCode, secondEmailCode
+        return client.login({keys: true})
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            emailCode = emailData['headers']['x-verify-code']
+            assert.equal(templateName, 'verifyLoginEmail', 'email template name set')
+            assert.ok(emailCode, 'emailCode set')
+            return server.mailbox.waitForEmail(secondEmail)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            secondEmailCode = emailData['headers']['x-verify-code']
+            assert.equal(templateName, 'verifyLoginEmail', 'email template name set')
+            assert.ok(secondEmailCode, 'emailCode set')
+            assert.equal(secondEmailCode, emailCode, 'email coes match')
+          })
+      }
+    )
+
+    it(
+      'receives change notification',
+      () => {
+        return client.changePassword('password1', undefined)
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
+            return server.mailbox.waitForEmail(secondEmail)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
+          })
+
       }
     )
   })
