@@ -28,22 +28,16 @@ describe('remote emails', function () {
   beforeEach(() => {
     email = server.uniqueEmail()
     return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-      .then(
-        function (x) {
-          client = x
-          assert.ok(client.authAt, 'authAt was set')
-        }
-      )
-      .then(
-        function () {
-          return client.emailStatus()
-        }
-      )
-      .then(
-        function (status) {
-          assert.equal(status.verified, true, 'account is verified')
-        }
-      )
+      .then(function (x) {
+        client = x
+        assert.ok(client.authAt, 'authAt was set')
+      })
+      .then(function () {
+        return client.emailStatus()
+      })
+      .then(function (status) {
+        assert.equal(status.verified, true, 'account is verified')
+      })
   })
 
   describe('create and get additional email', () => {
@@ -332,7 +326,7 @@ describe('remote emails', function () {
     )
 
     it(
-      'receives change notification',
+      'receives change password notification',
       () => {
         return client.changePassword('password1', undefined)
           .then((res) => {
@@ -348,12 +342,85 @@ describe('remote emails', function () {
             const templateName = emailData['headers']['x-template-name']
             assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
           })
-
       }
     )
+
+    it(
+      'receives password reset notification',
+      () => {
+        return client.forgotPassword()
+          .then(() => {
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            return emailData.headers['x-recovery-code']
+          })
+          .then((code) => {
+            return resetPassword(client, code, 'password1', undefined, undefined)
+          })
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'passwordResetEmail', 'email template name set')
+            return server.mailbox.waitForEmail(secondEmail)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'passwordResetEmail', 'email template name set')
+          })
+      }
+    )
+
+    it(
+      'does not send to unverified secondary emails',
+      () => {
+        return client.deleteEmail(secondEmail)
+          .then((res) => {
+            assert.ok(res)
+            return client.createEmail(secondEmail)
+          })
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(secondEmail)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
+            return client.accountEmails()
+          })
+          .then((res) => {
+            assert.ok(res)
+            assert.equal(res.length, 2, 'returns number of emails')
+            assert.equal(res[1].email, secondEmail, 'returns correct email')
+            assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
+            assert.equal(res[1].isVerified, false, 'returns correct isVerified')
+            return client.changePassword('password1', undefined)
+          })
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
+
+            // TODO How to test that an email did not arrive?
+            // return server.mailbox.waitForEmail(secondEmail, 3)
+          })
+      })
   })
 
   after(() => {
     return TestServer.stop(server)
   })
+
+  function resetPassword(client, code, newPassword, headers, options) {
+    return client.verifyPasswordResetCode(code, headers, options)
+      .then(function () {
+        return client.resetPassword(newPassword, {}, options)
+      })
+  }
 })
