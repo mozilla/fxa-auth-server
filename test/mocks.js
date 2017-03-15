@@ -42,6 +42,7 @@ const DB_METHOD_NAMES = [
   'deleteVerificationReminder',
   'deviceFromTokenVerificationId',
   'devices',
+  'emailBounces',
   'emailRecord',
   'forgotPasswordVerified',
   'keyFetchToken',

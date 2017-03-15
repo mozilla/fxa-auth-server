@@ -29,6 +29,7 @@
 
 var P = require('bluebird')
 const config = require('../config').getProperties()
+const error = require('../lib/error')
 const createSenders = require('../lib/senders')
 var fs = require('fs')
 const log = require('../lib/senders/legacy_log')(require('../lib/senders/log')('server'))
@@ -53,9 +54,13 @@ var mailSender = {
   close: function () {}
 }
 
+const db = {
+  emailBounces: () => P.resolve([])
+}
+
 require('../lib/senders/translator')(config.i18n.supportedLanguages, config.i18n.defaultLanguage)
   .then(translator => {
-    return createSenders(log, config, translator, mailSender)
+    return createSenders(log, config, error, db, translator, mailSender)
   })
   .then((senders) => {
     const mailer = senders.email
