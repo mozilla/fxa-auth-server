@@ -378,7 +378,9 @@ describe('/recovery_email/verify_code', function () {
   var dbData = {
     email: TEST_EMAIL,
     emailCode: Buffer(mockRequest.payload.code, 'hex'),
-    emailVerified: false
+    emailVerified: false,
+    secondEmail: 'test@email.com',
+    secondEmailCode: crypto.randomBytes(16).toString('hex')
   }
   var dbErrors = {
     verifyTokens: error.invalidVerificationCode({})
@@ -515,7 +517,6 @@ describe('/recovery_email/verify_code', function () {
 
     it('sign-in confirmation', function () {
       dbData.emailCode = crypto.randomBytes(16)
-      dbData.secondEmailCode = crypto.randomBytes(16)
 
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyTokens.callCount, 1, 'call db.verifyTokens')
@@ -541,6 +542,31 @@ describe('/recovery_email/verify_code', function () {
         .then(function () {
           mockDB.verifyTokens.reset()
           mockLog.activityEvent.reset()
+          mockPush.notifyUpdate.reset()
+        })
+    })
+
+    it('secondary email verification', function () {
+      dbData.emailCode = crypto.randomBytes(16).toString('hex')
+      mockRequest.payload.code = dbData.secondEmailCode.toString('hex')
+
+      return runTest(route, mockRequest, function (response) {
+        assert.equal(mockDB.verifyEmail.callCount, 1, 'call db.verifyEmail')
+        var args = mockDB.verifyEmail.args[0]
+        assert.equal(args.length, 2, 'mockDB.verifyEmail was passed correct arguments')
+        assert.equal(args[0].email, dbData.email, 'correct account primary email was passed')
+        assert.equal(args[1].toString('hex'), dbData.secondEmailCode.toString('hex'), 'correct email code was passed')
+
+        assert.equal(mockMailer.sendPostVerifySecondaryEmail.callCount, 1, 'call mailer.sendPostVerifySecondaryEmail')
+        args = mockMailer.sendPostVerifySecondaryEmail.args[0]
+        assert.equal(args.length, 2, 'mockMailer.sendPostVerifySecondaryEmail was passed correct arguments')
+        assert.equal(args[0], dbData.email, 'correct account primary email was passed')
+        assert.equal(args[1].secondaryEmail, dbData.secondEmail, 'correct secondary email was passed')
+      })
+        .then(function () {
+          mockDB.verifyEmail.reset()
+          mockLog.activityEvent.reset()
+          mockMailer.sendPostVerifySecondaryEmail.reset()
           mockPush.notifyUpdate.reset()
         })
     })
@@ -583,14 +609,14 @@ describe('/recovery_email/emails', function () {
     push: mockPush
   })
 
-  describe('should create email to account', function () {
-    it('creates new email', function () {
+  describe('/recovery_email/create', function () {
+    it('should create email to account', function () {
       route = getRoute(accountRoutes, '/recovery_email/create')
 
       return runTest(route, mockRequest, function (response) {
         assert.ok(response)
         assert.equal(mockDB.createEmail.callCount, 1, 'call db.createEmail')
-        assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1, 'does not call db.verifyEmail')
+        assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1, 'call db.sendVerifySecondaryEmail')
       })
         .then(function () {
           mockDB.createEmail.reset()
@@ -598,8 +624,8 @@ describe('/recovery_email/emails', function () {
     })
   })
 
-  describe('should get all emails to account', function () {
-    it('creates new email', function () {
+  describe('/recovery_email/emails', function () {
+    it('should get all emails to account', function () {
       route = getRoute(accountRoutes, '/recovery_email/emails')
       return runTest(route, mockRequest, function (response) {
         assert.equal(response.length, 2, 'should return two emails')
@@ -613,8 +639,8 @@ describe('/recovery_email/emails', function () {
     })
   })
 
-  describe('should delete email from account', function () {
-    it('creates new email', function () {
+  describe('/recovery_email/destroy', function () {
+    it('should delete email from account', function () {
       route = getRoute(accountRoutes, '/recovery_email/destroy')
       return runTest(route, mockRequest, function (response) {
         assert.ok(response)

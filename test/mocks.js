@@ -81,6 +81,7 @@ const MAILER_METHOD_NAMES = [
   'sendPasswordChangedNotification',
   'sendPasswordResetNotification',
   'sendPostVerifyEmail',
+  'sendPostVerifySecondaryEmail',
   'sendUnblockCode',
   'sendVerifyCode',
   'sendVerifyLoginEmail',
@@ -144,7 +145,7 @@ function mockDB (data, errors) {
         },
         {
           email: data.secondEmail || 'secondEmail@email.com',
-          emailCode: data.secondEmailCode || crypto.randomBytes(16),
+          emailCode: data.secondEmailCode || crypto.randomBytes(16).toString('hex'),
           isVerified: data.secondEmailisVerified || false,
           isPrimary: false
         }

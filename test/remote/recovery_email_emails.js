@@ -150,6 +150,11 @@ describe('remote emails', function () {
             assert.equal(res[1].email, secondEmail, 'returns correct email')
             assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
             assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'postVerifySecondaryEmail', 'email template name set')
           })
       }
     )
@@ -296,6 +301,11 @@ describe('remote emails', function () {
           assert.equal(res[1].email, secondEmail, 'returns correct email')
           assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
           assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+          return server.mailbox.waitForEmail(email)
+        })
+        .then((emailData) => {
+          const templateName = emailData['headers']['x-template-name']
+          assert.equal(templateName, 'postVerifySecondaryEmail', 'email template name set')
         })
     })
 
