@@ -218,18 +218,8 @@ var conf = convict({
       format: String,
       default: 'https://www.mozilla.org/firefox/android/'
     },
-    androidAdjustUrl: {
-      doc: 'url to Android product page',
-      format: String,
-      default: 'https://mzl.la/1HOd4ec'
-    },
     iosUrl: {
       doc: 'url to IOS product page',
-      format: String,
-      default: 'https://mzl.la/1HOd4ec'
-    },
-    iosAdjustUrl: {
-      doc: 'url to IOS adjust',
       format: String,
       default: 'https://mzl.la/1HOd4ec'
     },

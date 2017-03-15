@@ -26,6 +26,7 @@ var messageTypes = [
   'passwordResetEmail',
   'passwordResetRequiredEmail',
   'postVerifyEmail',
+  'postVerifySecondaryEmail',
   'recoveryEmail',
   'unblockCodeEmail',
   'verificationReminderEmail',
@@ -39,6 +40,7 @@ var typesContainSupportLinks = [
   'passwordChangedEmail',
   'passwordResetEmail',
   'postVerifyEmail',
+  'postVerifySecondaryEmail',
   'recoveryEmail',
   'verificationReminderEmail',
   'verifyEmail'
@@ -64,11 +66,13 @@ var typesContainReportSignInLinks = [
 ]
 
 var typesContainAndroidStoreLinks = [
-  'postVerifyEmail'
+  'postVerifyEmail',
+  'postVerifySecondaryEmail'
 ]
 
 var typesContainIOSStoreLinks = [
-  'postVerifyEmail'
+  'postVerifyEmail',
+  'postVerifySecondaryEmail'
 ]
 
 var typesContainLocationData = [
@@ -461,8 +465,8 @@ describe(
             'test utm params for ' + type,
             function () {
               var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, {}, type, 'connect-device')
-              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, {}, type, 'connect-android')
-              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, {}, type, 'connect-ios')
+              var androidLink = config.get('mail').androidUrl
+              var iosLink = config.get('mail').iosUrl
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, syncLink))
