@@ -23,6 +23,11 @@ describe('lib/senders/index', () => {
 
     const UID = crypto.randomBytes(16)
     const EMAIL = crypto.randomBytes(16).toString('hex') + '@example.test'
+    const EMAILS = [{
+      email: EMAIL,
+      isPrimary: true,
+      isVerified: true
+    }]
     const db = {
       emailBounces: sinon.spy(() => P.resolve([]))
     }
@@ -67,6 +72,11 @@ describe('lib/senders/index', () => {
     describe('.sendVerifyLoginEmail()', () => {
       const acct = {
         email: EMAIL,
+        emails: [{
+          email: EMAIL,
+          isVerified: true,
+          isPrimary: true
+        }],
         uid: UID
       }
       const code = crypto.randomBytes(32)
@@ -116,7 +126,7 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.passwordChangedEmail = sinon.spy(() => P.resolve({}))
-            return email.sendPasswordChangedNotification(EMAIL, {})
+            return email.sendPasswordChangedNotification(EMAILS, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.passwordChangedEmail.callCount, 1)
@@ -132,7 +142,7 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.passwordResetEmail = sinon.spy(() => P.resolve({}))
-            return email.sendPasswordResetNotification(EMAIL, {})
+            return email.sendPasswordResetNotification(EMAILS, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.passwordResetEmail.callCount, 1)
@@ -148,7 +158,7 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.newDeviceLoginEmail = sinon.spy(() => P.resolve({}))
-            return email.sendNewDeviceLoginNotification(EMAIL, {})
+            return email.sendNewDeviceLoginNotification(EMAILS, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.newDeviceLoginEmail.callCount, 1)

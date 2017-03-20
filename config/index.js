@@ -221,7 +221,7 @@ var conf = convict({
     iosUrl: {
       doc: 'url to IOS product page',
       format: String,
-      default: 'https://www.mozilla.org/firefox/ios/'
+      default: 'https://mzl.la/1HOd4ec'
     },
     supportUrl: {
       doc: 'url to Mozilla Support product page',
@@ -243,6 +243,11 @@ var conf = convict({
       doc: 'url to Firefox password manager information',
       format: String,
       default: 'https://support.mozilla.org/kb/password-manager-remember-delete-change-and-import#w_viewing-and-deleting-passwords'
+    },
+    accountSettingsUrl: {
+      doc: 'url to Firefox password manager information',
+      format: String,
+      default: 'https://accounts.firefox.com/settings'
     },
     sesConfigurationSet: {
       doc: ('AWS SES Configuration Set for SES Event Publishing. If defined, ' +
