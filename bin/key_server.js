@@ -2,12 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+'use strict'
+
 // Only `require()` the newrelic module if explicity enabled.
 // If required, modules will be instrumented.
 require('../lib/newrelic')()
 
 var config = require('../config').getProperties()
 var jwtool = require('fxa-jwtool')
+var P = require('../lib/promise')
 
 var log = require('../lib/log')(config.log.level)
 var getGeoData = require('../lib/geodb')(log)
@@ -74,61 +77,61 @@ function main() {
     log.stat(Password.stat())
   }
 
-  require('../lib/senders')(config, log)
-    .then(
-      function(result) {
-        senders = result
+  var DB = require('../lib/db')(
+    config,
+    log,
+    error,
+    Token.SessionToken,
+    Token.KeyFetchToken,
+    Token.AccountResetToken,
+    Token.PasswordForgotToken,
+    Token.PasswordChangeToken,
+    UnblockCode
+  )
 
-        var DB = require('../lib/db')(
-          config,
-          log,
-          error,
-          Token.SessionToken,
-          Token.KeyFetchToken,
-          Token.AccountResetToken,
-          Token.PasswordForgotToken,
-          Token.PasswordChangeToken,
-          UnblockCode
-        )
+  P.all([
+    DB.connect(config[config.db.backend]),
+    require('../lib/senders/translator')(config.i18n.supportedLanguages, config.i18n.defaultLanguage)
+  ])
+    .spread(
+      (db, translator) => {
+        database = db
 
-        DB.connect(config[config.db.backend])
-          .then(
-            function (db) {
-              database = db
-              customs = new Customs(config.customsUrl)
-              var routes = require('../lib/routes')(
-                log,
-                error,
-                serverPublicKeys,
-                signer,
-                db,
-                senders.email,
-                senders.sms,
-                Password,
-                config,
-                customs
-              )
-              server = Server.create(log, error, config, routes, db)
+        require('../lib/senders')(log, config, error, db, translator)
+          .then(result => {
+            senders = result
+            customs = new Customs(config.customsUrl)
+            var routes = require('../lib/routes')(
+              log,
+              error,
+              serverPublicKeys,
+              signer,
+              db,
+              senders.email,
+              senders.sms,
+              Password,
+              config,
+              customs
+            )
+            server = Server.create(log, error, config, routes, db, translator)
 
-              server.start(
-                function (err) {
-                  if (err) {
-                    log.error({ op: 'server.start.1', msg: 'failed startup with error',
-                      err: { message: err.message } })
-                    process.exit(1)
-                  } else {
-                    log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
-                  }
+            server.start(
+              function (err) {
+                if (err) {
+                  log.error({ op: 'server.start.1', msg: 'failed startup with error',
+                    err: { message: err.message } })
+                  process.exit(1)
+                } else {
+                  log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
                 }
-              )
-              statsInterval = setInterval(logStatInfo, 15000)
-            },
-            function (err) {
-              log.error({ op: 'DB.connect', err: { message: err.message } })
-              process.exit(1)
-            }
-          )
-
+              }
+            )
+            statsInterval = setInterval(logStatInfo, 15000)
+          })
+      },
+      function (err) {
+        log.error({ op: 'DB.connect', err: { message: err.message } })
+        process.exit(1)
       }
     )
 

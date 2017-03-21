@@ -48,6 +48,11 @@ in a sign-in or sign-up flow:
 |`flow.${viewName}.create-account`|A user has clicked on the 'Create an account' link.|
 |`flow.${viewName}.forgot-password`|A user has clicked on the 'Forgot password?' link.|
 |`flow.${action}.attempt`|The content server has sent a sign-in/up request to the auth server.|
+|`flow.experiment.${experiment}.${group}`|A user has been included in an active experiment.|
+|`flow.performance`|`flow_time` for this event indicates the number of milliseconds a user waited until the first view rendered and they were able to interact with the page.|
+|`flow.performance.network`|`flow_time` for this event is a number that approximates the relative speed of a user's network performance (lower is faster).|
+|`flow.performance.server`|`flow_time` for this event is a number that approximates the relative speed of the server performance (lower is faster).|
+|`flow.performance.client`|`flow_time` for this event is a number that approximates the relative speed of a user's client-side performance (lower is faster).|
 |`account.login`|An existing account has been signed in to.|
 |`account.created`|A new account has been created.|
 |`email.confirmation.sent`|A sign-in confirmation email has been sent to a user.|
@@ -109,6 +114,8 @@ contains the following fields:
 |`duration`|The length of time from the `flow.begin` event until the last event of the flow.|
 |`completed`|Boolean indicating whether the flow was successfully completed.|
 |`new_account`|Boolean indicating whether the flow was a sign-up.|
+|`uid`|The user id. An opaque token, HMACed to avoid correlation back to FxA user db.|
+|`locale`|The user's locale. For cases where we aren't localised in their favoured locale(s), the value will be `en-US.default`|
 |`ua_browser`|The user's web browser, e.g. 'Firefox' or 'Chrome'.|
 |`ua_version`|The user's browser version.|
 |`ua_os`|The user's operating system, e.g. 'Windows 10' or 'Android'.|
@@ -121,6 +128,7 @@ contains the following fields:
 |`utm_medium`|Marketing campaign medium for the first flow in the session. Not stored if the `DNT` request header was `1`.|
 |`utm_source`|Marketing campaign source for the first flow in the session. Not stored if the `DNT` request header was `1`.|
 |`utm_term`|Marketing campaign search term for the first flow in the session. Not stored if the `DNT` request header was `1`.|
+|`export_date`|The date that the `flow.begin` event was exported to S3 by the metrics pipeline.|
 
 The `flow_events` table
 contains the following fields:
@@ -131,6 +139,8 @@ contains the following fields:
 |`flow_time`|The time since the beginning of the flow.|
 |`flow_id`|The flow identifier.|
 |`type`|The event name.|
+|`uid`|The user id. An opaque token, HMACed to avoid correlation back to FxA user db.|
+|`locale`|The user's locale. For cases where we aren't localised in their favoured locale(s), the value will be `en-US.default`|
 
 ## Activity events
 
@@ -202,33 +212,48 @@ in the preceding five days.
 
 ## Significant changes
 
+### Train 83
+
+* [`locale` was added
+  to the `flow_events`
+  and `flow_metadata` schemata](https://github.com/mozilla/fxa-auth-server/pull/1702).
+
+### Train 82
+
+* [The `flow.performance.*` events
+  were added](https://github.com/mozilla/fxa-content-server/pull/4776).
+
+* [The `flow.experiment.${experiment}.${group}` event
+  was added](https://github.com/mozilla/fxa-content-server/pull/4775).
+
+### Train 81
+
+* [`uid` was added
+  to the `flow_events`
+  and `flow_metadata` schemata](https://github.com/mozilla/fxa-auth-server/pull/1650).
+
 ### Train 80
 
 * [A known cause
   of duplicate flow ids
   being logged
-  was fixed]
-  (https://github.com/mozilla/fxa-content-server/pull/4676).
+  was fixed](https://github.com/mozilla/fxa-content-server/pull/4676).
 
 ### Train 78
 
 * [Logging for the `route.*` events
-  was fixed]
-  (https://github.com/mozilla/fxa-auth-server/pull/1606).
+  was fixed](https://github.com/mozilla/fxa-auth-server/pull/1606).
 
 * [Logging for the `email.${templateName}.bounced` event
-  was fixed]
-  (https://github.com/mozilla/fxa-auth-server/pull/1609).
+  was fixed](https://github.com/mozilla/fxa-auth-server/pull/1609).
 
 ### Train 76
 
 * [Duplicate flow events
-  were fixed in the content server]
-  (https://github.com/mozilla/fxa-content-server/pull/4478).
+  were fixed in the content server](https://github.com/mozilla/fxa-content-server/pull/4478).
 
 * [The `account.reset` event
-  was made a flow event]
-  (https://github.com/mozilla/fxa-auth-server/pull/1584).
+  was made a flow event](https://github.com/mozilla/fxa-auth-server/pull/1584).
 
 ### Train 75
 
@@ -237,94 +262,75 @@ in the preceding five days.
   for OAuth reliers,
   stopping those requests from
   being identified as originating from
-  the content server]
-  (https://github.com/mozilla/fxa-content-server/pull/4419).
+  the content server](https://github.com/mozilla/fxa-content-server/pull/4419).
 
 * [The `flow.${viewName}.view` event
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4440).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4440).
 
 * [The `flow.${viewName}.begin` event
-  was changed back to `flow.begin`]
-  (https://github.com/mozilla/fxa-content-server/pull/4440).
+  was changed back to `flow.begin`](https://github.com/mozilla/fxa-content-server/pull/4440).
 
 * [Validation of the `utm_*` parameters
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4446).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4446).
 
-* [The `route.*` events were implemented]
-  (https://github.com/mozilla/fxa-auth-server/pull/1576).
+* [The `route.*` events were implemented](https://github.com/mozilla/fxa-auth-server/pull/1576).
 
 ### Train 74
 
 * [Flow event data validation
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4383).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4383).
 
 * [The `${viewName}` part of
   `flow.${viewName}.begin`,
   `flow.${viewName}.engage` and
   `flow.${viewName}.submit`
-  was fixed]
-  (https://github.com/mozilla/fxa-content-server/pull/4317).
+  was fixed](https://github.com/mozilla/fxa-content-server/pull/4317).
 
 * [The `flow.have-account` event
-  was changed to `flow.${viewName}.have-account`]
-  (https://github.com/mozilla/fxa-content-server/pull/4317).
+  was changed to `flow.${viewName}.have-account`](https://github.com/mozilla/fxa-content-server/pull/4317).
 
 * [The `flow.${viewName}.create-account` event
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4317).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4317).
 
 * [The `flow.${viewName}.forgot-password` event
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4317).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4317).
 
 * [The `flow.${action}.attempt` event
-  was implemented]
-  (https://github.com/mozilla/fxa-content-server/pull/4317).
+  was implemented](https://github.com/mozilla/fxa-content-server/pull/4317).
 
 ### Train 73
 
 * [Expiry time
   for metrics context data in memcached
   was increased from 30 minutes
-  to 2 hours]
-  (https://github.com/mozilla/fxa-auth-server/pull/1519).
+  to 2 hours](https://github.com/mozilla/fxa-auth-server/pull/1519).
 
 * [The `flow.complete` event
-  was implemented]
-  (https://github.com/mozilla/fxa-auth-server/pull/1515).
+  was implemented](https://github.com/mozilla/fxa-auth-server/pull/1515).
 
 ### Train 72
 
 * [A change to the memcached key
   used when stashing metrics context data
   introduced a 30-minute partial blip
-  in flow event data]
-  (https://github.com/mozilla/fxa-auth-server/pull/1500).
+  in flow event data](https://github.com/mozilla/fxa-auth-server/pull/1500).
 
 ### Train 71
 
 * [The `flow.begin` event
-  was changed to `flow.${viewName}.begin`]
-  (https://github.com/mozilla/fxa-content-server/pull/4224).
+  was changed to `flow.${viewName}.begin`](https://github.com/mozilla/fxa-content-server/pull/4224).
 
 * [Timestamps were fixed
-  on the begin, engage and submit events]
-  (https://github.com/mozilla/fxa-content-server/pull/4351).
+  on the begin, engage and submit events](https://github.com/mozilla/fxa-content-server/pull/4351).
 
 * [Metrics context data was added
-  to the begin, engage and submit events]
-  (https://github.com/mozilla/fxa-content-server/pull/4234).
+  to the begin, engage and submit events](https://github.com/mozilla/fxa-content-server/pull/4234).
 
 * [Erroneous `"none"` values were removed
   from empty metrics context properties
-  in the content server]
-  (https://github.com/mozilla/fxa-content-server/pull/4234).
+  in the content server](https://github.com/mozilla/fxa-content-server/pull/4234).
 
 * [Expiry time for flow ids
   was increased from 30 minutes
-  to two hours]
-  (https://github.com/mozilla/fxa-auth-server/pull/1487).
+  to two hours](https://github.com/mozilla/fxa-auth-server/pull/1487).
 

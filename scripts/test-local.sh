@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-set -euo pipefail
+set -eu
 
 glob=$*
-if [ "$glob" == "" ]; then
-  glob="test/local/* test/remote/*"
+if [ -z "$glob" ]; then
+  glob="--recursive test/local test/remote"
 fi
 
 ./scripts/gen_keys.js

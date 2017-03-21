@@ -35,9 +35,11 @@ const DB_METHOD_NAMES = [
   'deleteDevice',
   'deleteKeyFetchToken',
   'deletePasswordChangeToken',
+  'deleteSessionToken',
   'deleteVerificationReminder',
   'deviceFromTokenVerificationId',
   'devices',
+  'emailBounces',
   'emailRecord',
   'forgotPasswordVerified',
   'keyFetchToken',
@@ -187,6 +189,9 @@ function mockDB (data, errors) {
     }),
     devices: sinon.spy(() => {
       return P.resolve(data.devices || [])
+    }),
+    deleteSessionToken: sinon.spy(() => {
+      return P.resolve()
     }),
     emailRecord: sinon.spy(() => {
       if (errors.emailRecord) {
@@ -349,7 +354,9 @@ function mockRequest (data) {
   return {
     app: {
       acceptLanguage: 'en-US',
-      clientAddress: data.clientAddress || '63.245.221.32' // MTV
+      clientAddress: data.clientAddress || '63.245.221.32',
+      isLocaleAcceptable: true,
+      locale: data.locale || 'en-US'
     },
     auth: {
       credentials: data.credentials

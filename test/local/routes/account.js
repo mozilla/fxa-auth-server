@@ -204,6 +204,7 @@ describe('/account/create', () => {
     mockLog.error = sinon.spy()
     const mockMetricsContext = mocks.mockMetricsContext()
     const mockRequest = mocks.mockRequest({
+      locale: 'en-GB',
       log: mockLog,
       metricsContext: mockMetricsContext,
       payload: {
@@ -288,7 +289,6 @@ describe('/account/create', () => {
       assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
       assert.deepEqual(args[0], {
         event: 'account.created',
-        locale: 'en',
         service: 'sync',
         userAgent: 'test user-agent',
         uid: uid.toString('hex')
@@ -302,7 +302,7 @@ describe('/account/create', () => {
         flowCompleteSignal: 'account.signed',
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
-        locale: 'en',
+        locale: 'en-GB',
         time: now,
         uid: uid.toString('hex'),
         userAgent: 'test user-agent'
@@ -490,7 +490,7 @@ describe('/account/login', function () {
     mockLog.activityEvent.reset()
     mockLog.flowEvent.reset()
     mockLog.stdout.write.reset()
-    mockMailer.sendNewDeviceLoginNotification.reset()
+    mockMailer.sendNewDeviceLoginNotification = sinon.spy(() => P.resolve([]))
     mockMailer.sendVerifyLoginEmail.reset()
     mockMailer.sendVerifyCode.reset()
     mockDB.createSessionToken.reset()
@@ -817,7 +817,22 @@ describe('/account/login', function () {
           var tokenData = mockDB.createSessionToken.getCall(0).args[0]
           assert.equal(tokenData.tokenVerificationId, null, 'sessionToken was created verified')
           assert.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
-          assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was not called')
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+          assert.ok(response.verified, 'response indicates account is verified')
+        })
+      })
+
+      it('do not error if new device login notification is blocked', function () {
+        setup(true, 0)
+
+        mockMailer.sendNewDeviceLoginNotification = sinon.spy(() => P.reject(error.emailBouncedHard()))
+
+        return runTest(route, mockRequest, function (response) {
+          assert.equal(mockDB.createSessionToken.callCount, 1, 'db.createSessionToken was called')
+          var tokenData = mockDB.createSessionToken.getCall(0).args[0]
+          assert.equal(tokenData.tokenVerificationId, null, 'sessionToken was created verified')
+          assert.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
           assert.ok(response.verified, 'response indicates account is verified')
         })
       })
@@ -1193,4 +1208,70 @@ describe('/account/destroy', function () {
       }, 'event data was correct')
     })
   })
+})
+
+
+describe('/account/sessions', function () {
+  var testSession = {
+    tokenId: 'foo',
+    uid: '010',
+    createdAt: Date.now(),
+    uaOS: 'Windows',
+    uaOSVersion: '10',
+    uaDeviceType: 'desktop',
+    lastAccessTime: Date.now(),
+
+    uaBrowser: 'Firefox',
+    uaBrowserVersion: '50',
+
+    deviceId: 'deviceId',
+    deviceName: 'deviceName',
+    deviceType: 'desktop',
+    deviceCreatedAt: Date.now(),
+    devicePushCallback: 'foo',
+    devicePushPublicKey: 'bar',
+    devicePushAuthKey: 'authKey',
+  }
+  var mockDB = mocks.mockDB()
+  mockDB.sessions = sinon.spy(function () {
+    return P.resolve([
+      Object.assign({}, testSession)
+    ])
+  })
+
+  var mockRequest = mocks.mockRequest({
+    credentials: {
+      uid: crypto.randomBytes(16),
+      tokenId: crypto.randomBytes(16)
+    },
+    payload: {}
+  })
+
+  var accountRoutes = makeRoutes({
+    db: mockDB
+  })
+
+
+  it('should list account sessions', () => {
+    var route = getRoute(accountRoutes, '/account/sessions')
+
+    return runTest(route, mockRequest, function (res) {
+      assert.equal(res.length, 1)
+      assert.equal(Object.keys(res[0]).length, 12)
+      var s = res[0]
+      assert.equal(s.id, testSession.tokenId)
+      assert.equal(s.deviceName, testSession.deviceName)
+      assert.equal(s.deviceType, testSession.deviceType)
+      assert.equal(s.devicePushCallback, testSession.devicePushCallback)
+      assert.equal(s.devicePushPublicKey, testSession.devicePushPublicKey)
+      assert.equal(s.devicePushAuthKey, testSession.devicePushAuthKey)
+      assert.equal(s.id, testSession.tokenId)
+      assert.equal(s.isCurrentDevice, false)
+      assert.equal(s.isDevice, true)
+      assert.equal(s.lastAccessTimeFormatted, 'a few seconds ago')
+      assert.equal(s.userAgent, 'Firefox 50')
+    })
+
+  })
+
 })

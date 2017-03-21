@@ -11,14 +11,14 @@ var extend = require('util')._extend
 var sinon = require('sinon')
 var P = require('bluebird')
 
-var nullLog = {
+var mockLog = {
   trace: function () {},
-  info: function () {},
+  info: sinon.spy(),
   error: function () {}
 }
 
 var config = require(`${ROOT_DIR}/mailer/config`)
-var Mailer = require(`${ROOT_DIR}/lib/senders/email`)(nullLog)
+var Mailer = require(`${ROOT_DIR}/lib/senders/email`)(mockLog)
 
 var messageTypes = [
   'newDeviceLoginEmail',
@@ -133,11 +133,14 @@ describe(
           'Contains template header for ' + type,
           function () {
             mailer.mailer.sendMail = function (emailConfig) {
+              assert.equal(emailConfig.from, config.get('mail.sender'), 'from header is correct')
+              assert.equal(emailConfig.sender, config.get('mail.sender'), 'sender header is correct')
               var templateName = emailConfig.headers['X-Template-Name']
 
               if (type === 'verificationReminderEmail') {
                 // Handle special case for verification reminders
-                assert.equal(templateName, 'verificationReminderFirstEmail' || 'verificationReminderSecondEmail')
+                assert.ok(templateName === 'verificationReminderFirstEmail' ||
+                  templateName === 'verificationReminderSecondEmail')
               } else if (type === 'verifyEmail') {
                 // Handle special case for verify email
                 assert.equal(templateName, 'verifySyncEmail')
@@ -555,6 +558,31 @@ describe(
         return mailer.send(message)
           .then(function (status) {
             assert.equal(status.resp, 'ok')
+          })
+      }
+    )
+
+    it(
+      'logs emailEvent on send',
+      function () {
+        mockLog.info.reset()
+
+        var message = {
+          email: 'test@restmail.net',
+          subject: 'subject',
+          template: 'verifyLoginEmail',
+          uid: 'foo'
+        }
+
+        return mailer.send(message)
+          .then(function () {
+            assert.equal(mockLog.info.callCount, 3, 'calls log emailEvent')
+            const emailEventLog = mockLog.info.getCalls()[2]
+            assert.equal(emailEventLog.args[0], 'emailEvent', 'logs emailEvent')
+            assert.equal(emailEventLog.args[1].domain, 'other', 'logs domain')
+            assert.equal(emailEventLog.args[1].template, 'verifyLoginEmail', 'logs correct template')
+            assert.equal(emailEventLog.args[1].type, 'sent', 'logs correct type')
+
           })
       }
     )

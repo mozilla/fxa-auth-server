@@ -27,7 +27,8 @@
  */
 
 var P = require('bluebird')
-var config = require('../config')
+const config = require('../config').getProperties()
+const error = require('../lib/error')
 const createSenders = require('../lib/senders')
 var fs = require('fs')
 const log = require('../lib/senders/legacy_log')(require('../lib/senders/log')('server'))
@@ -52,8 +53,14 @@ var mailSender = {
   close: function () {}
 }
 
+const db = {
+  emailBounces: () => P.resolve([])
+}
 
-createSenders(config.getProperties(), log, mailSender)
+require('../lib/senders/translator')(config.i18n.supportedLanguages, config.i18n.defaultLanguage)
+  .then(translator => {
+    return createSenders(log, config, error, db, translator, mailSender)
+  })
   .then((senders) => {
     const mailer = senders.email
     checkMessageType(mailer, messageToSend)
@@ -124,7 +131,10 @@ function getMailerMessageTypes(mailer) {
   var messageTypes = []
 
   for (var key in mailer) {
-    if (typeof mailer[key] === 'function' && ! /^_/.test(key) && /Email$/.test(key)) {
+    if (
+      typeof mailer[key] === 'function' &&
+      ! /^_/.test(key) && ! /^send/.test(key) && /Email$/.test(key)
+    ) {
       messageTypes.push(key)
     }
   }

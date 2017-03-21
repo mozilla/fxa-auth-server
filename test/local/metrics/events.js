@@ -170,7 +170,8 @@ describe('metrics/events', () => {
     const metricsContext = mocks.mockMetricsContext()
     const request = {
       app: {
-        acceptLanguage: 'en'
+        isLocaleAcceptable: false,
+        locale: 'en'
       },
       auth: {
         credentials: {
@@ -203,7 +204,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en',
+          locale: 'en.default',
           time,
           uid: 'deadbeef',
           userAgent: 'foo'
@@ -224,6 +225,10 @@ describe('metrics/events', () => {
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
     const request = {
+      app: {
+        isLocaleAcceptable: true,
+        locale: 'fr'
+      },
       clearMetricsContext: metricsContext.clear,
       gatherMetricsContext: metricsContext.gather,
       headers: {
@@ -247,7 +252,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
-          locale: 'baz',
+          locale: 'fr',
           time,
           uid: 'qux',
           userAgent: 'foo'
@@ -257,7 +262,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
-          locale: 'baz',
+          locale: 'fr',
           time,
           uid: 'qux',
           userAgent: 'foo'
@@ -696,6 +701,69 @@ describe('metrics/events', () => {
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
+      })
+  })
+
+  it('.emitRouteFlowEvent with matching route and invalid metrics context', () => {
+    const metricsContext = mocks.mockMetricsContext()
+    const validateMetricsContext = sinon.spy(() => false)
+    const request = {
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      path: '/v1/account/destroy',
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: Date.now()
+        }
+      },
+      validateMetricsContext
+    }
+    return events.emitRouteFlowEvent.call(request, { statusCode: 400, errno: 107 })
+      .then(() => {
+        assert.equal(validateMetricsContext.callCount, 1, 'metricsContext.validate was called once')
+        assert.equal(validateMetricsContext.args[0].length, 0, 'metricsContext.validate was passed no arguments')
+
+        assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
+        assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      })
+  })
+
+  it('.emitRouteFlowEvent with missing parameter error but valid metrics context', () => {
+    const metricsContext = mocks.mockMetricsContext()
+    const validateMetricsContext = sinon.spy(() => true)
+    const request = {
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      path: '/v1/account/destroy',
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: Date.now()
+        }
+      },
+      validateMetricsContext
+    }
+    return events.emitRouteFlowEvent.call(request, { statusCode: 400, errno: 107 })
+      .then(() => {
+        assert.equal(validateMetricsContext.callCount, 1, 'metricsContext.validate was called once')
+        assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+        assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
+
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      }).finally(() => {
+        log.flowEvent.reset()
       })
   })
 })
