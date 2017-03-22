@@ -598,7 +598,7 @@ module.exports = config => {
       function (token) {
         return this.doRequest(
           'GET',
-          this.baseURL + '/recovery_email/emails',
+          this.baseURL + '/recovery_emails',
           token,
           undefined
         )
@@ -612,7 +612,7 @@ module.exports = config => {
       function (token) {
         return this.doRequest(
           'POST',
-          this.baseURL + '/recovery_email/create',
+          this.baseURL + '/recovery_email',
           token,
           {
             email: email

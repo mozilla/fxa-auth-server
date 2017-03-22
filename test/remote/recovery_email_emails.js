@@ -51,7 +51,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 1, 'returns number of emails')
             assert.equal(res[0].email, email, 'returns correct email')
             assert.equal(res[0].isPrimary, true, 'returns correct isPrimary')
-            assert.equal(res[0].isVerified, true, 'returns correct isVerified')
+            assert.equal(res[0].verified, true, 'returns correct verified')
             return client.createEmail(secondEmail)
           })
           .then((res) => {
@@ -62,7 +62,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 2, 'returns number of emails')
             assert.equal(res[1].email, secondEmail, 'returns correct email')
             assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-            assert.equal(res[1].isVerified, false, 'returns correct isVerified')
+            assert.equal(res[1].verified, false, 'returns correct verified')
             return client.createEmail(thirdEmail)
           })
           .then((res) => {
@@ -73,7 +73,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 3, 'returns number of emails')
             assert.equal(res[2].email, thirdEmail, 'returns correct email')
             assert.equal(res[2].isPrimary, false, 'returns correct isPrimary')
-            assert.equal(res[2].isVerified, false, 'returns correct isVerified')
+            assert.equal(res[2].verified, false, 'returns correct verified')
           })
           .catch((err) => {
             assert.fail(err)
@@ -88,7 +88,7 @@ describe('remote emails', function () {
         return client.createEmail(secondEmail)
           .then(assert.fail)
           .catch((err) => {
-            assert.equal(err.errno, 301, 'email already exists errno')
+            assert.equal(err.errno, 136, 'email already exists errno')
             assert.equal(err.code, 400, 'email already exists code')
           })
       }
@@ -105,9 +105,34 @@ describe('remote emails', function () {
           })
           .then(assert.fail)
           .catch((err) => {
-            assert.equal(err.errno, 301, 'email already exists errno')
+            assert.equal(err.errno, 136, 'email already exists errno')
             assert.equal(err.code, 400, 'email already exists code')
             assert.equal(err.message, 'Email already exists', 'correct error message')
+          })
+      }
+    )
+
+    it(
+      'fails for unverified session',
+      () => {
+        const secondEmail = server.uniqueEmail()
+        return client.login()
+          .then(() => {
+            return client.accountEmails()
+          })
+          .then((res) => {
+            assert.equal(res.length, 1, 'returns number of emails')
+            assert.equal(res[0].email, email, 'returns correct email')
+            assert.equal(res[0].isPrimary, true, 'returns correct isPrimary')
+            assert.equal(res[0].verified, true, 'returns correct verified')
+            return client.createEmail(secondEmail)
+              .then(() => {
+                assert.fail(new Error('Should not have created email'))
+              })
+          })
+          .catch((err) => {
+            assert.equal(err.code, 400, 'correct error code')
+            assert.equal(err.errno, 138, 'correct error errno unverified session')
           })
       }
     )
@@ -126,7 +151,7 @@ describe('remote emails', function () {
           assert.equal(res.length, 2, 'returns number of emails')
           assert.equal(res[1].email, secondEmail, 'returns correct email')
           assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-          assert.equal(res[1].isVerified, false, 'returns correct isVerified')
+          assert.equal(res[1].verified, false, 'returns correct verified')
         })
     })
 
@@ -149,7 +174,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 2, 'returns number of emails')
             assert.equal(res[1].email, secondEmail, 'returns correct email')
             assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-            assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+            assert.equal(res[1].verified, true, 'returns correct verified')
             return server.mailbox.waitForEmail(email)
           })
           .then((emailData) => {
@@ -210,7 +235,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 2, 'returns number of emails')
             assert.equal(res[1].email, secondEmail, 'returns correct email')
             assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-            assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+            assert.equal(res[1].verified, true, 'returns correct verified')
           })
 
       }
@@ -230,7 +255,7 @@ describe('remote emails', function () {
           assert.equal(res.length, 2, 'returns number of emails')
           assert.equal(res[1].email, secondEmail, 'returns correct email')
           assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-          assert.equal(res[1].isVerified, false, 'returns correct isVerified')
+          assert.equal(res[1].verified, false, 'returns correct verified')
         })
     })
 
@@ -246,7 +271,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 1, 'returns number of emails')
             assert.equal(res[0].email, email, 'returns correct email')
             assert.equal(res[0].isPrimary, true, 'returns correct isPrimary')
-            assert.equal(res[0].isVerified, true, 'returns correct isVerified')
+            assert.equal(res[0].verified, true, 'returns correct verified')
           })
       }
     )
@@ -268,9 +293,33 @@ describe('remote emails', function () {
         return client.deleteEmail(email)
           .then(assert.fail)
           .catch((err) => {
-            assert.equal(err.errno, 302, 'correct error errno')
+            assert.equal(err.errno, 137, 'correct error errno')
             assert.equal(err.code, 400, 'correct error code')
             assert.equal(err.message, 'Can not delete primary email', 'correct error message')
+          })
+      }
+    )
+
+    it(
+      'fails for unverified session',
+      () => {
+        return client.login()
+          .then(() => {
+            return client.accountEmails()
+          })
+          .then((res) => {
+            assert.equal(res.length, 2, 'returns number of emails')
+            assert.equal(res[1].email, secondEmail, 'returns correct email')
+            assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
+            assert.equal(res[1].verified, false, 'returns correct verified')
+            return client.deleteEmail(secondEmail)
+              .then(() => {
+                assert.fail(new Error('Should not have deleted email'))
+              })
+          })
+          .catch((err) => {
+            assert.equal(err.code, 400, 'correct error code')
+            assert.equal(err.errno, 138, 'correct error errno unverified session')
           })
       }
     )
@@ -300,7 +349,7 @@ describe('remote emails', function () {
           assert.equal(res.length, 2, 'returns number of emails')
           assert.equal(res[1].email, secondEmail, 'returns correct email')
           assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-          assert.equal(res[1].isVerified, true, 'returns correct isVerified')
+          assert.equal(res[1].verified, true, 'returns correct verified')
           return server.mailbox.waitForEmail(email)
         })
         .then((emailData) => {
@@ -406,7 +455,7 @@ describe('remote emails', function () {
             assert.equal(res.length, 2, 'returns number of emails')
             assert.equal(res[1].email, secondEmail, 'returns correct email')
             assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
-            assert.equal(res[1].isVerified, false, 'returns correct isVerified')
+            assert.equal(res[1].verified, false, 'returns correct verified')
             return client.changePassword('password1', undefined)
           })
           .then((res) => {

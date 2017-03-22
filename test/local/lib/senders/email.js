@@ -359,11 +359,11 @@ describe(
               'original user email data is in template for ' + type,
               function () {
                 var message = getLocationMessage(defaultLocation)
-                message.userEmail = 'user@email.com'
+                message.primaryEmail = 'user@email.com'
                 mailer.mailer.sendMail = function (emailConfig) {
-                  assert.ok(includes(emailConfig.html, message.userEmail))
+                  assert.ok(includes(emailConfig.html, message.primaryEmail))
                   assert.ok(includes(emailConfig.html, message.email))
-                  assert.ok(includes(emailConfig.text, message.userEmail))
+                  assert.ok(includes(emailConfig.text, message.primaryEmail))
                   assert.ok(includes(emailConfig.text, message.email))
                 }
                 mailer[type](message)

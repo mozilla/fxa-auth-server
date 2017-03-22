@@ -571,7 +571,7 @@ describe('/recovery_email/verify_code', function () {
   })
 })
 
-describe('/recovery_email/emails', function () {
+describe('/recovery_email', function () {
   var uid = uuid.v4('binary').toString('hex')
   const mockLog = mocks.spyLog()
   var dbData, accountRoutes, mockDB, mockRequest, route
@@ -607,9 +607,9 @@ describe('/recovery_email/emails', function () {
     push: mockPush
   })
 
-  describe('/recovery_email/create', function () {
+  describe('/recovery_email', function () {
     it('should create email to account', function () {
-      route = getRoute(accountRoutes, '/recovery_email/create')
+      route = getRoute(accountRoutes, '/recovery_email')
 
       return runTest(route, mockRequest, function (response) {
         assert.ok(response)
@@ -622,9 +622,9 @@ describe('/recovery_email/emails', function () {
     })
   })
 
-  describe('/recovery_email/emails', function () {
+  describe('/recovery_emails', function () {
     it('should get all emails to account', function () {
-      route = getRoute(accountRoutes, '/recovery_email/emails')
+      route = getRoute(accountRoutes, '/recovery_emails')
       return runTest(route, mockRequest, function (response) {
         assert.equal(response.length, 2, 'should return two emails')
         assert.equal(response[0].email, dbData.email, 'should return users email')
