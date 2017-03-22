@@ -21,6 +21,7 @@
  *   verificationReminderEmail:first
  *   verificationReminderEmail:second
  *   verifyEmail
+ *   verifySecondaryEmail
  *   verifyLoginEmail
  *
  * Emails that are written to disk can be previewed in Firefox

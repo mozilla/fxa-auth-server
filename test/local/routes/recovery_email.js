@@ -301,8 +301,8 @@ describe('/recovery_email/resend_code', () => {
       assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1)
       assert.equal(mockMailer.sendVerifyCode.callCount, 0)
       assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 0)
-      const args = mockMailer.sendVerifySecondaryEmail.args[0]
-      assert.equal(args[1], secondEmailCode, 'email code set')
+      const args = mockMailer.sendVerifySecondaryEmail.getCall(0).args
+      assert.equal(args[2].code, secondEmailCode, 'email code set')
     })
       .then(() => {
         mockMailer.sendVerifySecondaryEmail.reset()
@@ -557,9 +557,9 @@ describe('/recovery_email/verify_code', function () {
 
         assert.equal(mockMailer.sendPostVerifySecondaryEmail.callCount, 1, 'call mailer.sendPostVerifySecondaryEmail')
         args = mockMailer.sendPostVerifySecondaryEmail.args[0]
-        assert.equal(args.length, 2, 'mockMailer.sendPostVerifySecondaryEmail was passed correct arguments')
-        assert.equal(args[0], dbData.email, 'correct account primary email was passed')
-        assert.equal(args[1].secondaryEmail, dbData.secondEmail, 'correct secondary email was passed')
+        assert.equal(args.length, 3, 'mockMailer.sendPostVerifySecondaryEmail was passed correct arguments')
+        assert.equal(args[1].email, dbData.email, 'correct account primary email was passed')
+        assert.equal(args[2].secondaryEmail, dbData.secondEmail, 'correct secondary email was passed')
       })
         .then(function () {
           mockDB.verifyEmail.reset()
@@ -582,7 +582,8 @@ describe('/recovery_email', function () {
   mockRequest = mocks.mockRequest({
     credentials: {
       uid: uuid.v4('binary').toString('hex'),
-      email: TEST_EMAIL
+      email: TEST_EMAIL,
+      emailVerified: true
     },
     log: mockLog,
     payload: {
@@ -616,6 +617,21 @@ describe('/recovery_email', function () {
         assert.equal(mockDB.createEmail.callCount, 1, 'call db.createEmail')
         assert.equal(mockMailer.sendVerifySecondaryEmail.callCount, 1, 'call db.sendVerifySecondaryEmail')
       })
+        .then(function () {
+          mockDB.createEmail.reset()
+        })
+    })
+
+    it('should fail with unverified primary email', function () {
+      route = getRoute(accountRoutes, '/recovery_email')
+
+      mockRequest.auth.credentials.emailVerified = false
+      return runTest(route, mockRequest, function (response) {
+        assert.fail(new Error('Should have failed adding secondary email with unverified primary email'))
+      })
+        .catch((err) => {
+          assert.equal(err.errno, 104, 'unverified account')
+        })
         .then(function () {
           mockDB.createEmail.reset()
         })

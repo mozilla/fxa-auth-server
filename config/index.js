@@ -239,11 +239,6 @@ var conf = convict({
       format: String,
       default: 'https://support.mozilla.org/kb/password-manager-remember-delete-change-and-import#w_viewing-and-deleting-passwords'
     },
-    accountSettingsUrl: {
-      doc: 'url to Firefox account settings page',
-      format: String,
-      default: 'https://accounts.firefox.com/settings'
-    },
     sesConfigurationSet: {
       doc: ('AWS SES Configuration Set for SES Event Publishing. If defined, ' +
             'X-SES-MESSAGE-TAGS headers will be added to emails. Only ' +
@@ -689,6 +684,7 @@ conf.validate({ strict: true })
 conf.set('domain', url.parse(conf.get('publicUrl')).host)
 
 // derive fxa-auth-mailer configuration from our content-server url
+// conf.set('accountSettingsUrl', conf.get('contentServer.url') + '/settings')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/verify_email')
 conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/complete_reset_password')
 conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')

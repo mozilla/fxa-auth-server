@@ -361,7 +361,7 @@ describe('remote emails', function () {
     it(
       'receives sign-in confirmation email',
       () => {
-        let emailCode, secondEmailCode
+        let emailCode
         return client.login({keys: true})
           .then((res) => {
             assert.ok(res)
@@ -372,14 +372,8 @@ describe('remote emails', function () {
             emailCode = emailData['headers']['x-verify-code']
             assert.equal(templateName, 'verifyLoginEmail', 'email template name set')
             assert.ok(emailCode, 'emailCode set')
-            return server.mailbox.waitForEmail(secondEmail)
-          })
-          .then((emailData) => {
-            const templateName = emailData['headers']['x-template-name']
-            secondEmailCode = emailData['headers']['x-verify-code']
-            assert.equal(templateName, 'verifyLoginEmail', 'email template name set')
-            assert.ok(secondEmailCode, 'emailCode set')
-            assert.equal(secondEmailCode, emailCode, 'email coes match')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
           })
       }
     )
@@ -395,11 +389,8 @@ describe('remote emails', function () {
           .then((emailData) => {
             const templateName = emailData['headers']['x-template-name']
             assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
-            return server.mailbox.waitForEmail(secondEmail)
-          })
-          .then((emailData) => {
-            const templateName = emailData['headers']['x-template-name']
-            assert.equal(templateName, 'passwordChangedEmail', 'email template name set')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
           })
       }
     )
@@ -424,11 +415,8 @@ describe('remote emails', function () {
           .then((emailData) => {
             const templateName = emailData['headers']['x-template-name']
             assert.equal(templateName, 'passwordResetEmail', 'email template name set')
-            return server.mailbox.waitForEmail(secondEmail)
-          })
-          .then((emailData) => {
-            const templateName = emailData['headers']['x-template-name']
-            assert.equal(templateName, 'passwordResetEmail', 'email template name set')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
           })
       }
     )

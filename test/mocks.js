@@ -139,13 +139,15 @@ function mockDB (data, errors) {
     accountEmails: sinon.spy(() => {
       return P.resolve([
         {
-          email: data.email,
+          email: data.email || 'primary@email.com',
+          normalizedEmail: (data.email || 'primary@email.com').toLowerCase(),
           emailCode: data.emailCode,
           isPrimary: true,
           isVerified: data.emailVerified
         },
         {
           email: data.secondEmail || 'secondEmail@email.com',
+          normalizedEmail: (data.secondEmail || 'secondEmail@email.com').toLowerCase(),
           emailCode: data.secondEmailCode || crypto.randomBytes(16).toString('hex'),
           isVerified: data.secondEmailisVerified || false,
           isPrimary: false
