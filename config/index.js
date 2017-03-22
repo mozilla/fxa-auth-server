@@ -694,3 +694,4 @@ conf.set('smtp.reportSignInUrl', conf.get('contentServer.url') + '/report_signin
 conf.set('isProduction', conf.get('env') === 'prod')
 
 module.exports = conf
+
