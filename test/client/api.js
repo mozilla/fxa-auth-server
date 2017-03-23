@@ -638,6 +638,17 @@ module.exports = config => {
     )
   }
 
+  ClientApi.prototype.sendUnblockCode = function (email) {
+    return this.doRequest(
+      'POST',
+      this.baseURL + '/account/login/send_unblock_code',
+      undefined,
+      {
+        email: email
+      }
+    )
+  }
+
   ClientApi.heartbeat = function (origin) {
     return (new ClientApi(origin)).doRequest('GET', origin + '/__heartbeat__')
   }

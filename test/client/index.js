@@ -428,6 +428,10 @@ module.exports = config => {
     return this.api.deleteEmail(this.sessionToken, email)
   }
 
+  Client.prototype.sendUnblockCode = function (email) {
+    return this.api.sendUnblockCode(email)
+  }
+
   Client.prototype.resetPassword = function (newPassword, headers, options) {
     if (! this.accountResetToken) {
       throw new Error('call verifyPasswordResetCode before calling resetPassword')

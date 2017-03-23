@@ -579,37 +579,40 @@ describe('/recovery_email', function () {
   const mockPush = mocks.mockPush()
   var mockCustoms = mocks.mockCustoms()
 
-  mockRequest = mocks.mockRequest({
-    credentials: {
-      uid: uuid.v4('binary').toString('hex'),
+  beforeEach(() => {
+    mockRequest = mocks.mockRequest({
+      credentials: {
+        uid: uuid.v4('binary').toString('hex'),
+        email: TEST_EMAIL,
+        emailVerified: true,
+        normalizedEmail: TEST_EMAIL.toLowerCase()
+      },
+      log: mockLog,
+      payload: {
+        email: TEST_EMAIL_ADDITIONAL
+      }
+    })
+    dbData = {
       email: TEST_EMAIL,
-      emailVerified: true
-    },
-    log: mockLog,
-    payload: {
-      email: TEST_EMAIL_ADDITIONAL
+      uid: uid,
+      secondEmail: TEST_EMAIL_ADDITIONAL
     }
-  })
-  dbData = {
-    email: TEST_EMAIL,
-    uid: uid,
-    secondEmail: TEST_EMAIL_ADDITIONAL
-  }
-  mockDB = mocks.mockDB(dbData)
-  accountRoutes = makeRoutes({
-    checkPassword: function () {
-      return P.resolve(true)
-    },
-    config: {},
-    customs: mockCustoms,
-    db: mockDB,
-    log: mockLog,
-    mailer: mockMailer,
-    push: mockPush
+    mockDB = mocks.mockDB(dbData)
+    accountRoutes = makeRoutes({
+      checkPassword: function () {
+        return P.resolve(true)
+      },
+      config: {},
+      customs: mockCustoms,
+      db: mockDB,
+      log: mockLog,
+      mailer: mockMailer,
+      push: mockPush
+    })
   })
 
   describe('/recovery_email', function () {
-    it('should create email to account', function () {
+    it('should create email on account', function () {
       route = getRoute(accountRoutes, '/recovery_email')
 
       return runTest(route, mockRequest, function (response) {
@@ -631,6 +634,21 @@ describe('/recovery_email', function () {
       })
         .catch((err) => {
           assert.equal(err.errno, 104, 'unverified account')
+        })
+        .then(function () {
+          mockDB.createEmail.reset()
+        })
+    })
+
+    it('should fail when adding secondary email that is same as primary', function () {
+      route = getRoute(accountRoutes, '/recovery_email')
+
+      mockRequest.payload.email = TEST_EMAIL
+      return runTest(route, mockRequest, function (response) {
+        assert.fail(new Error('Should have failed when adding secondary email that is same as primary'))
+      })
+        .catch((err) => {
+          assert.equal(err.errno, 139, 'cannot add secondary email, same as primary')
         })
         .then(function () {
           mockDB.createEmail.reset()
