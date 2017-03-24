@@ -327,7 +327,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: true })
+      assert.deepEqual(response, { ok: true, country: 'US' })
     })
 
     it('called log.begin correctly', () => {
@@ -366,7 +366,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: 'US' })
     })
 
     it('called log.begin once', () => {
@@ -397,7 +397,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: 'CA' })
     })
 
     it('called log.begin once', () => {
@@ -504,7 +504,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: undefined })
     })
 
     it('called log.begin once', () => {
@@ -559,7 +559,7 @@ describe('/sms/status with disabled geo-ip lookup', () => {
   })
 
   it('returned the correct response', () => {
-    assert.deepEqual(response, { ok: true })
+    assert.deepEqual(response, { ok: true, country: undefined })
   })
 
   it('called log.begin once', () => {
