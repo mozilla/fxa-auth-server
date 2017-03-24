@@ -5,21 +5,17 @@
 'use strict'
 
 const assert = require('insist')
-var TestServer = require('../test_server')
+const TestServer = require('../test_server')
 const Client = require('../client')()
-var config = require('../../config').getProperties()
 
-let server
-let client
-let email
+let config, server, client, email
 const password = 'allyourbasearebelongtous'
 
 describe('remote emails', function () {
   this.timeout(30000)
 
   before(() => {
-    process.env.IP_PROFILING_ENABLED = false
-
+    config = require('../../config').getProperties()
     return TestServer.start(config)
       .then(s => {
         server = s
@@ -41,7 +37,7 @@ describe('remote emails', function () {
       })
   })
 
-  describe('create and get additional email', () => {
+  describe('should create and get additional email', () => {
     it(
       'can create',
       () => {
@@ -90,7 +86,7 @@ describe('remote emails', function () {
           .catch((err) => {
             assert.equal(err.errno, 139, 'email already exists errno')
             assert.equal(err.code, 400, 'email already exists code')
-            assert.equal(err.message, 'Can not add secondary email that is same as primary', 'correct error message')
+            assert.equal(err.message, 'Can not add secondary email that is same as your primary', 'correct error message')
           })
       }
     )
@@ -162,9 +158,26 @@ describe('remote emails', function () {
           })
       }
     )
+
+    it(
+      'fails create when email is another users verified primary',
+      () => {
+        const anotherUserEmail = server.uniqueEmail()
+        return Client.createAndVerify(config.publicUrl, anotherUserEmail, password, server.mailbox)
+          .then(() => {
+            return client.createEmail(anotherUserEmail)
+          })
+          .then(assert.fail)
+          .catch((err) => {
+            assert.equal(err.errno, 140, 'email already exists errno')
+            assert.equal(err.code, 400, 'email already exists code')
+            assert.equal(err.message, 'Email already exists', 'correct error message')
+          })
+      }
+    )
   })
 
-  describe('verify additional email', () => {
+  describe('should verify additional email', () => {
     let secondEmail
     beforeEach(() => {
       secondEmail = server.uniqueEmail()
@@ -268,7 +281,7 @@ describe('remote emails', function () {
     )
   })
 
-  describe('delete additional email', () => {
+  describe('should delete additional email', () => {
     let secondEmail
     beforeEach(() => {
       secondEmail = server.uniqueEmail()
@@ -314,7 +327,7 @@ describe('remote emails', function () {
     )
 
     it(
-      'fail on delete primary account email',
+      'fails on delete primary account email',
       () => {
         return client.deleteEmail(email)
           .then(assert.fail)
@@ -351,7 +364,7 @@ describe('remote emails', function () {
     )
   })
 
-  describe('receives email confirmations on added email', () => {
+  describe('should receive email confirmations on verified secondary emails', () => {
     let secondEmail
     let thirdEmail
     beforeEach(() => {
@@ -405,6 +418,19 @@ describe('remote emails', function () {
             assert.ok(emailCode, 'emailCode set')
             assert.equal(emailData.cc.length, 1)
             assert.equal(emailData.cc[0].address, secondEmail)
+            return client.requestVerifyEmail()
+          })
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            const anotherEmailCode = emailData['headers']['x-verify-code']
+            assert.equal(templateName, 'verifyLoginEmail', 'email template name set')
+            assert.equal(emailCode, anotherEmailCode, 'emailCodes match')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
           })
       }
     )
@@ -412,23 +438,54 @@ describe('remote emails', function () {
     it(
       'receives sign-in unblock email',
       () => {
+        let unblockCode
         return client.sendUnblockCode(email)
           .then(() => {
             return server.mailbox.waitForEmail(email)
           })
           .then((emailData) => {
             const templateName = emailData['headers']['x-template-name']
-            const code = emailData['headers']['x-unblock-code']
+            unblockCode = emailData['headers']['x-unblock-code']
             assert.equal(templateName, 'unblockCodeEmail', 'email template name set')
-            assert.ok(code, 'code set')
+            assert.ok(unblockCode, 'code set')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
+            return client.sendUnblockCode(email)
+          })
+          .then((res) => {
+            assert.ok(res)
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            const anotherUnblockCode = emailData['headers']['x-unblock-code']
+            assert.equal(templateName, 'unblockCodeEmail', 'email template name set')
+            assert.ok(unblockCode, anotherUnblockCode, 'unblock codes match set')
             assert.equal(emailData.cc.length, 1)
             assert.equal(emailData.cc[0].address, secondEmail)
           })
       }
     )
+
+    it(
+      'receives password reset email',
+      () => {
+        return client.forgotPassword()
+          .then(() => {
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'recoveryEmail', 'email template name set')
+            assert.equal(emailData.cc.length, 1)
+            assert.equal(emailData.cc[0].address, secondEmail)
+            return emailData.headers['x-recovery-code']
+          })
+      }
+    )
   })
 
-  describe('receives email notifications on added email', () => {
+  describe('should receive email notifications on all secondary emails', () => {
     let secondEmail
     let thirdEmail
     beforeEach(() => {
@@ -508,6 +565,67 @@ describe('remote emails', function () {
             assert.equal(emailData.cc.length, 2)
             assert.equal(emailData.cc[0].address, secondEmail)
             assert.equal(emailData.cc[1].address, thirdEmail)
+            return client.login({keys: true})
+          })
+          .then((x) => {
+            client = x
+            return client.accountEmails()
+          })
+          .then((res) => {
+            // Emails maintain there verification status through the password reset
+            assert.equal(res.length, 3, 'returns number of emails')
+            assert.equal(res[1].email, secondEmail, 'returns correct email')
+            assert.equal(res[1].isPrimary, false, 'returns correct isPrimary')
+            assert.equal(res[1].verified, true, 'returns correct verified')
+            assert.equal(res[2].email, thirdEmail, 'returns correct email')
+            assert.equal(res[2].isPrimary, false, 'returns correct isPrimary')
+            assert.equal(res[2].verified, false, 'returns correct verified')
+          })
+      }
+    )
+
+    it(
+      'receives new device sign-in email',
+      () => {
+        config.signinConfirmation.skipForNewAccounts.enabled = true
+        return TestServer.start(config)
+          .then(s => {
+            server = s
+            email = server.uniqueEmail()
+            secondEmail = server.uniqueEmail()
+            thirdEmail = server.uniqueEmail()
+            return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+          })
+          .then((x) => {
+            client = x
+            return client.createEmail(secondEmail)
+          })
+          .then(() => {
+            return server.mailbox.waitForCode(secondEmail)
+          })
+          .then((code) => {
+            return client.verifyEmail(code)
+              .then(() => {
+                // Clear add secondary email notification
+                return server.mailbox.waitForEmail(email)
+              })
+          })
+          .then(() => {
+            // Create unverified email
+            return client.createEmail(thirdEmail)
+          })
+          .then(() => {
+            return client.login({keys: true})
+          })
+          .then(() => {
+            return server.mailbox.waitForEmail(email)
+          })
+          .then((emailData) => {
+            const templateName = emailData['headers']['x-template-name']
+            assert.equal(templateName, 'newDeviceLoginEmail', 'email template name set')
+            assert.equal(emailData.cc.length, 2)
+            assert.equal(emailData.cc[0].address, secondEmail)
+            assert.equal(emailData.cc[1].address, thirdEmail)
           })
       }
     )
@@ -523,66 +641,4 @@ describe('remote emails', function () {
         return client.resetPassword(newPassword, {}, options)
       })
   }
-})
-
-describe('receives new device sign-in email', function () {
-  this.timeout(30000)
-
-  let server
-  let email
-  let client
-  let secondEmail
-  let thirdEmail
-
-  before(() => {
-    process.env.SIGNIN_CONFIRMATION_SKIP_FOR_NEW_ACCOUNTS = true
-    return TestServer.start(config)
-      .then(s => {
-        server = s
-        email = server.uniqueEmail()
-        secondEmail = server.uniqueEmail()
-        thirdEmail = server.uniqueEmail()
-        return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
-      })
-      .then((x) => {
-        client = x
-        return client.createEmail(secondEmail)
-      })
-      .then(() => {
-        return server.mailbox.waitForCode(secondEmail)
-      })
-      .then((code) => {
-        return client.verifyEmail(code)
-          .then(() => {
-            // Clear add secondary email notification
-            return server.mailbox.waitForEmail(email)
-          })
-      })
-      .then(() => {
-        // Create unverified email
-        return client.createEmail(thirdEmail)
-      })
-  })
-
-  it(
-    'receives new device sign-in email',
-    () => {
-      return client.login({keys: true})
-        .then(() => {
-          return server.mailbox.waitForEmail(email)
-        })
-        .then((emailData) => {
-          const templateName = emailData['headers']['x-template-name']
-          assert.equal(templateName, 'newDeviceLoginEmail', 'email template name set')
-          assert.equal(emailData.cc.length, 2)
-          assert.equal(emailData.cc[0].address, secondEmail)
-          assert.equal(emailData.cc[1].address, thirdEmail)
-        })
-    }
-  )
-
-  after(() => {
-    delete process.env.SIGNIN_CONFIRMATION_SKIP_FOR_NEW_ACCOUNTS
-    return TestServer.stop(server)
-  })
 })
