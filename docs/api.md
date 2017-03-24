@@ -762,8 +762,10 @@ Returns the "verified" status for the account's recovery email address.
 
 Currently, each account is associated with exactly one email address. This address must be "verified" before the account can be used (specifically, `/v1/certificate/sign` and `/v1/account/keys` will return errors until the address is verified). In the future, this may be expanded to include multiple addresses, and/or alternate types of recovery methods (e.g., SMS). A new API will be provided for this extra functionality.
 
-This call is used to determine the current state (verified or unverified) of the account. During account creation, until the address is verified, the agent can poll this method to discover when it should proceed with `/v1/certificate/sign` and `/v1/account/keys`.
+This call is used to determine the current state (verified or unverified) of the account. During account creation, until the status is no longer `pending`, the agent can poll this method to discover when it should proceed with `/v1/certificate/sign` and `/v1/account/keys`.
 
+A well-behaved client can keep polling as long as `status` is `pending`.
+It should stop when that is no longer the case.
 
 ### Request
 
@@ -783,16 +785,44 @@ https://api-accounts.dev.lcip.org/v1/recovery_email/status \
 
 ### Response
 
-Successful requests will produce a "200 OK" response with the account email and details on the verification status in the JSON body object:
+Successful requests will produce a "200 OK" response with the account email and details on the verification status in the JSON body object. A "200" does not mean verified, but instead a tagged union of the status will be returned in JSON:
+
+#### Success
 
 ```json
 {
+  "status": "success",
   "email": "me@example.com",
   "verified": true,
   "sessionVerified": true,
   "emailVerified": true
 }
 ```
+
+#### Pending
+
+```json
+{
+  "status": "pending",
+  "email": "me@example.com"
+}
+```
+
+#### Error
+
+```json
+{
+  "status": "error",
+  "email": "me@example.com",
+  "error": 135
+}
+```
+
+The `error` field will contain a number that corresponds to an errno,
+and signals that error occured asynchronously when try to send the
+verification email.
+
+#### Failure
 
 Failing requests may be due to the following errors:
 
@@ -801,6 +831,8 @@ Failing requests may be due to the following errors:
 * status code 401, errno 111:  invalid authentication timestamp
 * status code 401, errno 115:  invalid authentication nonce
 
+Note that this indicates an error requesting `/recovery_email/status`,
+not that the sent email had an error.
 
 ## POST /v1/recovery_email/resend_code
 
