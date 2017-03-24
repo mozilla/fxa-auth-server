@@ -443,8 +443,8 @@ describe(
             'test utm params for ' + type,
             function () {
               var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, {}, type, 'connect-device')
-              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, {}, type, 'connect-android')
-              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, {}, type, 'connect-ios')
+              var androidLink = config.get('mail').androidUrl
+              var iosLink = config.get('mail').iosUrl
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, syncLink))

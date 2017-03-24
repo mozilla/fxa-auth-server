@@ -311,7 +311,8 @@ module.exports = config => {
             {
               service: options.service || undefined,
               redirectTo: options.redirectTo || undefined,
-              resume: options.resume || undefined
+              resume: options.resume || undefined,
+              email: options.email || undefined
             }
           )
         }.bind(this)
@@ -589,6 +590,63 @@ module.exports = config => {
           )
         }.bind(this)
       )
+  }
+
+  ClientApi.prototype.accountEmails = function (sessionTokenHex) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'GET',
+          this.baseURL + '/recovery_emails',
+          token,
+          undefined
+        )
+      }.bind(this)
+    )
+  }
+
+  ClientApi.prototype.createEmail = function (sessionTokenHex, email) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/recovery_email',
+          token,
+          {
+            email: email
+          }
+        )
+      }.bind(this)
+    )
+  }
+
+  ClientApi.prototype.deleteEmail = function (sessionTokenHex, email) {
+    var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
+    return o.then(
+      function (token) {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/recovery_email/destroy',
+          token,
+          {
+            email: email
+          }
+        )
+      }.bind(this)
+    )
+  }
+
+  ClientApi.prototype.sendUnblockCode = function (email) {
+    return this.doRequest(
+      'POST',
+      this.baseURL + '/account/login/send_unblock_code',
+      undefined,
+      {
+        email: email
+      }
+    )
   }
 
   ClientApi.heartbeat = function (origin) {
