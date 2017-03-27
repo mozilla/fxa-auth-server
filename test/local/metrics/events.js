@@ -220,6 +220,212 @@ describe('metrics/events', () => {
       })
   })
 
+  it('.emit with flow event and no session token', () => {
+    const time = Date.now()
+    sinon.stub(Date, 'now', () => time)
+    const metricsContext = mocks.mockMetricsContext()
+    const request = {
+      app: {
+        isLocaleAcceptable: false,
+        locale: 'en'
+      },
+      auth: null,
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: time - 1000,
+          flowCompleteSignal: 'account.signed'
+        },
+        service: 'baz'
+      }
+    }
+    return events.emit.call(request, 'account.reminder')
+      .then(() => {
+        assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+
+        assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
+        const args = log.flowEvent.args[0]
+        assert.equal(args.length, 1, 'log.flowEvent was passed one argument')
+        assert.deepEqual(args[0], {
+          event: 'account.reminder',
+          flow_id: 'bar',
+          flow_time: 1000,
+          flowCompleteSignal: 'account.signed',
+          locale: 'en.default',
+          time,
+          userAgent: 'foo'
+        }, 'argument was event data')
+
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      }).finally(() => {
+        metricsContext.gather.reset()
+        log.flowEvent.reset()
+        Date.now.restore()
+      })
+  })
+
+  it('.emit with flow event and string uid', () => {
+    const time = Date.now()
+    sinon.stub(Date, 'now', () => time)
+    const metricsContext = mocks.mockMetricsContext()
+    const request = {
+      app: {
+        isLocaleAcceptable: false,
+        locale: 'en'
+      },
+      auth: null,
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: time - 1000,
+          flowCompleteSignal: 'account.signed'
+        },
+        service: 'baz'
+      }
+    }
+    return events.emit.call(request, 'account.reminder', { uid: 'deadbeef' })
+      .then(() => {
+        assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+
+        assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
+        const args = log.flowEvent.args[0]
+        assert.equal(args.length, 1, 'log.flowEvent was passed one argument')
+        assert.deepEqual(args[0], {
+          event: 'account.reminder',
+          flow_id: 'bar',
+          flow_time: 1000,
+          flowCompleteSignal: 'account.signed',
+          locale: 'en.default',
+          time,
+          uid: 'deadbeef',
+          userAgent: 'foo'
+        }, 'argument was event data')
+
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      }).finally(() => {
+        metricsContext.gather.reset()
+        log.flowEvent.reset()
+        Date.now.restore()
+      })
+  })
+
+  it('.emit with flow event and buffer uid', () => {
+    const time = Date.now()
+    sinon.stub(Date, 'now', () => time)
+    const metricsContext = mocks.mockMetricsContext()
+    const request = {
+      app: {
+        isLocaleAcceptable: false,
+        locale: 'en'
+      },
+      auth: null,
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: time - 1000,
+          flowCompleteSignal: 'account.signed'
+        },
+        service: 'baz'
+      }
+    }
+    return events.emit.call(request, 'account.reminder', { uid: Buffer.from('deadbeef', 'hex') })
+      .then(() => {
+        assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+
+        assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
+        const args = log.flowEvent.args[0]
+        assert.equal(args.length, 1, 'log.flowEvent was passed one argument')
+        assert.deepEqual(args[0], {
+          event: 'account.reminder',
+          flow_id: 'bar',
+          flow_time: 1000,
+          flowCompleteSignal: 'account.signed',
+          locale: 'en.default',
+          time,
+          uid: 'deadbeef',
+          userAgent: 'foo'
+        }, 'argument was event data')
+
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      }).finally(() => {
+        metricsContext.gather.reset()
+        log.flowEvent.reset()
+        Date.now.restore()
+      })
+  })
+
+  it('.emit with flow event and null uid', () => {
+    const time = Date.now()
+    sinon.stub(Date, 'now', () => time)
+    const metricsContext = mocks.mockMetricsContext()
+    const request = {
+      app: {
+        isLocaleAcceptable: false,
+        locale: 'en'
+      },
+      auth: null,
+      clearMetricsContext: metricsContext.clear,
+      gatherMetricsContext: metricsContext.gather,
+      headers: {
+        'user-agent': 'foo'
+      },
+      payload: {
+        metricsContext: {
+          flowId: 'bar',
+          flowBeginTime: time - 1000,
+          flowCompleteSignal: 'account.signed'
+        },
+        service: 'baz'
+      }
+    }
+    return events.emit.call(request, 'account.reminder', { uid: null })
+      .then(() => {
+        assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
+
+        assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
+        const args = log.flowEvent.args[0]
+        assert.equal(args.length, 1, 'log.flowEvent was passed one argument')
+        assert.deepEqual(args[0], {
+          event: 'account.reminder',
+          flow_id: 'bar',
+          flow_time: 1000,
+          flowCompleteSignal: 'account.signed',
+          locale: 'en.default',
+          time,
+          userAgent: 'foo'
+        }, 'argument was event data')
+
+        assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      }).finally(() => {
+        metricsContext.gather.reset()
+        log.flowEvent.reset()
+        Date.now.restore()
+      })
+  })
+
   it('.emit with flow event that matches complete signal', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
@@ -532,7 +738,6 @@ describe('metrics/events', () => {
           flowCompleteSignal: undefined,
           locale: undefined,
           time,
-          uid: undefined,
           userAgent: 'foo'
         }, 'argument was event data')
 
@@ -576,7 +781,6 @@ describe('metrics/events', () => {
           flowCompleteSignal: undefined,
           locale: undefined,
           time,
-          uid: undefined,
           userAgent: 'foo'
         }, 'argument was event data')
 
@@ -620,7 +824,6 @@ describe('metrics/events', () => {
           flowCompleteSignal: undefined,
           locale: undefined,
           time,
-          uid: undefined,
           userAgent: 'foo'
         }, 'argument was event data')
 
@@ -664,7 +867,6 @@ describe('metrics/events', () => {
           flowCompleteSignal: undefined,
           locale: undefined,
           time,
-          uid: undefined,
           userAgent: 'foo'
         }, 'argument was event data')
 
