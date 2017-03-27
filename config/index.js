@@ -704,6 +704,7 @@ conf.validate({ strict: true })
 conf.set('domain', url.parse(conf.get('publicUrl')).host)
 
 // derive fxa-auth-mailer configuration from our content-server url
+conf.set('accountSettingsUrl', conf.get('contentServer.url') + '/settings')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/verify_email')
 conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/complete_reset_password')
 conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')

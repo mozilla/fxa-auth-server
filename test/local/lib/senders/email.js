@@ -26,11 +26,13 @@ var messageTypes = [
   'passwordResetEmail',
   'passwordResetRequiredEmail',
   'postVerifyEmail',
+  'postVerifySecondaryEmail',
   'recoveryEmail',
   'unblockCodeEmail',
   'verificationReminderEmail',
   'verifyEmail',
-  'verifyLoginEmail'
+  'verifyLoginEmail',
+  'verifySecondaryEmail'
 ]
 
 var typesContainSupportLinks = [
@@ -38,6 +40,7 @@ var typesContainSupportLinks = [
   'passwordChangedEmail',
   'passwordResetEmail',
   'postVerifyEmail',
+  'postVerifySecondaryEmail',
   'recoveryEmail',
   'verificationReminderEmail',
   'verifyEmail'
@@ -63,11 +66,13 @@ var typesContainReportSignInLinks = [
 ]
 
 var typesContainAndroidStoreLinks = [
-  'postVerifyEmail'
+  'postVerifyEmail',
+  'postVerifySecondaryEmail'
 ]
 
 var typesContainIOSStoreLinks = [
-  'postVerifyEmail'
+  'postVerifyEmail',
+  'postVerifySecondaryEmail'
 ]
 
 var typesContainLocationData = [
@@ -76,7 +81,8 @@ var typesContainLocationData = [
   'unblockCodeEmail',
   'recoveryEmail',
   'verifyEmail',
-  'verifyLoginEmail'
+  'verifyLoginEmail',
+  'verifySecondaryEmail'
 ]
 
 var typesContainPasswordManagerInfoLinks = [
@@ -348,6 +354,23 @@ describe(
             stateCode: 'CA'
           }
 
+          if (type === 'verifySecondaryEmail') {
+            it(
+              'original user email data is in template for ' + type,
+              function () {
+                var message = getLocationMessage(defaultLocation)
+                message.primaryEmail = 'user@email.com'
+                mailer.mailer.sendMail = function (emailConfig) {
+                  assert.ok(includes(emailConfig.html, message.primaryEmail))
+                  assert.ok(includes(emailConfig.html, message.email))
+                  assert.ok(includes(emailConfig.text, message.primaryEmail))
+                  assert.ok(includes(emailConfig.text, message.email))
+                }
+                mailer[type](message)
+              }
+            )
+          }
+
           it(
             'ip data is in template for ' + type,
             function () {
@@ -443,8 +466,8 @@ describe(
             'test utm params for ' + type,
             function () {
               var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, {}, type, 'connect-device')
-              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, {}, type, 'connect-android')
-              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, {}, type, 'connect-ios')
+              var androidLink = config.get('mail').androidUrl
+              var iosLink = config.get('mail').iosUrl
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, syncLink))
