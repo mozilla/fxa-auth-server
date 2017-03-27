@@ -23,6 +23,19 @@ describe('lib/senders/index', () => {
 
     const UID = crypto.randomBytes(16)
     const EMAIL = crypto.randomBytes(16).toString('hex') + '@example.test'
+    const EMAILS = [{
+      email: EMAIL,
+      isPrimary: true,
+      isVerified: true
+    }, {
+      email: crypto.randomBytes(16).toString('hex') + '@example.test',
+      isPrimary: false,
+      isVerified: true
+    }, {
+      email: crypto.randomBytes(16).toString('hex') + '@example.test',
+      isPrimary: false,
+      isVerified: false
+    }]
     const db = {
       emailBounces: sinon.spy(() => P.resolve([]))
     }
@@ -55,11 +68,14 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.verifyEmail = sinon.spy(() => P.resolve({}))
-            return email.sendVerifyCode([], acct, {code: code})
+            return email.sendVerifyCode(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 1)
             assert.equal(email._ungatedMailer.verifyEmail.callCount, 1)
+
+            const args = email._ungatedMailer.verifyEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
           })
       })
     })
@@ -73,11 +89,16 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.verifyLoginEmail = sinon.spy(() => P.resolve({}))
-            return email.sendVerifyLoginEmail([], acct, {code: code})
+            return email.sendVerifyLoginEmail(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 1)
             assert.equal(email._ungatedMailer.verifyLoginEmail.callCount, 1)
+
+            const args = email._ungatedMailer.verifyLoginEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
           })
       })
     })
@@ -96,11 +117,16 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.recoveryEmail = sinon.spy(() => P.resolve({}))
-            return email.sendRecoveryCode([], acct, {code: code, token: token})
+            return email.sendRecoveryCode(EMAILS, acct, {code: code, token: token})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 1)
             assert.equal(email._ungatedMailer.recoveryEmail.callCount, 1)
+
+            const args = email._ungatedMailer.recoveryEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
           })
       })
     })
@@ -112,10 +138,17 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.passwordChangedEmail = sinon.spy(() => P.resolve({}))
-            return email.sendPasswordChangedNotification([], acct, {})
+            return email.sendPasswordChangedNotification(EMAILS, acct, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.passwordChangedEmail.callCount, 1)
+
+            const args = email._ungatedMailer.passwordChangedEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 2, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
+            assert.equal(args[0].ccEmails[1], EMAILS[2].email, 'cc email correctly set')
+
             assert.equal(db.emailBounces.callCount, 1)
           })
       })
@@ -128,10 +161,17 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.passwordResetEmail = sinon.spy(() => P.resolve({}))
-            return email.sendPasswordResetNotification([], acct, {})
+            return email.sendPasswordResetNotification(EMAILS, acct, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.passwordResetEmail.callCount, 1)
+
+            const args = email._ungatedMailer.passwordResetEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 2, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
+            assert.equal(args[0].ccEmails[1], EMAILS[2].email, 'cc email correctly set')
+
             assert.equal(db.emailBounces.callCount, 1)
           })
       })
@@ -144,10 +184,17 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.newDeviceLoginEmail = sinon.spy(() => P.resolve({}))
-            return email.sendNewDeviceLoginNotification([], acct, {})
+            return email.sendNewDeviceLoginNotification(EMAILS, acct, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.newDeviceLoginEmail.callCount, 1)
+
+            const args = email._ungatedMailer.newDeviceLoginEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 2, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
+            assert.equal(args[0].ccEmails[1], EMAILS[2].email, 'cc email correctly set')
+
             assert.equal(db.emailBounces.callCount, 1)
           })
       })
@@ -160,10 +207,15 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.postVerifyEmail = sinon.spy(() => P.resolve({}))
-            return email.sendPostVerifyEmail(EMAIL, acct, {})
+            return email.sendPostVerifyEmail(EMAILS, acct, {})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.postVerifyEmail.callCount, 1)
+
+            const args = email._ungatedMailer.postVerifyEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails, undefined, 'no cc emails set')
+
             assert.equal(db.emailBounces.callCount, 1)
           })
       })
@@ -178,10 +230,16 @@ describe('lib/senders/index', () => {
           .then(e => {
             email = e
             email._ungatedMailer.unblockCodeEmail = sinon.spy(() => P.resolve({}))
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(email._ungatedMailer.unblockCodeEmail.callCount, 1)
+
+            const args = email._ungatedMailer.unblockCodeEmail.getCall(0).args
+            assert.equal(args[0].email, EMAIL, 'email correctly set')
+            assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
+            assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
+
             assert.equal(db.emailBounces.callCount, 1)
           })
       })
@@ -199,7 +257,7 @@ describe('lib/senders/index', () => {
         return createSender(config, db)
           .then(email => {
             email._ungatedMailer.unblockCodeEmail = sinon.spy(() => P.resolve({}))
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 1)
@@ -226,7 +284,7 @@ describe('lib/senders/index', () => {
         return createSender(conf, db)
           .then(email => {
             email._ungatedMailer.unblockCodeEmail = sinon.spy(() => P.resolve({}))
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .catch(e => {
             assert.equal(db.emailBounces.callCount, 1)
@@ -254,7 +312,7 @@ describe('lib/senders/index', () => {
         return createSender(conf, db)
           .then(email => {
             email._ungatedMailer.unblockCodeEmail = sinon.spy(() => P.resolve({}))
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .catch(e => {
             assert.equal(db.emailBounces.callCount, 1)
@@ -284,7 +342,7 @@ describe('lib/senders/index', () => {
         return createSender(conf, db)
           .then(email => {
             email._ungatedMailer.unblockCodeEmail = sinon.spy(() => P.resolve({}))
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 1)
@@ -303,7 +361,7 @@ describe('lib/senders/index', () => {
         return createSender(conf, db)
           .then(email => {
             email._ungatedMailer.unblockCodeEmail = spy
-            return email.sendUnblockCode([], acct, {code: code})
+            return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .then(() => {
             assert.equal(db.emailBounces.callCount, 0)
