@@ -58,6 +58,7 @@ var makeRoutes = function (options, requireMocks) {
     isA,
     error,
     db,
+    mocks.mockBounces(),
     options.mailer || {},
     Password,
     config,
@@ -352,19 +353,6 @@ describe('/account/create', () => {
       assert.strictEqual(args[2].uaDeviceType, undefined)
 
       assert.equal(mockLog.error.callCount, 0)
-
-      mockRequest.query._createdAt = Date.now()
-      return runTest(route, mockRequest, () => {
-        assert.equal(mockLog.error.callCount, 1)
-        const args = mockLog.error.args[0]
-        assert.equal(args.length, 1)
-        assert.equal(args[0].op, 'account.create.createSessionToken')
-        assert.ok(args[0].err instanceof Error)
-        assert.equal(args[0].err.message, 'Unexpected _createdAt query parameter')
-        assert.equal(args[0]._createdAt, mockRequest.query._createdAt)
-        assert.equal(args[0].userAgent, 'test user-agent')
-        assert.equal(args[0].service, 'sync')
-      })
     }).finally(() => Date.now.restore())
   })
 })
@@ -553,7 +541,6 @@ describe('/account/login', function () {
         flowCompleteSignal: 'account.signed',
         locale: 'en-US',
         time: now,
-        uid: undefined,
         userAgent: 'test user-agent'
       }, 'second flow event was correct')
 

@@ -55,6 +55,7 @@ var makeRoutes = function (options, requireMocks) {
     isA,
     error,
     db,
+    mocks.mockBounces(),
     options.mailer || {},
     Password,
     config,
@@ -254,7 +255,7 @@ describe('/account/devices/notify', function () {
     })
   })
 
-  it('extra push payload properties are stripped', function () {
+  it('extra push payload properties are rejected', function () {
     var extraPropsPayload = JSON.parse(JSON.stringify(pushPayload))
     extraPropsPayload.extra = true
     extraPropsPayload.data.extra = true
@@ -271,14 +272,12 @@ describe('/account/devices/notify', function () {
       pushToAllDevicesPromise.resolve()
       return Promise.resolve()
     })
-    return runTest(route, mockRequest, function (response) {
-      return pushToAllDevicesPromise.promise.then(function () {
-        assert.deepEqual(mockPush.pushToAllDevices.args[0][2], {
-          data: Buffer.from(JSON.stringify(pushPayload)),
-          excludedDeviceIds: ['bogusid'],
-          TTL: 60
-        }, 'third argument payload properties has no extra properties')
-      })
+    return runTest(route, mockRequest, function () {
+      assert(false, 'should have thrown')
+    })
+    .then(() => assert.ok(false), function (err) {
+      assert.equal(err.output.statusCode, 400, 'correct status code is returned')
+      assert.equal(err.errno, error.ERRNO.INVALID_PARAMETER, 'correct errno is returned')
     })
   })
 
@@ -334,7 +333,6 @@ describe('/account/devices/notify', function () {
       to: ['bogusid1', 'bogusid2'],
       TTL: 60,
       payload: {
-        isValid: true,
         version: 1,
         command: 'fxaccounts:password_reset'
       }
@@ -523,5 +521,19 @@ describe('/account/devices', function () {
       assert.equal(mockDevices.synthesizeName.args[0].length, 1, 'mockDevices.synthesizeName was passed one argument')
       assert.equal(mockDevices.synthesizeName.args[0][0], unnamedDevice, 'mockDevices.synthesizeName was passed unnamed device')
     })
+  })
+
+  it('should allow returning a lastAccessTime of 0', () => {
+    const route = getRoute(makeRoutes({}), '/account/devices')
+    const res = [
+      {
+        id: crypto.randomBytes(16).toString('hex'),
+        isCurrentDevice: true,
+        lastAccessTime: 0,
+        name: 'test',
+        type: 'test'
+      }
+    ]
+    isA.assert(res, route.config.response.schema)
   })
 })

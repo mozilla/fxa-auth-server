@@ -110,6 +110,7 @@ const PUSH_METHOD_NAMES = [
 
 module.exports = {
   generateMetricsContext: generateMetricsContext,
+  mockBounces: mockObject(['check']),
   mockCustoms: mockObject(CUSTOMS_METHOD_NAMES),
   mockDB: mockDB,
   mockDevices: mockDevices,
@@ -350,7 +351,9 @@ function mockMetricsContext (methods) {
       if (this.payload && this.payload.metricsContext) {
         this.payload.metricsContext.flowCompleteSignal = flowCompleteSignal
       }
-    })
+    }),
+
+    validate: methods.validate || sinon.spy(() => true)
   })
 }
 
@@ -393,6 +396,7 @@ function mockRequest (data) {
     headers: data.headers || {
       'user-agent': 'test user-agent'
     },
+    path: data.path,
     payload: data.payload,
     query: data.query,
     setMetricsFlowCompleteSignal: metricsContext.setFlowCompleteSignal,
