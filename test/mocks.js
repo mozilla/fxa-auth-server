@@ -165,8 +165,6 @@ function mockDB (data, errors) {
         wrapWrapKb: data.wrapWrapKb
       })
     }),
-    createEmail: sinon.spy(() => { return P.resolve({})}),
-    deleteEmail: sinon.spy(() => { return P.resolve({})}),
     createDevice: sinon.spy(() => {
       return P.resolve(Object.keys(data.device).reduce((result, key) => {
         result[key] = data.device[key]
