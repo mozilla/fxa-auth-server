@@ -58,6 +58,7 @@ var makeRoutes = function (options, requireMocks) {
     isA,
     error,
     db,
+    options.bounces || mocks.mockBounces(),
     options.mailer || {},
     Password,
     config,
@@ -85,6 +86,7 @@ function runTest (route, request, assertions) {
 describe('/recovery_email/status', function () {
   var config = {}
   var mockDB = mocks.mockDB()
+  var mockBounces = mocks.mockBounces()
   var pushCalled
   var mockLog = mocks.mockLog({
     increment: function (name) {
@@ -94,6 +96,7 @@ describe('/recovery_email/status', function () {
     }
   })
   var accountRoutes = makeRoutes({
+    bounces: mockBounces,
     config: config,
     db: mockDB,
     log: mockLog
@@ -135,6 +138,7 @@ describe('/recovery_email/status', function () {
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.deleteAccount.callCount, 0)
         assert.deepEqual(response, {
+          status: 'success',
           email: TEST_EMAIL_INVALID,
           verified: true,
           emailVerified: true,
@@ -163,6 +167,7 @@ describe('/recovery_email/status', function () {
       assert.equal(pushCalled, true)
 
       assert.deepEqual(response, {
+        status: 'success',
         email: TEST_EMAIL,
         verified: true,
         emailVerified: true,
@@ -177,6 +182,7 @@ describe('/recovery_email/status', function () {
 
     return runTest(route, mockRequest, function (response) {
       assert.deepEqual(response, {
+        status: 'success',
         email: TEST_EMAIL,
         verified: true,
         sessionVerified: true,
@@ -192,10 +198,11 @@ describe('/recovery_email/status', function () {
 
     return runTest(route, mockRequest, function (response) {
       assert.deepEqual(response, {
+        status: 'pending',
         email: TEST_EMAIL,
         verified: false,
-        sessionVerified: false,
-        emailVerified: true
+        emailVerified: true,
+        sessionVerified: false
       })
     })
   })
@@ -207,12 +214,38 @@ describe('/recovery_email/status', function () {
 
     return runTest(route, mockRequest, function (response) {
       assert.deepEqual(response, {
+        status: 'success',
         email: TEST_EMAIL,
         verified: true,
         sessionVerified: false,
         emailVerified: true
       })
     })
+  })
+
+  describe('bounces', () => {
+
+    it('should return message when bounce was seen', () => {
+      const oldCheck = mockBounces.check
+      mockBounces.check = sinon.spy(() => P.reject(error.emailBouncedSoft()))
+      mockRequest.auth.credentials.emailVerified = false
+      mockRequest.auth.credentials.tokenVerified = false
+      mockRequest.auth.credentials.mustVerify = true
+
+      return runTest(route, mockRequest).then(response => {
+        assert.deepEqual(response, {
+          status: 'error',
+          email: TEST_EMAIL,
+          error: error.ERRNO.BOUNCE_SOFT,
+          verified: false,
+          emailVerified: false,
+          sessionVerified: false
+        })
+
+        mockBounces.check = oldCheck
+      })
+    })
+
   })
 })
 
