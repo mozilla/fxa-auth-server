@@ -32,20 +32,8 @@ describe('metrics/events', () => {
 
   it('.emit with missing event', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
-      payload: {
-        service: 'bar'
-      }
-    }
-    const data = {
-      uid: 'baz'
-    }
-    return events.emit.call(request, '', data)
+    const request = mocks.mockRequest({ metricsContext })
+    return events.emit.call(request, '', {})
       .then(() => {
         assert.equal(log.error.callCount, 1, 'log.error was called once')
         const args = log.error.args[0]
@@ -66,16 +54,15 @@ describe('metrics/events', () => {
 
   it('.emit with activity event', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
+    const request = mocks.mockRequest({
       headers: {
         'user-agent': 'foo'
       },
+      metricsContext,
       query: {
         service: 'bar'
       }
-    }
+    })
     const data = {
       uid: 'baz'
     }
@@ -102,16 +89,12 @@ describe('metrics/events', () => {
 
   it('.emit with activity event and missing data', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
-      query: {
+    const request = mocks.mockRequest({
+      metricsContext,
+      payload: {
         service: 'bar'
       }
-    }
+    })
     return events.emit.call(request, 'device.created')
       .then(() => {
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
@@ -119,7 +102,7 @@ describe('metrics/events', () => {
         assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
         assert.deepEqual(args[0], {
           event: 'device.created',
-          userAgent: 'foo',
+          userAgent: 'test user-agent',
           service: 'bar'
         }, 'argument was event data')
 
@@ -134,16 +117,7 @@ describe('metrics/events', () => {
 
   it('.emit with activity event and missing uid', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
-      query: {
-        service: 'bar'
-      }
-    }
+    const request = mocks.mockRequest({ metricsContext })
     return events.emit.call(request, 'device.created', {})
       .then(() => {
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
@@ -151,8 +125,8 @@ describe('metrics/events', () => {
         assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
         assert.deepEqual(args[0], {
           event: 'device.created',
-          userAgent: 'foo',
-          service: 'bar'
+          service: undefined,
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
@@ -168,21 +142,11 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      app: {
-        isLocaleAcceptable: false,
-        locale: 'en'
+    const request = mocks.mockRequest({
+      credentials: {
+        uid: Buffer.from('deadbeef', 'hex')
       },
-      auth: {
-        credentials: {
-          uid: Buffer.from('deadbeef', 'hex')
-        }
-      },
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
@@ -191,7 +155,7 @@ describe('metrics/events', () => {
         },
         service: 'baz'
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder')
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -204,10 +168,10 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en.default',
+          locale: 'en-US',
           time,
           uid: 'deadbeef',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -240,8 +204,7 @@ describe('metrics/events', () => {
           flowId: 'bar',
           flowBeginTime: time - 1000,
           flowCompleteSignal: 'account.signed'
-        },
-        service: 'baz'
+        }
       }
     }
     return events.emit.call(request, 'account.reminder')
@@ -275,26 +238,16 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      app: {
-        isLocaleAcceptable: false,
-        locale: 'en'
-      },
-      auth: null,
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: time - 1000,
           flowCompleteSignal: 'account.signed'
-        },
-        service: 'baz'
+        }
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder', { uid: 'deadbeef' })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -307,10 +260,10 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en.default',
+          locale: 'en-US',
           time,
           uid: 'deadbeef',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -327,26 +280,16 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      app: {
-        isLocaleAcceptable: false,
-        locale: 'en'
-      },
-      auth: null,
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: time - 1000,
           flowCompleteSignal: 'account.signed'
-        },
-        service: 'baz'
+        }
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder', { uid: Buffer.from('deadbeef', 'hex') })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -359,10 +302,10 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en.default',
+          locale: 'en-US',
           time,
           uid: 'deadbeef',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -379,26 +322,16 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      app: {
-        isLocaleAcceptable: false,
-        locale: 'en'
-      },
-      auth: null,
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: time - 1000,
           flowCompleteSignal: 'account.signed'
-        },
-        service: 'baz'
+        }
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder', { uid: null })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -411,9 +344,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
-          locale: 'en.default',
+          locale: 'en-US',
           time,
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -430,16 +363,9 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      app: {
-        isLocaleAcceptable: true,
-        locale: 'fr'
-      },
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      locale: 'fr',
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
@@ -447,7 +373,7 @@ describe('metrics/events', () => {
           flowCompleteSignal: 'account.reminder'
         }
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder', { locale: 'baz', uid: 'qux' })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -461,7 +387,7 @@ describe('metrics/events', () => {
           locale: 'fr',
           time,
           uid: 'qux',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data first time')
         assert.deepEqual(log.flowEvent.args[1][0], {
           event: 'flow.complete',
@@ -471,7 +397,7 @@ describe('metrics/events', () => {
           locale: 'fr',
           time,
           uid: 'qux',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was complete event data second time')
 
         assert.equal(metricsContext.clear.callCount, 1, 'metricsContext.clear was called once')
@@ -521,18 +447,14 @@ describe('metrics/events', () => {
 
   it('.emit with flow event and missing flowId', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowBeginTime: Date.now() - 1
         }
       }
-    }
+    })
     return events.emit.call(request, 'account.reminder')
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -557,19 +479,15 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: time - 42
         }
       }
-    }
+    })
     const data = {
       uid: 'baz'
     }
@@ -578,7 +496,7 @@ describe('metrics/events', () => {
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
         assert.deepEqual(log.activityEvent.args[0][0], {
           event: 'account.keyfetch',
-          userAgent: 'foo',
+          userAgent: 'test user-agent',
           service: undefined,
           uid: 'baz'
         }, 'activity event data was correct')
@@ -592,9 +510,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 42,
           flowCompleteSignal: undefined,
-          locale: undefined,
+          locale: 'en-US',
           uid: 'baz',
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'flow event data was correct')
 
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
@@ -609,18 +527,14 @@ describe('metrics/events', () => {
 
   it('.emit with optional flow event and missing flowId', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowBeginTime: Date.now() - 1
         }
       }
-    }
+    })
     const data = {
       uid: 'bar'
     }
@@ -640,12 +554,8 @@ describe('metrics/events', () => {
 
   it('.emit with content-server account.signed event', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
@@ -655,7 +565,7 @@ describe('metrics/events', () => {
       query: {
         service: 'content-server'
       }
-    }
+    })
     const data = {
       uid: 'baz'
     }
@@ -673,12 +583,8 @@ describe('metrics/events', () => {
 
   it('.emit with sync account.signed event', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       payload: {
         metricsContext: {
           flowId: 'bar',
@@ -688,7 +594,7 @@ describe('metrics/events', () => {
       query: {
         service: 'sync'
       }
-    }
+    })
     const data = {
       uid: 'baz'
     }
@@ -710,12 +616,8 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/create',
       payload: {
         metricsContext: {
@@ -723,7 +625,7 @@ describe('metrics/events', () => {
           flowBeginTime: time - 1000
         }
       }
-    }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 200 })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -736,9 +638,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
-          locale: undefined,
+          locale: 'en-US',
           time,
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -755,12 +657,8 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/login',
       payload: {
         metricsContext: {
@@ -768,7 +666,7 @@ describe('metrics/events', () => {
           flowBeginTime: time - 1000
         }
       }
-    }
+    })
     return events.emitRouteFlowEvent.call(request, { output: { statusCode: 399 } })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -779,9 +677,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
-          locale: undefined,
+          locale: 'en-US',
           time,
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -798,12 +696,8 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/recovery_email/resend_code',
       payload: {
         metricsContext: {
@@ -811,7 +705,7 @@ describe('metrics/events', () => {
           flowBeginTime: time - 1000
         }
       }
-    }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 400 })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -822,9 +716,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
-          locale: undefined,
+          locale: 'en-US',
           time,
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -841,12 +735,8 @@ describe('metrics/events', () => {
     const time = Date.now()
     sinon.stub(Date, 'now', () => time)
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/destroy',
       payload: {
         metricsContext: {
@@ -854,7 +744,7 @@ describe('metrics/events', () => {
           flowBeginTime: time - 1000
         }
       }
-    }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 400, errno: 42 })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
@@ -865,9 +755,9 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
-          locale: undefined,
+          locale: 'en-US',
           time,
-          userAgent: 'foo'
+          userAgent: 'test user-agent'
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
@@ -882,12 +772,8 @@ describe('metrics/events', () => {
 
   it('.emitRouteFlowEvent with non-matching route', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/devices',
       payload: {
         metricsContext: {
@@ -895,7 +781,7 @@ describe('metrics/events', () => {
           flowBeginTime: Date.now() - 1000
         }
       }
-    }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 200 })
       .then(() => {
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
@@ -907,27 +793,21 @@ describe('metrics/events', () => {
   })
 
   it('.emitRouteFlowEvent with matching route and invalid metrics context', () => {
-    const metricsContext = mocks.mockMetricsContext()
-    const validateMetricsContext = sinon.spy(() => false)
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const metricsContext = mocks.mockMetricsContext({ validate: sinon.spy(() => false) })
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/destroy',
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: Date.now()
         }
-      },
-      validateMetricsContext
-    }
+      }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 400, errno: 107 })
       .then(() => {
-        assert.equal(validateMetricsContext.callCount, 1, 'metricsContext.validate was called once')
-        assert.equal(validateMetricsContext.args[0].length, 0, 'metricsContext.validate was passed no arguments')
+        assert.equal(metricsContext.validate.callCount, 1, 'metricsContext.validate was called once')
+        assert.equal(metricsContext.validate.args[0].length, 0, 'metricsContext.validate was passed no arguments')
 
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
@@ -939,25 +819,19 @@ describe('metrics/events', () => {
 
   it('.emitRouteFlowEvent with missing parameter error but valid metrics context', () => {
     const metricsContext = mocks.mockMetricsContext()
-    const validateMetricsContext = sinon.spy(() => true)
-    const request = {
-      clearMetricsContext: metricsContext.clear,
-      gatherMetricsContext: metricsContext.gather,
-      headers: {
-        'user-agent': 'foo'
-      },
+    const request = mocks.mockRequest({
+      metricsContext,
       path: '/v1/account/destroy',
       payload: {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: Date.now()
         }
-      },
-      validateMetricsContext
-    }
+      }
+    })
     return events.emitRouteFlowEvent.call(request, { statusCode: 400, errno: 107 })
       .then(() => {
-        assert.equal(validateMetricsContext.callCount, 1, 'metricsContext.validate was called once')
+        assert.equal(metricsContext.validate.callCount, 1, 'metricsContext.validate was called once')
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
         assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
 
