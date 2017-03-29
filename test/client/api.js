@@ -592,6 +592,17 @@ module.exports = config => {
       )
   }
 
+  ClientApi.prototype.smsStatus = function (sessionTokenHex, country, clientIpAddress) {
+    return tokens.SessionToken.fromHex(sessionTokenHex)
+      .then(token => this.doRequest(
+        'GET',
+        `${this.baseURL}/sms/status${country ? `?country=${country}` : ''}`,
+        token,
+        null,
+        { 'X-Forwarded-For': clientIpAddress || '8.8.8.8' }
+      ))
+  }
+
   ClientApi.prototype.accountEmails = function (sessionTokenHex) {
     var o = sessionTokenHex ? tokens.SessionToken.fromHex(sessionTokenHex) : P.resolve(null)
     return o.then(

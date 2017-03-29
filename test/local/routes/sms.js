@@ -104,9 +104,14 @@ describe('/sms', () => {
       })
 
       it('called log.flowEvent correctly', () => {
-        assert.equal(log.flowEvent.callCount, 1)
+        assert.equal(log.flowEvent.callCount, 2)
 
-        const args = log.flowEvent.args[0]
+        let args = log.flowEvent.args[0]
+        assert.equal(args.length, 1)
+        assert.equal(args[0].event, 'sms.region.US')
+        assert.equal(args[0].flow_id, request.payload.metricsContext.flowId)
+
+        args = log.flowEvent.args[1]
         assert.equal(args.length, 1)
         assert.equal(args[0].event, 'sms.42.sent')
         assert.equal(args[0].flow_id, request.payload.metricsContext.flowId)
@@ -134,8 +139,9 @@ describe('/sms', () => {
         assert.equal(args[1], '16474909977')
       })
 
-      it('called log.flowEvent once', () => {
-        assert.equal(log.flowEvent.callCount, 1)
+      it('called log.flowEvent correctly', () => {
+        assert.equal(log.flowEvent.callCount, 2)
+        assert.equal(log.flowEvent.args[0][0].event, 'sms.region.CA')
       })
     })
 
@@ -160,8 +166,9 @@ describe('/sms', () => {
         assert.equal(args[1], 'Firefox')
       })
 
-      it('called log.flowEvent once', () => {
-        assert.equal(log.flowEvent.callCount, 1)
+      it('called log.flowEvent correctly', () => {
+        assert.equal(log.flowEvent.callCount, 2)
+        assert.equal(log.flowEvent.args[0][0].event, 'sms.region.GB')
       })
     })
 
@@ -222,8 +229,9 @@ describe('/sms', () => {
         assert.equal(sms.send.callCount, 0)
       })
 
-      it('did not call log.flowEvent', () => {
-        assert.equal(log.flowEvent.callCount, 0)
+      it('called log.flowEvent correctly', () => {
+        assert.equal(log.flowEvent.callCount, 1)
+        assert.equal(log.flowEvent.args[0][0].event, 'sms.region.TW')
       })
 
       it('threw the correct error data', () => {
@@ -259,8 +267,8 @@ describe('/sms', () => {
       assert.equal(sms.send.callCount, 1)
     })
 
-    it('did not call log.flowEvent', () => {
-      assert.equal(log.flowEvent.callCount, 0)
+    it('called log.flowEvent once', () => {
+      assert.equal(log.flowEvent.callCount, 1)
     })
 
     it('threw the correct error data', () => {
@@ -327,7 +335,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: true })
+      assert.deepEqual(response, { ok: true, country: 'US' })
     })
 
     it('called log.begin correctly', () => {
@@ -366,7 +374,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: 'US' })
     })
 
     it('called log.begin once', () => {
@@ -397,7 +405,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: 'CA' })
     })
 
     it('called log.begin once', () => {
@@ -504,7 +512,7 @@ describe('/sms/status', () => {
     })
 
     it('returned the correct response', () => {
-      assert.deepEqual(response, { ok: false })
+      assert.deepEqual(response, { ok: false, country: undefined })
     })
 
     it('called log.begin once', () => {
@@ -559,7 +567,7 @@ describe('/sms/status with disabled geo-ip lookup', () => {
   })
 
   it('returned the correct response', () => {
-    assert.deepEqual(response, { ok: true })
+    assert.deepEqual(response, { ok: true, country: undefined })
   })
 
   it('called log.begin once', () => {
@@ -574,6 +582,106 @@ describe('/sms/status with disabled geo-ip lookup', () => {
       op: 'sms.getGeoData',
       warning: 'skipping geolocation step'
     })
+  })
+
+  it('did not call geodb', () => {
+    assert.equal(geodb.callCount, 0)
+  })
+
+  it('called sms.balance once', () => {
+    assert.equal(sms.balance.callCount, 1)
+  })
+
+  it('did not call log.error', () => {
+    assert.equal(log.error.callCount, 0)
+  })
+})
+
+describe('/sms/status with query param and enabled geo-ip lookup', () => {
+  let log, config, geodb, routes, route, request, response
+
+  beforeEach(() => {
+    log = mocks.spyLog()
+    config = {
+      sms: {
+        enabled: true,
+        regions: [ 'RO' ],
+        isStatusGeoEnabled: true
+      }
+    }
+    geodb = sinon.spy(() => ({ location: { countryCode: 'US' } }))
+    routes = makeRoutes({ log, config }, { '../geodb': () => geodb })
+    route = getRoute(routes, '/sms/status')
+    request = mocks.mockRequest({
+      credentials: {
+        email: 'foo@example.org'
+      },
+      query: {
+        country: 'RO'
+      },
+      log: log
+    })
+    sms.balance = sinon.spy(() => P.resolve({ isOk: true }))
+    return runTest(route, request)
+      .then(r => response = r)
+  })
+
+  it('returned the correct response', () => {
+    assert.deepEqual(response, { ok: true, country: 'RO' })
+  })
+
+  it('called log.begin once', () => {
+    assert.equal(log.begin.callCount, 1)
+  })
+
+  it('did not call geodb', () => {
+    assert.equal(geodb.callCount, 0)
+  })
+
+  it('called sms.balance once', () => {
+    assert.equal(sms.balance.callCount, 1)
+  })
+
+  it('did not call log.error', () => {
+    assert.equal(log.error.callCount, 0)
+  })
+})
+
+describe('/sms/status with query param and disabled geo-ip lookup', () => {
+  let log, config, geodb, routes, route, request, response
+
+  beforeEach(() => {
+    log = mocks.spyLog()
+    config = {
+      sms: {
+        enabled: true,
+        regions: [ 'GB' ],
+        isStatusGeoEnabled: false
+      }
+    }
+    geodb = sinon.spy(() => ({ location: { countryCode: 'US' } }))
+    routes = makeRoutes({ log, config }, { '../geodb': () => geodb })
+    route = getRoute(routes, '/sms/status')
+    request = mocks.mockRequest({
+      credentials: {
+        email: 'foo@example.org'
+      },
+      query: {
+        country: 'GB'
+      },
+      log: log
+    })
+    sms.balance = sinon.spy(() => P.resolve({ isOk: true }))
+    return runTest(route, request)
+      .then(r => response = r)
+  })
+
+  it('returned the correct response', () => {
+    assert.deepEqual(response, { ok: true, country: 'GB' })
+  })
+
+  it('called log.begin once', () => {
+    assert.equal(log.begin.callCount, 1)
   })
 
   it('did not call geodb', () => {
