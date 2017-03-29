@@ -689,6 +689,14 @@ var conf = convict({
       format: Number,
       env: 'SMS_THROTTLE_WAIT_TIME'
     }
+  },
+  secondaryEmail: {
+    enabled: {
+      doc: 'Indicates whether secondary email APIs are enabled',
+      default: true,
+      format: Boolean,
+      env: 'SECONDARY_EMAIL_ENABLED'
+    }
   }
 })
 

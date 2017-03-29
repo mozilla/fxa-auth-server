@@ -40,6 +40,7 @@ var makeRoutes = function (options, requireMocks) {
   config.lastAccessTimeUpdates = {}
   config.signinConfirmation = config.signinConfirmation || {}
   config.signinUnblock = config.signinUnblock || {}
+  config.secondaryEmail = config.secondaryEmail || {}
   config.push = {
     allowedServerRegex: /^https:\/\/updates\.push\.services\.mozilla\.com(\/.*)?$/
   }
@@ -86,7 +87,11 @@ function runTest (route, request, assertions) {
 }
 
 describe('/recovery_email/status', function () {
-  var config = {}
+  var config = {
+    secondaryEmail: {
+      enabled: true
+    }
+  }
   var mockDB = mocks.mockDB()
   var pushCalled
   var mockLog = mocks.mockLog({
@@ -604,7 +609,11 @@ describe('/recovery_email', () => {
       checkPassword: function () {
         return P.resolve(true)
       },
-      config: {},
+      config: {
+        secondaryEmail: {
+          enabled: true
+        }
+      },
       customs: mockCustoms,
       db: mockDB,
       log: mockLog,
@@ -729,6 +738,56 @@ describe('/recovery_email', () => {
       })
         .then(function () {
           mockDB.deleteEmail.reset()
+        })
+    })
+  })
+
+  describe('can disable feature', () => {
+    beforeEach(() => {
+      accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        config: {
+          secondaryEmail: {
+            enabled: false
+          }
+        },
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
+      })
+    })
+
+    it('/recovery_email/destroy disabled', () => {
+      route = getRoute(accountRoutes, '/recovery_email/destroy')
+      return runTest(route, mockRequest, () => {
+        assert.fail(new Error('Should have failed accessing endpoint'))
+      })
+        .catch((err) => {
+          assert.equal(err.errno, 202, 'correct errno feature disabled')
+        })
+    })
+
+    it('/recovery_email disabled', () => {
+      route = getRoute(accountRoutes, '/recovery_email')
+      return runTest(route, mockRequest, () => {
+        assert.fail(new Error('Should have failed accessing endpoint'))
+      })
+        .catch((err) => {
+          assert.equal(err.errno, 202, 'correct errno feature disabled')
+        })
+    })
+
+    it('/recovery_emails disabled', () => {
+      route = getRoute(accountRoutes, '/recovery_emails')
+      return runTest(route, mockRequest, () => {
+        assert.fail(new Error('Should have failed accessing endpoint'))
+      })
+        .catch((err) => {
+          assert.equal(err.errno, 202, 'correct errno feature disabled')
         })
     })
   })
