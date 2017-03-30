@@ -16,6 +16,7 @@ describe('remote emails', function () {
 
   before(() => {
     config = require('../../config').getProperties()
+    config.secondaryEmail.enabled = true
     return TestServer.start(config)
       .then(s => {
         server = s
