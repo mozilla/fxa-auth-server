@@ -150,9 +150,9 @@ Since this is a HTTP-based protocol, clients should be prepared to gracefully ha
     * [GET  /v1/recovery_email/status (:lock: sessionToken)](#get-v1recovery_emailstatus)
     * [POST /v1/recovery_email/resend_code (:lock: sessionToken)](#post-v1recovery_emailresend_code)
     * [POST /v1/recovery_email/verify_code](#post-v1recovery_emailverify_code)
-    * [GET  /v1/recovery_emails](#post-v1recovery_emails)
-    * [POST /v1/recovery_email](#post-v1recovery_email)
-    * [POST /v1/recovery_email/destroy](#post-v1recovery_emaildestroy)
+    * [GET  /v1/recovery_emails (:lock: sessionToken)](#post-v1recovery_emails)
+    * [POST /v1/recovery_email (:lock: sessionToken)](#post-v1recovery_email)
+    * [POST /v1/recovery_email/destroy (:lock: sessionToken)](#post-v1recovery_emaildestroy)
 
 * Certificate Signing
     * [POST /v1/certificate/sign (:lock: sessionToken) (verf-required)](#post-v1certificatesign)
@@ -916,6 +916,7 @@ curl -v \
 -X GET \
 -H "Host: api-accounts.dev.lcip.org" \
 -H "Content-Type: application/json" \
+-H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", hash="vBODPWhDhiRWM4tmI9qp+np+3aoqEFzdGuGk0h7bh9w=", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
 https://api-accounts.dev.lcip.org/v1/recovery_emails \
 ```
 
@@ -953,6 +954,7 @@ curl -v \
 -X POST \
 -H "Host: api-accounts.dev.lcip.org" \
 -H "Content-Type: application/json" \
+-H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", hash="vBODPWhDhiRWM4tmI9qp+np+3aoqEFzdGuGk0h7bh9w=", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
 https://api-accounts.dev.lcip.org/v1/recovery_email \
 -d '{
   "email": "another@email.com"
@@ -996,6 +998,7 @@ curl -v \
 -X POST \
 -H "Host: api-accounts.dev.lcip.org" \
 -H "Content-Type: application/json" \
+-H 'Authorization: Hawk id="d4c5b1e3f5791ef83896c27519979b93a45e6d0da34c7509c5632ac35b28b48d", ts="1373391043", nonce="ohQjqb", hash="vBODPWhDhiRWM4tmI9qp+np+3aoqEFzdGuGk0h7bh9w=", mac="LAnpP3P2PXelC6hUoUaHP72nCqY5Iibaa3eeiGBqIIU="' \
 https://api-accounts.dev.lcip.org/v1/recovery_email/destroy \
 -d '{
   "email": "another@email.com"
