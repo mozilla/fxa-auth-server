@@ -527,17 +527,7 @@ var conf = convict({
     }
   },
   securityHistory: {
-    enabled: {
-      doc: 'enable security history',
-      default: true,
-      env: 'SECURITY_HISTORY_ENABLED'
-    },
     ipProfiling: {
-      enabled: {
-        doc: 'enable ip profiling, bypass sign-in confirmation if login is coming from a previously verified ip address.',
-        default: true,
-        env: 'IP_PROFILING_ENABLED'
-      },
       allowedRecency: {
         doc: 'Length of time since previously verified event to allow skipping confirmation',
         default: '72 hours',
@@ -636,6 +626,12 @@ var conf = convict({
       default: true,
       format: Boolean,
       env: 'SMS_ENABLED'
+    },
+    useMock: {
+      doc: 'Use a mock SMS provider implementation, for functional testing',
+      default: false,
+      format: Boolean,
+      env: 'SMS_USE_MOCK'
     },
     apiKey: {
       doc: 'API key for the SMS service',
