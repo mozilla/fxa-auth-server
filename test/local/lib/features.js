@@ -34,7 +34,7 @@ describe('features', () => {
     'interface is correct',
     () => {
       assert.equal(typeof features, 'object', 'object type should be exported')
-      assert.equal(Object.keys(features).length, 2, 'object should have four properties')
+      assert.equal(Object.keys(features).length, 3, 'object should have four properties')
       assert.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
       assert.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
       assert.equal(typeof features.isSecondaryEmailEnabled, 'function', 'isSecondaryEmailEnabled should be function')
