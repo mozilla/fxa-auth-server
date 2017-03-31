@@ -14,7 +14,6 @@ var proxyquire = require('proxyquire')
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var isA = require('joi')
 var error = require('../../../lib/error')
 var log = require('../../../lib/log')
 
@@ -53,11 +52,6 @@ var makeRoutes = function (options, requireMocks) {
   var push = options.push || require('../../../lib/push')(log, db, {})
   return proxyquire('../../../lib/routes/account', requireMocks || {})(
     log,
-    require('../../../lib/crypto/random'),
-    P,
-    uuid,
-    isA,
-    error,
     db,
     mocks.mockBounces(),
     options.mailer || {},
@@ -362,7 +356,7 @@ describe('/account/login', function () {
   var config = {
     newLoginNotificationEnabled: true,
     securityHistory: {
-      enabled: true
+      ipProfiling: {}
     },
     signinConfirmation: {},
     signinUnblock: {
