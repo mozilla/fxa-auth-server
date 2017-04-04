@@ -28,7 +28,8 @@ describe('remote verifier upgrade', function() {
   this.timeout(30000)
 
   before(() => {
-    process.env.VERIFIER_VERSION = '0'
+    config.verifierVersion = 0
+    config.securityHistory.ipProfiling.allowedRecency = 0
   })
 
   it(
@@ -76,7 +77,7 @@ describe('remote verifier upgrade', function() {
         )
         .then(
           function () {
-            process.env.VERIFIER_VERSION = '1'
+            config.verifierVersion = 1
             return TestServer.start(config)
           }
         )
@@ -87,11 +88,6 @@ describe('remote verifier upgrade', function() {
               .then(
                 function (x) {
                   client = x
-                  return client.keys()
-                }
-              )
-              .then(
-                function () {
                   return client.changePassword(password)
                 }
               )
@@ -135,8 +131,4 @@ describe('remote verifier upgrade', function() {
       })
     }
   )
-
-  after(() => {
-    delete process.env.VERIFIER_VERSION
-  })
 })

@@ -6,8 +6,8 @@
 
 const assert = require('insist')
 const proxyquire = require('proxyquire')
-const mockLog = require('../../mocks').mockLog
-const modulePath = '../../../lib/geodb'
+const mockLog = require('../mocks').mockLog
+const modulePath = '../../lib/geodb'
 
 describe('geodb', () => {
   it(
@@ -31,6 +31,7 @@ describe('geodb', () => {
       .then(function (geoData) {
         assert.equal(geoData.location.city, 'Mountain View')
         assert.equal(geoData.location.country, 'United States')
+        assert.equal(geoData.location.countryCode, 'US')
         assert.equal(geoData.timeZone, 'America/Los_Angeles')
         assert.equal(geoData.location.state, 'California')
         assert.equal(geoData.location.stateCode, 'CA')

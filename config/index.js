@@ -211,12 +211,12 @@ var conf = convict({
     androidUrl: {
       doc: 'url to Android product page',
       format: String,
-      default: 'https://www.mozilla.org/firefox/android/'
+      default: 'https://app.adjust.com/2uo1qc?campaign=fxa-conf-email&adgroup=android&creative=button'
     },
     iosUrl: {
       doc: 'url to IOS product page',
       format: String,
-      default: 'https://www.mozilla.org/firefox/ios/'
+      default: 'https://app.adjust.com/2uo1qc?campaign=fxa-conf-email&adgroup=ios&creative=button&fallback=https%3A%2F%2Fitunes.apple.com%2Fapp%2Fapple-store%2Fid989804926%3Fpt%3D373246%26ct%3Dadjust_tracker%26mt%3D8'
     },
     supportUrl: {
       doc: 'url to Mozilla Support product page',
@@ -373,6 +373,20 @@ var conf = convict({
       default: ''
     }
   },
+  profileServerMessaging: {
+    region: {
+      doc: 'The region where the queues live',
+      format: String,
+      env: 'PROFILE_MESSAGING_REGION',
+      default: ''
+    },
+    profileUpdatesQueueUrl: {
+      doc: 'The queue URL to use (should include https://sqs.<region>.amazonaws.com/<account-id>/<queue-name>)',
+      format: String,
+      env: 'PROFILE_UPDATES_QUEUE_URL',
+      default: ''
+    }
+  },
   verificationReminders: {
     rate: {
       doc: 'Rate of users getting the verification reminder. If "0" then the feature is disabled. If "1" all users get it.',
@@ -513,17 +527,7 @@ var conf = convict({
     }
   },
   securityHistory: {
-    enabled: {
-      doc: 'enable security history',
-      default: true,
-      env: 'SECURITY_HISTORY_ENABLED'
-    },
     ipProfiling: {
-      enabled: {
-        doc: 'enable ip profiling, bypass sign-in confirmation if login is coming from a previously verified ip address.',
-        default: true,
-        env: 'IP_PROFILING_ENABLED'
-      },
       allowedRecency: {
         doc: 'Length of time since previously verified event to allow skipping confirmation',
         default: '72 hours',
@@ -623,6 +627,12 @@ var conf = convict({
       format: Boolean,
       env: 'SMS_ENABLED'
     },
+    useMock: {
+      doc: 'Use a mock SMS provider implementation, for functional testing',
+      default: false,
+      format: Boolean,
+      env: 'SMS_USE_MOCK'
+    },
     apiKey: {
       doc: 'API key for the SMS service',
       default: 'YOU MUST CHANGE ME',
@@ -640,6 +650,12 @@ var conf = convict({
       default: 1,
       format: Number,
       env: 'SMS_MINIMUM_BALANCE'
+    },
+    isStatusGeoEnabled: {
+      doc: 'Indicates whether the status endpoint should do geo-ip lookup',
+      default: true,
+      format: Boolean,
+      env: 'SMS_STATUS_GEO_ENABLED'
     },
     regions: {
       doc: 'Valid ISO 3166-1 alpha-2 country codes for enabled regions',

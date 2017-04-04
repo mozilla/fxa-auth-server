@@ -14,8 +14,9 @@ var proxyquire = require('proxyquire')
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var isA = require('joi')
 var error = require('../../../lib/error')
+
+const isA = require('joi')
 
 var makeRoutes = function (options, requireMocks) {
   options = options || {}
@@ -49,12 +50,8 @@ var makeRoutes = function (options, requireMocks) {
   var push = options.push || require('../../../lib/push')(log, db, {})
   return proxyquire('../../../lib/routes/account', requireMocks || {})(
     log,
-    require('../../../lib/crypto/random'),
-    P,
-    uuid,
-    isA,
-    error,
     db,
+    mocks.mockBounces(),
     options.mailer || {},
     Password,
     config,
@@ -191,7 +188,6 @@ describe('/account/devices/notify', function () {
     }
   })
   var pushPayload = {
-    isValid: true,
     version: 1,
     command: 'sync:collection_changed',
     data: {
@@ -199,22 +195,12 @@ describe('/account/devices/notify', function () {
     }
   }
   var mockPush = mocks.mockPush()
-  var validate = sinon.spy(function (payload) { return payload.isValid })
-  var mockAjv = function () {
-    return {
-      compile: function () {
-        return validate
-      }
-    }
-  }
   var sandbox = sinon.sandbox.create()
   var mockCustoms = mocks.mockCustoms()
   var accountRoutes = makeRoutes({
     config: config,
     customs: mockCustoms,
     push: mockPush
-  }, {
-    ajv: mockAjv
   })
   var route = getRoute(accountRoutes, '/account/devices/notify')
 
@@ -222,14 +208,13 @@ describe('/account/devices/notify', function () {
     mockRequest.payload = {
       to: ['bogusid1'],
       payload: {
-        isValid: false
+        bogus: 'payload'
       }
     }
     return runTest(route, mockRequest, function () {
       assert(false, 'should have thrown')
     })
       .then(() => assert(false), function (err) {
-        assert.equal(validate.callCount, 1, 'ajv validator function was called')
         assert.equal(mockPush.pushToDevices.callCount, 0, 'mockPush.pushToDevices was not called')
         assert.equal(err.errno, 107, 'Correct errno for invalid push payload')
       })
@@ -263,6 +248,32 @@ describe('/account/devices/notify', function () {
           TTL: 60
         }, 'third argument was the push options')
       })
+    })
+  })
+
+  it('extra push payload properties are rejected', function () {
+    var extraPropsPayload = JSON.parse(JSON.stringify(pushPayload))
+    extraPropsPayload.extra = true
+    extraPropsPayload.data.extra = true
+    mockRequest.payload = {
+      to: 'all',
+      excluded: ['bogusid'],
+      TTL: 60,
+      payload: extraPropsPayload
+    }
+    // We don't wait on pushToAllDevices in the request handler, that's why
+    // we have to wait on it manually by spying.
+    var pushToAllDevicesPromise = P.defer()
+    mockPush.pushToAllDevices = sinon.spy(function () {
+      pushToAllDevicesPromise.resolve()
+      return Promise.resolve()
+    })
+    return runTest(route, mockRequest, function () {
+      assert(false, 'should have thrown')
+    })
+    .then(() => assert.ok(false), function (err) {
+      assert.equal(err.output.statusCode, 400, 'correct status code is returned')
+      assert.equal(err.errno, error.ERRNO.INVALID_PARAMETER, 'correct errno is returned')
     })
   })
 
@@ -318,7 +329,6 @@ describe('/account/devices/notify', function () {
       to: ['bogusid1', 'bogusid2'],
       TTL: 60,
       payload: {
-        isValid: true,
         version: 1,
         command: 'fxaccounts:password_reset'
       }
@@ -349,6 +359,12 @@ describe('/account/devices/notify', function () {
   })
 
   it('throws error if customs blocked the request', function () {
+    mockRequest.payload = {
+      to: 'all',
+      excluded: ['bogusid'],
+      TTL: 60,
+      payload: pushPayload
+    }
     config.deviceNotificationsEnabled = true
 
     mockCustoms = mocks.mockCustoms({
@@ -501,5 +517,19 @@ describe('/account/devices', function () {
       assert.equal(mockDevices.synthesizeName.args[0].length, 1, 'mockDevices.synthesizeName was passed one argument')
       assert.equal(mockDevices.synthesizeName.args[0][0], unnamedDevice, 'mockDevices.synthesizeName was passed unnamed device')
     })
+  })
+
+  it('should allow returning a lastAccessTime of 0', () => {
+    const route = getRoute(makeRoutes({}), '/account/devices')
+    const res = [
+      {
+        id: crypto.randomBytes(16).toString('hex'),
+        isCurrentDevice: true,
+        lastAccessTime: 0,
+        name: 'test',
+        type: 'test'
+      }
+    ]
+    isA.assert(res, route.config.response.schema)
   })
 })

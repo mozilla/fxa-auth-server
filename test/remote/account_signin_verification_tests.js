@@ -24,8 +24,7 @@ describe('remote account signin verification', function() {
   this.timeout(30000)
   let server
   before(() => {
-    process.env.IP_PROFILING_ENABLED = false
-
+    config.securityHistory.ipProfiling.allowedRecency = 0
     return TestServer.start(config)
       .then(s => {
         server = s

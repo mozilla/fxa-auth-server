@@ -14,7 +14,6 @@ var proxyquire = require('proxyquire')
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var isA = require('joi')
 var error = require('../../../lib/error')
 var log = require('../../../lib/log')
 
@@ -52,12 +51,8 @@ var makeRoutes = function (options, requireMocks) {
   var push = options.push || require('../../../lib/push')(log, db, {})
   return proxyquire('../../../lib/routes/account', requireMocks || {})(
     log,
-    require('../../../lib/crypto/random'),
-    P,
-    uuid,
-    isA,
-    error,
     db,
+    mocks.mockBounces(),
     options.mailer || {},
     Password,
     config,
@@ -352,19 +347,6 @@ describe('/account/create', () => {
       assert.strictEqual(args[2].uaDeviceType, undefined)
 
       assert.equal(mockLog.error.callCount, 0)
-
-      mockRequest.query._createdAt = Date.now()
-      return runTest(route, mockRequest, () => {
-        assert.equal(mockLog.error.callCount, 1)
-        const args = mockLog.error.args[0]
-        assert.equal(args.length, 1)
-        assert.equal(args[0].op, 'account.create.createSessionToken')
-        assert.ok(args[0].err instanceof Error)
-        assert.equal(args[0].err.message, 'Unexpected _createdAt query parameter')
-        assert.equal(args[0]._createdAt, mockRequest.query._createdAt)
-        assert.equal(args[0].userAgent, 'test user-agent')
-        assert.equal(args[0].service, 'sync')
-      })
     }).finally(() => Date.now.restore())
   })
 })
@@ -373,7 +355,7 @@ describe('/account/login', function () {
   var config = {
     newLoginNotificationEnabled: true,
     securityHistory: {
-      enabled: true
+      ipProfiling: {}
     },
     signinConfirmation: {},
     signinUnblock: {
@@ -553,7 +535,6 @@ describe('/account/login', function () {
         flowCompleteSignal: 'account.signed',
         locale: 'en-US',
         time: now,
-        uid: undefined,
         userAgent: 'test user-agent'
       }, 'second flow event was correct')
 

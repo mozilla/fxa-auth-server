@@ -4,6 +4,8 @@
 
 'use strict'
 
+const ROOT_DIR = '../../..'
+
 const assert = require('insist')
 const P = require('bluebird')
 const proxyquire = require('proxyquire')
@@ -43,21 +45,28 @@ function Nexmo () {}
 Nexmo.prototype.message = { sendSms }
 Nexmo.prototype.account = { checkBalance }
 
+let mockConstructed = false
+function MockNexmo () {
+  mockConstructed = true
+}
+MockNexmo.prototype = Nexmo.prototype
+
 describe('lib/senders/sms:', () => {
   let sms
 
   before(() => {
     return P.all([
-      require('../../../../lib/senders/translator')(['en'], 'en'),
-      require('../../../../lib/senders/templates')()
+      require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
+      require(`${ROOT_DIR}/lib/senders/templates`)()
     ]).spread((translator, templates) => {
-      sms = proxyquire('../../../../lib/senders/sms', {
+      sms = proxyquire(`${ROOT_DIR}/lib/senders/sms`, {
         nexmo: Nexmo
       })(log, translator, templates, {
         apiKey: 'foo',
         apiSecret: 'bar',
         balanceThreshold: 1,
-        installFirefoxLink: 'https://baz/qux'
+        installFirefoxLink: 'https://baz/qux',
+        useMock: false
       })
     })
   })
@@ -68,6 +77,7 @@ describe('lib/senders/sms:', () => {
     log.error.reset()
     log.info.reset()
     log.trace.reset()
+    mockConstructed = false
   })
 
   it('interface is correct', () => {
@@ -206,6 +216,30 @@ describe('lib/senders/sms:', () => {
 
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       })
+  })
+
+  it('uses the Nexmo constructor if `useMock: false`', () => {
+    assert.equal(mockConstructed, false)
+  })
+
+  it('uses the NexmoMock constructor if `useMock: true`', () => {
+    return P.all([
+      require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
+      require(`${ROOT_DIR}/lib/senders/templates`)()
+    ]).spread((translator, templates) => {
+      sms = proxyquire(`${ROOT_DIR}/lib/senders/sms`, {
+        nexmo: Nexmo,
+        '../mock-nexmo': MockNexmo
+      })(log, translator, templates, {
+        apiKey: 'foo',
+        apiSecret: 'bar',
+        balanceThreshold: 1,
+        installFirefoxLink: 'https://baz/qux',
+        useMock: true
+      })
+
+      assert.equal(mockConstructed, true)
+    })
   })
 })
 

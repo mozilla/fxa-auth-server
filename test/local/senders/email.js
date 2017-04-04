@@ -4,7 +4,7 @@
 
 'use strict'
 
-const ROOT_DIR = '../../../..'
+const ROOT_DIR = '../../..'
 
 const assert = require('insist')
 var extend = require('util')._extend
@@ -578,11 +578,10 @@ describe(
           .then(function () {
             assert.equal(mockLog.info.callCount, 3, 'calls log emailEvent')
             const emailEventLog = mockLog.info.getCalls()[2]
-            assert.equal(emailEventLog.args[0], 'emailEvent', 'logs emailEvent')
-            assert.equal(emailEventLog.args[1].domain, 'other', 'logs domain')
-            assert.equal(emailEventLog.args[1].template, 'verifyLoginEmail', 'logs correct template')
-            assert.equal(emailEventLog.args[1].type, 'sent', 'logs correct type')
-
+            assert.equal(emailEventLog.args[0].op, 'emailEvent', 'logs emailEvent')
+            assert.equal(emailEventLog.args[0].domain, 'other', 'logs domain')
+            assert.equal(emailEventLog.args[0].template, 'verifyLoginEmail', 'logs correct template')
+            assert.equal(emailEventLog.args[0].type, 'sent', 'logs correct type')
           })
       }
     )

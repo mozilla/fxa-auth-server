@@ -89,32 +89,38 @@ var conf = convict({
     reminderTimeFirst: {
       doc: 'Milliseconds since account creation after which the first reminder is sent',
       default: '48 hours',
-      format: 'duration'
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_FIRST'
     },
     reminderTimeSecond: {
       doc: 'Milliseconds since account creation after which the second reminder is sent',
       default: '168 hours',
-      format: 'duration'
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_SECOND'
     },
     reminderTimeFirstOutdated: {
       doc: 'Milliseconds since account creation after which the reminder should not be sent',
       default: '167 hours',
-      format: 'duration'
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_FIRST_OUTDATED'
     },
     reminderTimeSecondOutdated: {
       doc: 'Milliseconds since account creation after which the reminder should not be sent',
       default: '300 hours',
-      format: 'duration'
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_SECOND_OUTDATED'
     },
     pollFetch: {
       doc: 'Number of reminder record to fetch when polling.',
       format: Number,
-      default: 20
+      default: 20,
+      env: 'VERIFICATION_REMINDER_POLL_FETCH'
     },
     pollTime: {
       doc: 'Poll duration in milliseconds. 0 is disabled.',
       format: 'duration',
-      default: '30 minutes'
+      default: '30 minutes',
+      env: 'VERIFICATION_REMINDER_POLL_TIME'
     }
   },
   mail: {
@@ -221,12 +227,12 @@ var options = {
 conf.validate(options)
 
 var contentServerUrl = conf.get('contentServer.url')
-conf.set('mail.verificationUrl', contentServerUrl + '/v1/verify_email')
-conf.set('mail.passwordResetUrl', contentServerUrl + '/v1/complete_reset_password')
+conf.set('mail.verificationUrl', contentServerUrl + '/verify_email')
+conf.set('mail.passwordResetUrl', contentServerUrl + '/complete_reset_password')
 conf.set('mail.initiatePasswordResetUrl', contentServerUrl + '/reset_password')
 conf.set('mail.initiatePasswordChangeUrl', contentServerUrl + '/settings/change_password')
 conf.set('mail.verifyLoginUrl', contentServerUrl + '/complete_signin')
-conf.set('mail.reportSignInUrl', contentServerUrl + '/reject_unblock_code')
+conf.set('mail.reportSignInUrl', contentServerUrl + '/report_signin')
 
 // Extra Validations
 if (conf.get('locales').indexOf(conf.get('defaultLanguage')) === -1) {

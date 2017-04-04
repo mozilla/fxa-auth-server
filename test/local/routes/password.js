@@ -11,7 +11,6 @@ var getRoute = require('../../routes_helpers').getRoute
 var P = require('../../../lib/promise')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var isA = require('joi')
 var error = require('../../../lib/error')
 const sinon = require('sinon')
 const log = require('../../../lib/log')
@@ -32,8 +31,6 @@ function makeRoutes(options) {
   var checkPassword = require('../../../lib/routes/utils/password_check')(log, config, Password, customs, db)
   return require('../../../lib/routes/password')(
     log,
-    isA,
-    error,
     db,
     Password,
     config.smtp.redirectDomain || '',
@@ -304,10 +301,10 @@ describe('/password', () => {
 
           assert.equal(mockDB.account.callCount, 1)
           assert.equal(mockMailer.sendPasswordChangedNotification.callCount, 1)
-          assert.equal(mockMailer.sendPasswordChangedNotification.firstCall.args[0], TEST_EMAIL)
-          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[1].location.city, 'Mountain View')
-          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[1].location.country, 'United States')
-          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[1].timeZone, 'America/Los_Angeles')
+          assert.equal(mockMailer.sendPasswordChangedNotification.firstCall.args[1].email, TEST_EMAIL)
+          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].location.city, 'Mountain View')
+          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].location.country, 'United States')
+          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].timeZone, 'America/Los_Angeles')
 
           assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
           var args = mockLog.activityEvent.args[0]
