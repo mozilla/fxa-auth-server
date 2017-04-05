@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var restify = require('restify')
-var config = require('../mailer/config')
+var config = require('../config')
 
 var log = require('../lib/senders/log')('server')
-var mailConfig = config.get('mail')
+var mailConfig = config.get('smpt')
 
 var packageJson = require('../package.json')
 var P = require('bluebird')
@@ -21,7 +21,7 @@ var dbConnect = require('../lib/senders/db_connect')()
 
 P.all(
   [
-    require('../lib/senders/translator')(config.get('locales'), config.get('defaultLanguage')),
+    require('../lib/senders/translator')(config.get('supportedLanguages'), config.get('defaultLanguage')),
     require('../lib/senders/templates')()
   ]
 )
