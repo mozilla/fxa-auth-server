@@ -6,7 +6,7 @@ var restify = require('restify')
 var config = require('../config')
 
 var log = require('../lib/senders/log')('server')
-var mailConfig = config.get('smpt')
+var mailConfig = config.get('smtp')
 
 var packageJson = require('../package.json')
 var P = require('bluebird')
@@ -21,7 +21,7 @@ var dbConnect = require('../lib/senders/db_connect')()
 
 P.all(
   [
-    require('../lib/senders/translator')(config.get('supportedLanguages'), config.get('defaultLanguage')),
+    require('../lib/senders/translator')(config.get('i18n.supportedLanguages'), config.get('i18n.defaultLanguage')),
     require('../lib/senders/templates')()
   ]
 )
@@ -81,10 +81,10 @@ P.all(
     )
 
     api.listen(
-      config.get('port'),
-      config.get('host'),
+      config.get('smtp.port'),
+      config.get('smtp.host'),
       function () {
-        log.info('listening', { port: config.get('port'), host: config.get('host') })
+        log.info('listening', { port: config.get('smtp.port'), host: config.get('smtp.host') })
       }
     )
   }
