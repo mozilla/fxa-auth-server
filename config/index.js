@@ -404,6 +404,11 @@ var conf = convict({
     }
   },
   verificationReminders: {
+    rate: {
+      doc: 'Rate of users getting the verification reminder. If "0" then the feature is disabled. If "1" all users get it.',
+      default: 0,
+      env: 'VERIFICATION_REMINDER_RATE'
+    },
     reminderTimeFirst: {
       doc: 'Milliseconds since account creation after which the first reminder is sent',
       default: '48 hours',

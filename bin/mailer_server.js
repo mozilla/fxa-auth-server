@@ -81,10 +81,10 @@ P.all(
     )
 
     api.listen(
-      config.get('smtp.port'),
-      config.get('smtp.host'),
+      mailConfig.port,
+      mailConfig.host,
       function () {
-        log.info('listening', { port: config.get('smtp.port'), host: config.get('smtp.host') })
+        log.info('listening', { port: mailConfig.port, host: mailConfig.host })
       }
     )
   }
