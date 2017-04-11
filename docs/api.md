@@ -150,7 +150,7 @@ Since this is a HTTP-based protocol, clients should be prepared to gracefully ha
     * [GET  /v1/recovery_email/status (:lock: sessionToken)](#get-v1recovery_emailstatus)
     * [POST /v1/recovery_email/resend_code (:lock: sessionToken)](#post-v1recovery_emailresend_code)
     * [POST /v1/recovery_email/verify_code](#post-v1recovery_emailverify_code)
-    * [GET  /v1/recovery_emails (:lock: sessionToken)](#post-v1recovery_emails)
+    * [GET  /v1/recovery_emails (:lock: sessionToken)](#get-v1recovery_emails)
     * [POST /v1/recovery_email (:lock: sessionToken)](#post-v1recovery_email)
     * [POST /v1/recovery_email/destroy (:lock: sessionToken)](#post-v1recovery_emaildestroy)
 
