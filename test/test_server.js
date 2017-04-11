@@ -5,7 +5,6 @@
 'use strict'
 
 var crypto = require('crypto')
-const EventEmitter = require('events')
 var P = require('../lib/promise')
 var mailbox = require('./mailbox')
 var createDBServer = require('fxa-auth-db-mysql')
@@ -29,8 +28,6 @@ function TestServer(config, printLogs) {
     config.log.level = 'debug'
   } else {
     config.log.level = 'critical'
-    config.log.stdout = new EventEmitter()
-    config.log.stdout.write = function () {}
   }
   this.printLogs = printLogs
   this.config = config

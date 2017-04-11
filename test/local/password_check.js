@@ -26,7 +26,7 @@ var MockDB = {
 
 var CLIENT_ADDRESS = '10.0.0.1'
 
-var checkPassword = require('../../lib/routes/utils/password_check')(mockLog, config, Password, MockCustoms, MockDB)
+var checkPassword = require('../../lib/plugins/password')(mockLog, config, Password, MockCustoms, MockDB)
 
 describe('password_check', () => {
   it(

@@ -373,6 +373,12 @@ function mockRequest (data) {
     },
     path: data.path,
     payload: data.payload,
+    plugins: Object.assign({
+      customs: module.exports.mockCustoms(),
+      password: {
+        check: () => P.resolve(true)
+      }
+    }, data.plugins),
     query: data.query || {},
     setMetricsFlowCompleteSignal: metricsContext.setFlowCompleteSignal,
     stashMetricsContext: metricsContext.stash,

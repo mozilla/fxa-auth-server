@@ -13,7 +13,7 @@ const mocks = require('../../mocks')
 var error = require('../../../lib/error.js')
 var nock = require('nock')
 
-var Customs = require('../../../lib/customs.js')(log, error)
+var Customs = require('../../../lib/plugins/customs.js')(log, error)
 
 var CUSTOMS_URL_REAL = 'http://localhost:7000'
 var CUSTOMS_URL_MISSING = 'http://localhost:7001'

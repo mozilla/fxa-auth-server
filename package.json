@@ -59,7 +59,7 @@
     "joi": "9.0.4",
     "memcached": "2.2.2",
     "moment-timezone": "0.5.11",
-    "mozlog": "2.0.6",
+    "mozlog": "2.1.0",
     "newrelic": "1.30.1",
     "nexmo": "1.2.0",
     "node-statsd": "0.1.1",

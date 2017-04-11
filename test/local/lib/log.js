@@ -19,9 +19,10 @@ var statsd = {
   init: sinon.spy(),
   write: sinon.spy()
 }
+var createLog = sinon.spy(() => logger)
 var mocks = {
   mozlog: sinon.spy(function () {
-    return logger
+    return createLog
   })
 }
 mocks.mozlog.config = sinon.spy()

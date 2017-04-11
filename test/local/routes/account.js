@@ -44,10 +44,6 @@ var makeRoutes = function (options, requireMocks) {
   var log = options.log || mocks.mockLog()
   var Password = options.Password || require('../../../lib/crypto/password')(log, config)
   var db = options.db || mocks.mockDB()
-  var customs = options.customs || {
-    check: function () { return P.resolve(true) }
-  }
-  var checkPassword = options.checkPassword || require('../../../lib/routes/utils/password_check')(log, config, Password, customs, db)
   var push = options.push || require('../../../lib/push')(log, db, {})
   return proxyquire('../../../lib/routes/account', requireMocks || {})(
     log,
@@ -56,8 +52,6 @@ var makeRoutes = function (options, requireMocks) {
     options.mailer || {},
     Password,
     config,
-    customs,
-    checkPassword,
     push,
     options.devices || require('../../../lib/devices')(log, db, push)
   )
@@ -100,6 +94,7 @@ describe('/account/reset', function () {
         keys: 'true'
       }
     })
+    const mockCustoms = mockRequest.plugins.customs
     const keyFetchTokenId = crypto.randomBytes(16)
     const sessionTokenId = crypto.randomBytes(16)
     const mockDB = mocks.mockDB({
@@ -109,7 +104,6 @@ describe('/account/reset', function () {
       sessionTokenId: sessionTokenId,
       wrapWrapKb: crypto.randomBytes(32)
     })
-    var mockCustoms = mocks.mockCustoms()
     var mockPush = mocks.mockPush()
     var accountRoutes = makeRoutes({
       config: {
@@ -117,7 +111,6 @@ describe('/account/reset', function () {
           enabled: true
         }
       },
-      customs: mockCustoms,
       db: mockDB,
       log: mockLog,
       push: mockPush
@@ -178,7 +171,10 @@ describe('/account/reset', function () {
 describe('/account/create', () => {
   it('should create an account', () => {
     // We want to test what's actually written to stdout by the logger.
-    const mockLog = log('ERROR', 'test', {
+    const mockLog = log({
+      name: 'test',
+      level: 'ERROR',
+      uncaught: 'ignore',
       stdout: {
         on: sinon.spy(),
         write: sinon.spy()
@@ -381,6 +377,7 @@ describe('/account/login', function () {
   })
   const mockMetricsContext = mocks.mockMetricsContext()
 
+  const mockCustoms = mocks.mockCustoms()
   const mockRequest = mocks.mockRequest({
     log: mockLog,
     metricsContext: mockMetricsContext,
@@ -393,6 +390,9 @@ describe('/account/login', function () {
         flowBeginTime: Date.now(),
         flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103'
       }
+    },
+    plugins: {
+      customs: mockCustoms
     },
     query: {
       keys: 'true'
@@ -412,6 +412,9 @@ describe('/account/login', function () {
         service: 'dcdb5ae7add825d2'
       }
     },
+    plugins: {
+      customs: mockCustoms
+    },
     query: {}
   })
   const mockRequestWithUnblockCode = mocks.mockRequest({
@@ -428,7 +431,10 @@ describe('/account/login', function () {
         flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         service: 'dcdb5ae7add825d2'
       }
-    }
+    },
+    plugins: {
+      customs: mockCustoms
+    },
   })
   var keyFetchTokenId = crypto.randomBytes(16)
   var sessionTokenId = crypto.randomBytes(16)
@@ -447,16 +453,8 @@ describe('/account/login', function () {
   })
   var mockMailer = mocks.mockMailer()
   var mockPush = mocks.mockPush()
-  var mockCustoms = {
-    check: () => P.resolve(),
-    flag: () => P.resolve()
-  }
   var accountRoutes = makeRoutes({
-    checkPassword: function () {
-      return P.resolve(true)
-    },
     config: config,
-    customs: mockCustoms,
     db: mockDB,
     log: mockLog,
     mailer: mockMailer,
@@ -752,11 +750,7 @@ describe('/account/login', function () {
         }
 
         var accountRoutes = makeRoutes({
-          checkPassword: function () {
-            return P.resolve(true)
-          },
           config: config,
-          customs: mockCustoms,
           db: mockDB,
           log: mockLog,
           mailer: mockMailer,
@@ -1145,9 +1139,6 @@ describe('/account/destroy', function () {
       }
     })
     var accountRoutes = makeRoutes({
-      checkPassword: function () {
-        return P.resolve(true)
-      },
       config: {
         domain: 'wibble'
       },
@@ -1159,9 +1150,8 @@ describe('/account/destroy', function () {
     return runTest(route, mockRequest, function () {
       assert.equal(mockDB.emailRecord.callCount, 1, 'db.emailRecord was called once')
       var args = mockDB.emailRecord.args[0]
-      assert.equal(args.length, 2, 'db.emailRecord was passed two arguments')
+      assert.equal(args.length, 1, 'db.emailRecord was passed two arguments')
       assert.equal(args[0], email, 'first argument was email address')
-      assert.equal(args[1], true, 'second argument was customs.check result')
 
       assert.equal(mockDB.deleteAccount.callCount, 1, 'db.deleteAccount was called once')
       args = mockDB.deleteAccount.args[0]

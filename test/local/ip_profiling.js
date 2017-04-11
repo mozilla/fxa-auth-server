@@ -90,17 +90,6 @@ var config = {
   },
   signinUnblock: {}
 }
-// We want to test what's actually written to stdout by the logger.
-const mockLog = log('ERROR', 'test', {
-  stdout: {
-    on: sinon.spy(),
-    write: sinon.spy()
-  },
-  stderr: {
-    on: sinon.spy(),
-    write: sinon.spy()
-  }
-})
 const mockRequest = mocks.mockRequest({
   payload: {
     authPW: crypto.randomBytes(32).toString('hex'),
@@ -150,7 +139,24 @@ mockDB.emailRecord = function () {
 
 describe('IP Profiling', () => {
 
-  var route, accountRoutes
+  var route, accountRoutes, mockLog
+
+  before(() => {
+    // We want to test what's actually written to stdout by the logger.
+    mockLog = log({
+      name: 'test',
+      level: 'ERROR',
+      uncaught: 'ignore',
+      stdout: {
+        on: sinon.spy(),
+        write: sinon.spy()
+      },
+      stderr: {
+        on: sinon.spy(),
+        write: sinon.spy()
+      }
+    })
+  })
 
   beforeEach(() => {
     accountRoutes = makeRoutes({

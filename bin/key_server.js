@@ -62,14 +62,11 @@ function run(config) {
       : null
   }
 
-  var Customs = require('../lib/customs')(log, error)
-
   var Server = require('../lib/server')
   var server = null
   var senders = null
   var statsInterval = null
   var database = null
-  var customs = null
 
   function logStatInfo() {
     log.stat(server.stat())
@@ -95,7 +92,6 @@ function run(config) {
         return require('../lib/senders')(log, config, error, bounces, translator)
           .then(result => {
             senders = result
-            customs = new Customs(config.customsUrl)
             var routes = require('../lib/routes')(
               log,
               serverPublicKeys,
@@ -105,10 +101,9 @@ function run(config) {
               senders.email,
               senders.sms,
               Password,
-              config,
-              customs
+              config
             )
-            server = Server.create(log, error, config, routes, db, translator)
+            server = Server.create(log, config, Password, routes, db, translator)
             statsInterval = setInterval(logStatInfo, 15000)
 
             return new P((resolve, reject) => {
@@ -141,7 +136,6 @@ function run(config) {
             clearInterval(statsInterval)
             server.stop(
               function () {
-                customs.close()
                 try {
                   senders.email.stop()
                 } catch (e) {
