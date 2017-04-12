@@ -620,8 +620,7 @@ module.exports = config => {
         return this.doRequest(
           'GET',
           this.baseURL + '/recovery_emails',
-          token,
-          undefined
+          token
         )
       }.bind(this)
     )
@@ -663,7 +662,7 @@ module.exports = config => {
     return this.doRequest(
       'POST',
       this.baseURL + '/account/login/send_unblock_code',
-      undefined,
+      null,
       {
         email: email
       }

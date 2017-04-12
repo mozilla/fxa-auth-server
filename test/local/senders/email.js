@@ -66,13 +66,11 @@ var typesContainReportSignInLinks = [
 ]
 
 var typesContainAndroidStoreLinks = [
-  'postVerifyEmail',
-  'postVerifySecondaryEmail'
+  'postVerifyEmail'
 ]
 
 var typesContainIOSStoreLinks = [
-  'postVerifyEmail',
-  'postVerifySecondaryEmail'
+  'postVerifyEmail'
 ]
 
 var typesContainLocationData = [
@@ -466,8 +464,8 @@ describe(
             'test utm params for ' + type,
             function () {
               var syncLink = mailer._generateUTMLink(config.get('smtp').syncUrl, {}, type, 'connect-device')
-              var androidLink = config.get('smtp').androidUrl
-              var iosLink = config.get('smtp').iosUrl
+              var androidLink = mailer._generateUTMLink(config.get('smtp').androidUrl, {}, type, 'connect-android')
+              var iosLink = mailer._generateUTMLink(config.get('smtp').iosUrl, {}, type, 'connect-ios')
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, syncLink))

@@ -34,7 +34,7 @@ describe('features', () => {
     'interface is correct',
     () => {
       assert.equal(typeof features, 'object', 'object type should be exported')
-      assert.equal(Object.keys(features).length, 3, 'object should have four properties')
+      assert.equal(Object.keys(features).length, 3, 'object should have correct number of properties')
       assert.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
       assert.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
       assert.equal(typeof features.isSecondaryEmailEnabled, 'function', 'isSecondaryEmailEnabled should be function')
@@ -188,7 +188,7 @@ describe('features', () => {
       assert.equal(features.isSecondaryEmailEnabled(), true, 'should return true when everything is enabled in config')
 
       config.secondaryEmail.enabled = false
-      assert.equal(features.isSecondaryEmailEnabled(), false, 'should return false when profiling is disabled in config')
+      assert.equal(features.isSecondaryEmailEnabled(), false, 'should return false when secondary email is disabled in config')
     }
   )
 })

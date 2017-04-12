@@ -19,7 +19,7 @@ var error = require('../../../lib/error')
 var TEST_EMAIL = 'foo@gmail.com'
 var TEST_EMAIL_ADDITIONAL = 'foo2@gmail.com'
 var TEST_EMAIL_INVALID = 'example@dotless-domain'
-const MS_IN_DAY = 1000*60*60*24
+const MS_IN_DAY = 1000 * 60 * 60 * 24
 
 var makeRoutes = function (options, requireMocks) {
   options = options || {}
@@ -219,7 +219,11 @@ describe('/recovery_email/status', function () {
 })
 
 describe('/recovery_email/resend_code', () => {
-  const config = {}
+  const config = {
+    secondaryEmail: {
+      enabled: true
+    }
+  }
   const secondEmailCode = crypto.randomBytes(16)
   const mockDB = mocks.mockDB({secondEmailCode: secondEmailCode})
   const mockLog = mocks.mockLog()
@@ -392,7 +396,11 @@ describe('/recovery_email/verify_code', function () {
     checkPassword: function () {
       return P.resolve(true)
     },
-    config: {},
+    config: {
+      secondaryEmail: {
+        enabled: true
+      }
+    },
     customs: mockCustoms,
     db: mockDB,
     log: mockLog,
@@ -709,7 +717,7 @@ describe('/recovery_email', () => {
   })
 
   describe('/recovery_emails', () => {
-    it('should get all emails to account', () => {
+    it('should get all account emails', () => {
       route = getRoute(accountRoutes, '/recovery_emails')
       return runTest(route, mockRequest, (response) => {
         assert.equal(response.length, 2, 'should return two emails')
