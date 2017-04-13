@@ -328,7 +328,9 @@ module.exports = config => {
       {
         uid: uid,
         code: code,
-        service: options.service || undefined
+        service: options.service || undefined,
+        type: options.type || undefined,
+        verifiedEmail: options.verifiedEmail || undefined,
       },
       {
         'accept-language': options.lang

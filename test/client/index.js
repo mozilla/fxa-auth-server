@@ -212,6 +212,14 @@ module.exports = config => {
     return p
   }
 
+  Client.prototype.verifySecondaryEmail = function (code, secondaryEmail) {
+    const options = {
+      type: 'secondary',
+      secondaryEmail: secondaryEmail
+    }
+    return this.api.recoveryEmailVerifyCode(this.uid, code, options)
+  }
+
   Client.prototype.verifyEmail = function (code, options) {
     return this.api.recoveryEmailVerifyCode(this.uid, code, options)
   }

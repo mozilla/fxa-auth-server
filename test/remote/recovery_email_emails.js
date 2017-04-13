@@ -205,7 +205,7 @@ describe('remote emails', function () {
             const emailCode = emailData['headers']['x-verify-code']
             assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
             assert.ok(emailCode, 'emailCode set')
-            return client.verifyEmail(emailCode)
+            return client.verifySecondaryEmail(emailCode, secondEmail)
           })
           .then((res) => {
             assert.ok(res, 'ok response')
@@ -234,7 +234,7 @@ describe('remote emails', function () {
             const emailCode = emailData['headers']['x-verify-code']
             assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
             assert.ok(emailCode, 'emailCode set')
-            return client.verifyEmail('d092f3155ec8d534a7ee7f53b68e9e8b')
+            return client.verifySecondaryEmail('d092f3155ec8d534a7ee7f53b68e9e8b', secondEmail)
           })
           .then(assert.fail)
           .catch((err) => {
@@ -266,7 +266,7 @@ describe('remote emails', function () {
             const resendEmailCode = emailData['headers']['x-verify-code']
             assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
             assert.equal(resendEmailCode, emailCode, 'emailCode matches')
-            return client.verifyEmail(emailCode)
+            return client.verifySecondaryEmail(emailCode, secondEmail)
           })
           .then((res) => {
             assert.ok(res, 'ok response')
@@ -382,7 +382,7 @@ describe('remote emails', function () {
           const emailCode = emailData['headers']['x-verify-code']
           assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
           assert.ok(emailCode, 'emailCode set')
-          return client.verifyEmail(emailCode)
+          return client.verifySecondaryEmail(emailCode, secondEmail)
         })
         .then((res) => {
           assert.ok(res, 'ok response')
@@ -503,7 +503,7 @@ describe('remote emails', function () {
           const emailCode = emailData['headers']['x-verify-code']
           assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
           assert.ok(emailCode, 'emailCode set')
-          return client.verifyEmail(emailCode)
+          return client.verifySecondaryEmail(emailCode, secondEmail)
         })
         .then((res) => {
           assert.ok(res, 'ok response')
@@ -606,7 +606,7 @@ describe('remote emails', function () {
             return server.mailbox.waitForCode(secondEmail)
           })
           .then((code) => {
-            return client.verifyEmail(code)
+            return client.verifySecondaryEmail(code, secondEmail)
               .then(() => {
                 // Clear add secondary email notification
                 return server.mailbox.waitForEmail(email)

@@ -556,6 +556,8 @@ describe('/recovery_email/verify_code', function () {
     it('secondary email verification', function () {
       dbData.emailCode = crypto.randomBytes(16).toString('hex')
       mockRequest.payload.code = dbData.secondEmailCode.toString('hex')
+      mockRequest.payload.type = 'secondary'
+      mockRequest.payload.verifiedEmail = dbData.secondEmail
 
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyEmail.callCount, 1, 'call db.verifyEmail')
