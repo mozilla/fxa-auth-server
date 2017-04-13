@@ -874,6 +874,9 @@ ___Parameters___
 
 * uid - account identifier
 * code - the verification code (recovery email or token verification id)
+* service - the service issuing request
+* reminder - (optional) the reminder email associated with code
+* type - (optional) the type of code being verified
 
 ```sh
 curl -v \
