@@ -304,7 +304,7 @@ var conf = convict({
         },
         max: {
           doc: 'Maximum number of soft bounces before blocking emails',
-          default: 0,
+          default: 10,
           env: 'BOUNCES_SOFT_MAX'
         }
       }
