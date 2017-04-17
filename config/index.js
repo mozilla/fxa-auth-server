@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-require('envc')()
-
 var fs = require('fs')
 var path = require('path')
 var url = require('url')
@@ -298,7 +296,7 @@ var conf = convict({
       soft: {
         duration: {
           doc: 'Time until a soft bounce is no longer counted',
-          default: '5 mins',
+          default: '5 minutes',
           format: 'duration',
           env: 'BOUNCES_SOFT_DURATION'
         },
@@ -308,6 +306,19 @@ var conf = convict({
           env: 'BOUNCES_SOFT_MAX'
         }
       }
+    }
+  },
+  mailerServer: {
+    host: {
+      default: '127.0.0.1',
+      doc: 'Host for mailer_server.js',
+      env: 'MAILER_LISTEN_IP_ADDRESS',
+      format: 'ipaddress'
+    },
+    port: {
+      default: 10136,
+      doc: 'Port for mailer_server.js',
+      env: 'MAILER_LISTEN_PORT'
     }
   },
   maxEventLoopDelay: {
@@ -737,6 +748,14 @@ var conf = convict({
       format: Number,
       env: 'SMS_THROTTLE_WAIT_TIME'
     }
+  },
+  secondaryEmail: {
+    enabled: {
+      doc: 'Indicates whether secondary email APIs are enabled',
+      default: false,
+      format: Boolean,
+      env: 'SECONDARY_EMAIL_ENABLED'
+    }
   }
 })
 
@@ -744,7 +763,9 @@ var conf = convict({
 // files to process, which will be overlayed in order, in the CONFIG_FILES
 // environment variable.
 
-var files = (process.env.CONFIG_FILES || '').split(',').filter(fs.existsSync)
+var envConfig = path.join(__dirname, conf.get('env') + '.json')
+envConfig = envConfig + ',' + (process.env.CONFIG_FILES || '')
+var files = envConfig.split(',').filter(fs.existsSync)
 conf.loadFile(files)
 conf.validate({ strict: true })
 
@@ -752,6 +773,7 @@ conf.validate({ strict: true })
 conf.set('domain', url.parse(conf.get('publicUrl')).host)
 
 // derive fxa-auth-mailer configuration from our content-server url
+conf.set('smtp.accountSettingsUrl', conf.get('contentServer.url') + '/settings')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/verify_email')
 conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/complete_reset_password')
 conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')
