@@ -3,10 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var restify = require('restify')
-var config = require('../mailer/config')
+var config = require('../config')
 
 var log = require('../lib/senders/log')('server')
-var mailConfig = config.get('mail')
+var mailConfig = config.get('smtp')
+var mailerServerConfig = config.get('mailerServer')
 
 var packageJson = require('../package.json')
 var P = require('bluebird')
@@ -21,7 +22,7 @@ var dbConnect = require('../lib/senders/db_connect')()
 
 P.all(
   [
-    require('../lib/senders/translator')(config.get('locales'), config.get('defaultLanguage')),
+    require('../lib/senders/translator')(config.get('i18n.supportedLanguages'), config.get('i18n.defaultLanguage')),
     require('../lib/senders/templates')()
   ]
 )
@@ -30,6 +31,7 @@ P.all(
     var mailer = new Mailer(translator, templates, mailConfig)
     log.info('config', config.getProperties())
     log.info('mailConfig', mailConfig)
+    log.info('mailerServerConfig', mailerServerConfig)
     log.info('templates', Object.keys(templates))
 
     dbConnect()
@@ -81,10 +83,10 @@ P.all(
     )
 
     api.listen(
-      config.get('port'),
-      config.get('host'),
+      mailerServerConfig.port,
+      mailerServerConfig.host,
       function () {
-        log.info('listening', { port: config.get('port'), host: config.get('host') })
+        log.info('listening', { port: mailerServerConfig.port, host: mailerServerConfig.host })
       }
     )
   }

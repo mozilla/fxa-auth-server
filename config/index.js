@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-require('envc')()
-
 var fs = require('fs')
 var path = require('path')
 var url = require('url')
@@ -32,6 +30,10 @@ var conf = convict({
     }
   },
   log: {
+    app: {
+      default: 'fxa-auth-server',
+      env: 'LOG_APP_NAME'
+    },
     level: {
       default: 'info',
       env: 'LOG_LEVEL'
@@ -97,6 +99,18 @@ var conf = convict({
     backend: {
       default: 'httpdb',
       env: 'DB_BACKEND'
+    },
+    connectionRetry: {
+      default: '10 seconds',
+      env: 'DB_CONNECTION_RETRY',
+      doc: 'Time in milliseconds to retry a database connection attempt',
+      format: 'duration'
+    },
+    connectionTimeout: {
+      default: '5 minutes',
+      env: 'DB_CONNECTION_TIMEOUT',
+      doc: 'Timeout in milliseconds after which the mailer will stop trying to connect to the database',
+      format: 'duration'
     }
   },
   httpdb: {
@@ -282,7 +296,7 @@ var conf = convict({
       soft: {
         duration: {
           doc: 'Time until a soft bounce is no longer counted',
-          default: '5 mins',
+          default: '5 minutes',
           format: 'duration',
           env: 'BOUNCES_SOFT_DURATION'
         },
@@ -292,6 +306,19 @@ var conf = convict({
           env: 'BOUNCES_SOFT_MAX'
         }
       }
+    }
+  },
+  mailerServer: {
+    host: {
+      default: '127.0.0.1',
+      doc: 'Host for mailer_server.js',
+      env: 'MAILER_LISTEN_IP_ADDRESS',
+      format: 'ipaddress'
+    },
+    port: {
+      default: 10136,
+      doc: 'Port for mailer_server.js',
+      env: 'MAILER_LISTEN_PORT'
     }
   },
   maxEventLoopDelay: {
@@ -392,6 +419,42 @@ var conf = convict({
       doc: 'Rate of users getting the verification reminder. If "0" then the feature is disabled. If "1" all users get it.',
       default: 0,
       env: 'VERIFICATION_REMINDER_RATE'
+    },
+    reminderTimeFirst: {
+      doc: 'Milliseconds since account creation after which the first reminder is sent',
+      default: '48 hours',
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_FIRST'
+    },
+    reminderTimeSecond: {
+      doc: 'Milliseconds since account creation after which the second reminder is sent',
+      default: '168 hours',
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_SECOND'
+    },
+    reminderTimeFirstOutdated: {
+      doc: 'Milliseconds since account creation after which the reminder should not be sent',
+      default: '167 hours',
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_FIRST_OUTDATED'
+    },
+    reminderTimeSecondOutdated: {
+      doc: 'Milliseconds since account creation after which the reminder should not be sent',
+      default: '300 hours',
+      format: 'duration',
+      env: 'VERIFICATION_REMINDER_TIME_SECOND_OUTDATED'
+    },
+    pollFetch: {
+      doc: 'Number of reminder record to fetch when polling.',
+      format: Number,
+      default: 20,
+      env: 'VERIFICATION_REMINDER_POLL_FETCH'
+    },
+    pollTime: {
+      doc: 'Poll duration in milliseconds. 0 is disabled.',
+      format: 'duration',
+      default: '30 minutes',
+      env: 'VERIFICATION_REMINDER_POLL_TIME'
     }
   },
   useHttps: {
@@ -685,6 +748,14 @@ var conf = convict({
       format: Number,
       env: 'SMS_THROTTLE_WAIT_TIME'
     }
+  },
+  secondaryEmail: {
+    enabled: {
+      doc: 'Indicates whether secondary email APIs are enabled',
+      default: false,
+      format: Boolean,
+      env: 'SECONDARY_EMAIL_ENABLED'
+    }
   }
 })
 
@@ -692,7 +763,9 @@ var conf = convict({
 // files to process, which will be overlayed in order, in the CONFIG_FILES
 // environment variable.
 
-var files = (process.env.CONFIG_FILES || '').split(',').filter(fs.existsSync)
+var envConfig = path.join(__dirname, conf.get('env') + '.json')
+envConfig = envConfig + ',' + (process.env.CONFIG_FILES || '')
+var files = envConfig.split(',').filter(fs.existsSync)
 conf.loadFile(files)
 conf.validate({ strict: true })
 
@@ -700,6 +773,7 @@ conf.validate({ strict: true })
 conf.set('domain', url.parse(conf.get('publicUrl')).host)
 
 // derive fxa-auth-mailer configuration from our content-server url
+conf.set('smtp.accountSettingsUrl', conf.get('contentServer.url') + '/settings')
 conf.set('smtp.verificationUrl', conf.get('contentServer.url') + '/verify_email')
 conf.set('smtp.passwordResetUrl', conf.get('contentServer.url') + '/complete_reset_password')
 conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/reset_password')
