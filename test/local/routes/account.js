@@ -618,7 +618,6 @@ describe('/account/login', function () {
         assert.equal(response.verified, false, 'response indicates account is unverified')
         assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         assert.equal(response.verificationReason, 'signup', 'verificationReason is signup')
-        assert.equal(response.emailSent, true, 'email sent')
       })
     })
   })
@@ -725,7 +724,6 @@ describe('/account/login', function () {
         assert.ok(! response.verified, 'response indicates account is not verified')
         assert.equal(response.verificationMethod, 'email', 'verificationMethod is email')
         assert.equal(response.verificationReason, 'signup', 'verificationReason is signup')
-        assert.equal(response.emailSent, true, 'response indicates an email was sent')
       })
     })
 
