@@ -11,6 +11,10 @@ const Client = require('../client')()
 let config, server, client, email
 const password = 'allyourbasearebelongtous'
 
+function includes(haystack, needle) {
+  return (haystack.indexOf(needle) > -1)
+}
+
 describe('remote emails', function () {
   this.timeout(30000)
 
@@ -203,7 +207,13 @@ describe('remote emails', function () {
           .then((emailData) => {
             const templateName = emailData['headers']['x-template-name']
             const emailCode = emailData['headers']['x-verify-code']
+            const verifyLink = emailData['headers']['x-link']
             assert.equal(templateName, 'verifySecondaryEmail', 'email template name set')
+
+            assert.equal(includes(verifyLink, 'type=secondary'), true, 'contains type=secondary')
+            const secondaryEmailParam = 'secondary_email_verified=' + encodeURIComponent(secondEmail)
+            assert.equal(includes(verifyLink, secondaryEmailParam), true, 'contains correct secondary_email_verified')
+
             assert.ok(emailCode, 'emailCode set')
             return client.verifySecondaryEmail(emailCode, secondEmail)
           })

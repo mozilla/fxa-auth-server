@@ -198,6 +198,13 @@ var conf = convict({
       env: 'VERIFY_URL',
       arg: 'verify-url'
     },
+    verifySecondaryEmailUrl: {
+      doc: 'Deprecated. uses contentServer.url',
+      format: String,
+      default: undefined,
+      env: 'VERIFY_SECONDARY_EMAIL_URL',
+      arg: 'verify-secondary-email-url'
+    },
     verifyLoginUrl: {
       doc: 'Deprecated. uses contentServer.url',
       format: String,
@@ -780,6 +787,7 @@ conf.set('smtp.initiatePasswordResetUrl', conf.get('contentServer.url') + '/rese
 conf.set('smtp.initiatePasswordChangeUrl', conf.get('contentServer.url') + '/settings/change_password')
 conf.set('smtp.verifyLoginUrl', conf.get('contentServer.url') + '/complete_signin')
 conf.set('smtp.reportSignInUrl', conf.get('contentServer.url') + '/report_signin')
+conf.set('smtp.verifySecondaryEmailUrl', conf.get('contentServer.url') + '/verify_secondary_email')
 
 conf.set('isProduction', conf.get('env') === 'prod')
 
