@@ -41,7 +41,7 @@ describe('remote sms (live nexmo)', function() {
   })
 })
 
-describe('remote sms (mocked nexmo)', function(){
+describe('remote sms (mocked nexmo)', function() {
   this.timeout(10000)
   let server
 
