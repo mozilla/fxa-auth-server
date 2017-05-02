@@ -10,12 +10,12 @@
     * [Responses from intermediary servers](#responses-from-intermediary-servers)
   * [Validation](#validation)
 * [API endpoints](#api-endpoints)
-{{#modules}}
+{{#each modules}}
   * [{{moduleName}}](#{{slug}})
-{{#routes}}
-    * [{{method}} {{{path}}}{{#authentication}} {{emojis}} {{token}}{{/authentication}}](#{{slug}})
-{{/routes}}
-{{/modules}}
+{{#each routes}}
+    * [{{method}} {{{path}}}{{#with authentication}} {{emojis}} {{token}}{{/with}}](#{{slug}})
+{{/each}}
+{{/each}}
 * [Example flows](#example-flows)
 * [Back-off protocol](#back-off-protocol)
 * [Reference client](#reference-client)
@@ -43,17 +43,17 @@
 The currently-defined values
 for `code` and `errno` are:
 
-{{#errors}}
+{{#each errors}}
 * `code: {{code}}, errno: {{errno}}`:
   {{definition}}
-{{/errors}}
+{{/each}}
 
 The following errors
 include additional response properties:
 
-{{#additionalErrorParams}}
-* `errno: {{errno}}`{{#hasParams}}: {{params}}{{/hasParams}}
-{{/additionalErrorParams}}
+{{#each additionalErrorParams}}
+* `errno: {{errno}}`{{#if hasParams}}: {{params}}{{/if}}
+{{/each}}
 
 #### Responses from intermediary servers
 <!--begin-responses-from-intermediary-servers-->
@@ -71,82 +71,82 @@ those common validations are defined here.
 
 #### lib/routes/validators
 
-{{#validators}}
+{{#each validators}}
 * `{{key}}`: `{{{value}}}`
-{{/validators}}
+{{/each}}
 
 #### lib/metrics/context
 
-{{#metricsContext}}
+{{#each metricsContext}}
 * `{{key}}`: {{{value}}}
-{{/metricsContext}}
+{{/each}}
 
 ## API endpoints
-{{#modules}}
+{{#each modules}}
 
 ### {{moduleName}}
-{{#routes}}
+{{#each routes}}
 
 #### {{method}} {{{path}}}
-{{#authentication}}
+{{#with authentication}}
 
 {{emojis}} {{summary}}
-{{/authentication}}
+{{/with}}
 <!--begin-route-{{slug}}-->
 {{{routeDescription}}}
 <!--end-route-{{slug}}-->
 
-{{#hasQueryParameters}}
+{{#if hasQueryParameters}}
 ##### Query parameters
 
-{{/hasQueryParameters}}
-{{#queryParameters}}
+{{/if}}
+{{#each queryParameters}}
 * `{{paramName}}`: {{{validation}}}
 
-  <!--begin-query-param-{{slug}}-{{paramName}}-->
+  <!--begin-query-param-{{../slug}}-{{paramName}}-->
   {{{paramDescription}}}
-  <!--end-query-param-{{slug}}-{{paramName}}-->
+  <!--end-query-param-{{../slug}}-{{paramName}}-->
 
-{{/queryParameters}}
-{{#hasRequestBody}}
+{{/each}}
+{{#if hasRequestBody}}
 ##### Request body
 
-{{/hasRequestBody}}
-{{#requestBody}}
+{{/if}}
+{{#each requestBody}}
 * `{{paramName}}`: {{{validation}}}
 
-  <!--begin-request-body-{{slug}}-{{paramName}}-->
+  <!--begin-request-body-{{../slug}}-{{paramName}}-->
   {{{paramDescription}}}
-  <!--end-request-body-{{slug}}-{{paramName}}-->
+  <!--end-request-body-{{../slug}}-{{paramName}}-->
 
-{{/requestBody}}
-{{#hasResponseBody}}
+{{/each}}
+{{#if hasResponseBody}}
 ##### Response body
 
-{{/hasResponseBody}}
-{{#responseBody}}
+{{/if}}
+{{#each responseBody}}
 * `{{paramName}}`: {{{validation}}}
 
-  <!--begin-response-body-{{slug}}-{{paramName}}-->
+  <!--begin-response-body-{{../slug}}-{{paramName}}-->
   {{{paramDescription}}}
-  <!--end-response-body-{{slug}}-{{paramName}}-->
+  <!--end-response-body-{{../slug}}-{{paramName}}-->
 
-{{/responseBody}}
-{{#hasErrorResponses}}
+{{/each}}
+{{#if hasErrorResponses}}
 ##### Error responses
 
 Failing requests may be caused
 by the following errors
 (this is not an exhaustive list):
 
-{{/hasErrorResponses}}
-{{#errorResponses}}
+{{/if}}
+{{#each errorResponses}}
 * `code: {{code}}, errno: {{errno}}`:
   {{definition}}
 
-{{/errorResponses}}
-{{/routes}}
-{{/modules}}
+{{/each}}
+{{/each}}
+{{/each}}
 
 ## Back-off protocol
 <!--begin-back-off-protocol-->

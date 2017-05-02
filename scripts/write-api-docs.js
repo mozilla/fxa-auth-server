@@ -13,8 +13,11 @@
 const acorn = require('acorn')
 const P = require('../lib/promise')
 const fs = P.promisifyAll(require('fs'), { suffix: 'P' })
-const mustache = require('mustache')
 const path = require('path')
+const handlebars = require('handlebars')
+const render = handlebars.compile(
+  fs.readFileSync(path.resolve(__dirname, 'api-docs.handlebars'), { encoding: 'utf8' })
+)
 
 // In the API docs, any text inside <!--begin-xxx--> / <!--end-xxx-> delimiters
 // will be propagated to the same place each time the docs are regenerated.
@@ -38,7 +41,6 @@ const ERROR_PROPERTY_TYPES = new Set([ 'Literal', 'MemberExpression', 'BinaryExp
 const SESSION_TOKEN_STRATEGY = /^sessionToken/
 const KEY_FETCH_TOKEN_STRATEGY = /^keyFetchToken/
 const NOT_ERRORS = new Set([ 'toString', 'header', 'backtrace', 'translate' ])
-const TEMPLATE = fs.readFileSync(path.resolve(__dirname, 'api-docs.mustache'), { encoding: 'utf8' })
 
 const args = parseArgs()
 
@@ -936,6 +938,6 @@ function marshallErrorProperty (node, name, errnoMap) {
 }
 
 function writeOutput (data, outputPath) {
-  fs.writeFileSync(outputPath, mustache.render(TEMPLATE, data), { mode: 0o644 })
+  fs.writeFileSync(outputPath, render(data), { mode: 0o644 })
 }
 

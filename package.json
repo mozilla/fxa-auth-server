@@ -99,7 +99,6 @@
     "mailparser": "0.6.1",
     "mkdirp": "0.5.1",
     "mocha": "3.1.2",
-    "mustache": "2.3.0",
     "nock": "8.0.0",
     "npmshrink": "1.0.1",
     "nyc": "8.4.0",
