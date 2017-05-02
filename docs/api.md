@@ -1,4 +1,9 @@
 # Firefox Accounts authentication server API
+
+This document is automatically generated.
+If you are editing it,
+read [this section](#this-document) first.
+
 <!--begin-abstract-->
 This document provides protocol-level details
 of the Firefox Accounts auth server API.
