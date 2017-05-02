@@ -8,8 +8,10 @@ read [this section](#this-document) first.
 This document provides protocol-level details
 of the Firefox Accounts auth server API.
 For a prose description of the client/server protocol
-and details on how each parameter is derived
+and details on how each parameter is derived,
 see the [API design document](https://wiki.mozilla.org/Identity/AttachedServices/KeyServerProtocol).
+For a reference client implementation,
+see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
 <!--end-abstract-->
 * [Overview](#overview)
   * [URL structure](#url-structure)
@@ -64,7 +66,6 @@ see the [API design document](https://wiki.mozilla.org/Identity/AttachedServices
     * [GET /complete_reset_password](#get-complete_reset_password)
 * [Example flows](#example-flows)
 * [Back-off protocol](#back-off-protocol)
-* [Reference client](#reference-client)
 * [This document](#this-document)
 
 ## Overview
@@ -2216,11 +2217,6 @@ Content-Type: application/json
 }
 ```
 <!--end-back-off-protocol-->
-
-## Reference client
-<!--begin-reference-client-->
-https://github.com/mozilla/fxa-js-client
-<!--end-reference-client-->
 
 ## This document
 <!--begin-this-document-->
