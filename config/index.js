@@ -753,7 +753,7 @@ var conf = convict({
     enabledEmailAddresses: {
       doc: 'Only enable for email addresses matching this regex.',
       format: RegExp,
-      default: /.+@mozilla\.com$/,
+      default: /.+@mozilla\.com$|.+@restmail\.net$|.+@softvision\..{2,3}$/,
       env: 'SECONDARY_EMAIL_ENABLE_REGEX'
     },
     minUnverifiedAccountTime: {
