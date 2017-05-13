@@ -680,7 +680,7 @@ var conf = convict({
     allowedServerRegex: {
       doc: 'RegExp that validates the URI format of the Push Server',
       format: RegExp,
-      default: /^https:\/\/[a-zA-Z0-9._-]+\.services\.mozilla\.com(\/.*)?$/
+      default: /^https:\/\/[a-zA-Z0-9._-]+(\.services\.mozilla\.com|autopush\.dev\.mozaws\.net|autopush\.stage\.mozaws\.net)(\/.*)?$/
     }
   },
   sms: {
@@ -753,7 +753,7 @@ var conf = convict({
     enabledEmailAddresses: {
       doc: 'Only enable for email addresses matching this regex.',
       format: RegExp,
-      default: /.+@mozilla\.com$/,
+      default: /.+@mozilla\.com$|.+@restmail\.net$|.+@softvisioninc\.eu$|.+@softvision\.(com|ro)$/,
       env: 'SECONDARY_EMAIL_ENABLE_REGEX'
     },
     minUnverifiedAccountTime: {
