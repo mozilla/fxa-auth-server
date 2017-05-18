@@ -44,18 +44,18 @@ const NOT_ERRORS = new Set([ 'toString', 'header', 'backtrace', 'translate' ])
 
 const args = parseArgs()
 
-Promise.all([
+P.all([
   parseDocs(args.path),
   parseErrors()
 ])
-.then(([ docs, errors ]) => Promise.all([
+.spread((docs, errors) => P.all([
   parseRoutes().then(routes => marshallRouteData(docs, errors.definitionsMap, routes)),
   parseValidators(),
   parseMetricsContext(),
   docs,
   errors
 ]))
-.then(([ modules, validators, metricsContext, docs, errors ]) => writeOutput(Object.assign({
+.spread((modules, validators, metricsContext, docs, errors) => writeOutput(Object.assign({
   modules,
   validators,
   metricsContext,
@@ -133,7 +133,7 @@ function fail (message, filePath, lineNumber) {
 function parseRoutes () {
   return fs.readdirP(ROUTES_DIR)
     .then(fileNames => {
-      return Promise.all(
+      return P.all(
         fileNames
           .filter(fileName => fileName.endsWith('.js') && ! IGNORE.has(fileName))
           .map(fileName => path.join(ROUTES_DIR, fileName))
@@ -230,7 +230,9 @@ function findVariables (node) {
   }, { array: true })
 }
 
-function find (node, criteria, options = {}) {
+function find (node, criteria, options) {
+  options = options || {}
+
   if (match(node, criteria)) {
     return [ node ]
   }
