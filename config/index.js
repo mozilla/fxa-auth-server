@@ -762,6 +762,40 @@ var conf = convict({
       format: 'duration',
       env: 'SECONDARY_EMAIL_MIN_UNVERIFIED_ACCOUNT_TIME'
     }
+  },
+  delegated_recovery: {
+    private_key_path: {
+      default: path.resolve(__dirname, '..', 'prime256v1-key.pem'),
+      env: 'RECOVERY_PRIVATE_KEY_PATH'
+    },
+    public_key_path: {
+      default: path.resolve(__dirname, '..', 'prime256v1-pub.pem'),
+      env: 'RECOVERY_PUBLIC_KEY_PATH'
+    },
+    issue_origin: {
+      default: 'example.com',
+      env: 'ISSUE_ORIGIN'
+    },
+    save_token_return: {
+      default: '/v1/recovery_save_token',
+      env: 'SAVE_TOKEN_RETURN'
+    },
+    recover_account_return: {
+      default: '/v1/recover_account_return',
+      env: 'RECOVERY_ACCOUNT_RETURN'
+    },
+    privacy_policy: {
+      default: '/v1/legal/privacy',
+      env: 'RECOVERY_PRIVACY_POLICY'
+    },
+    icon_152x: {
+      default: '/v1/images/firefox@2x.png',
+      env: 'RECOVERY_ICON'
+    },
+    max_age: {
+      default: '0',
+      env: 'RECOVERY_MAX_AGE'
+    }
   }
 })
 
