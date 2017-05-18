@@ -62,6 +62,9 @@ P.all([
   errors: errors.definitions,
   additionalErrorParams: errors.additionalErrorParams
 }, docs), args.path))
+.then(() => {
+  console.log(`API docs updated at ${args.path}`)
+})
 .catch(error => {
   console.error(error.stack)
   process.exit(1)
