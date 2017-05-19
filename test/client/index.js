@@ -474,5 +474,9 @@ module.exports = config => {
     return this.api.smsStatus(this.sessionToken, country, clientIpAddress)
   }
 
+  Client.prototype.consumeSigninCode = function (code, metricsContext) {
+    return this.api.consumeSigninCode(code, metricsContext)
+  }
+
   return Client
 }
