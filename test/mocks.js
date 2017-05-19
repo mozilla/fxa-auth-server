@@ -32,6 +32,7 @@ const DB_METHOD_NAMES = [
   'createKeyFetchToken',
   'createPasswordForgotToken',
   'createSessionToken',
+  'createSigninCode',
   'createUnblockCode',
   'createVerificationReminder',
   'deleteAccount',
@@ -212,6 +213,9 @@ function mockDB (data, errors) {
         uaDeviceType: data.uaDeviceType,
         uid: data.uid
       })
+    }),
+    createSigninCode: sinon.spy(() => {
+      return P.resolve(data.signinCode || [])
     }),
     devices: sinon.spy(() => {
       return P.resolve(data.devices || [])

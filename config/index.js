@@ -731,8 +731,8 @@ var conf = convict({
       env: 'SMS_SENDER_IDS'
     },
     installFirefoxLink: {
-      doc: 'Link for the installFirefox SMS template',
-      default: 'https://mzl.la/firefoxapp',
+      doc: 'Base URI for the installFirefox SMS template',
+      default: 'https://accounts.firefox.com/m',
       format: 'url',
       env: 'SMS_INSTALL_FIREFOX_LINK'
     },
@@ -762,6 +762,12 @@ var conf = convict({
       format: 'duration',
       env: 'SECONDARY_EMAIL_MIN_UNVERIFIED_ACCOUNT_TIME'
     }
+  },
+  signinCodeSize: {
+    doc: 'signinCode size in bytes',
+    default: 6,
+    format: 'nat',
+    env: 'SIGNIN_CODE_SIZE'
   }
 })
 

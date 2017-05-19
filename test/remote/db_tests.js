@@ -23,7 +23,7 @@ const Token = require('../../lib/tokens')(log, {
   lastAccessTimeUpdates: lastAccessTimeUpdates
 })
 const DB = require('../../lib/db')(
-  { lastAccessTimeUpdates: lastAccessTimeUpdates },
+  { lastAccessTimeUpdates, signinCodeSize: config.signinCodeSize },
   log,
   Token,
   UnblockCode
@@ -660,6 +660,14 @@ describe('remote db', function() {
         })
     }
   )
+
+  it('signinCodes', () => {
+    return db.createSigninCode(ACCOUNT.uid)
+      .then(code => {
+        assert.ok(Buffer.isBuffer(code))
+        assert.equal(code.length, config.signinCodeSize)
+      })
+  })
 
   after(() => {
     return TestServer.stop(dbServer)

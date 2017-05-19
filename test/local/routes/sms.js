@@ -17,8 +17,9 @@ const sms = {}
 function makeRoutes (options, dependencies) {
   options = options || {}
   const log = options.log || mocks.mockLog()
+  const db = options.db || mocks.mockDB()
   return proxyquire('../../../lib/routes/sms', dependencies || {})(
-    log, options.config, mocks.mockCustoms(), sms
+    log, db, options.config, mocks.mockCustoms(), sms
   )
 }
 
@@ -35,10 +36,12 @@ function runTest (route, request) {
 }
 
 describe('/sms', () => {
-  let log, config, routes, route, request
+  let log, signinCode, db, config, routes, route, request
 
   beforeEach(() => {
     log = mocks.spyLog()
+    signinCode = Buffer.from('++//ff0=', 'base64')
+    db = mocks.mockDB({ signinCode })
     config = {
       sms: {
         enabled: true,
@@ -50,11 +53,12 @@ describe('/sms', () => {
         isStatusGeoEnabled: true
       }
     }
-    routes = makeRoutes({ log, config })
+    routes = makeRoutes({ log, db, config })
     route = getRoute(routes, '/sms')
     request = mocks.mockRequest({
       credentials: {
-        email: 'foo@example.org'
+        email: 'foo@example.org',
+        uid: 'bar'
       },
       log: log,
       payload: {
@@ -92,14 +96,22 @@ describe('/sms', () => {
         assert.equal(args.length, 0)
       })
 
+      it('called db.createSigninCode correctly', () => {
+        assert.equal(db.createSigninCode.callCount, 1)
+        const args = db.createSigninCode.args[0]
+        assert.equal(args.length, 1)
+        assert.equal(args[0], 'bar')
+      })
+
       it('called sms.send correctly', () => {
         assert.equal(sms.send.callCount, 1)
         const args = sms.send.args[0]
-        assert.equal(args.length, 4)
+        assert.equal(args.length, 5)
         assert.equal(args[0], '+18885083401')
         assert.equal(args[1], '15036789977')
         assert.equal(args[2], 'installFirefox')
         assert.equal(args[3], 'en-US')
+        assert.equal(args[4], signinCode)
       })
 
       it('called log.flowEvent correctly', () => {
@@ -131,6 +143,10 @@ describe('/sms', () => {
         assert.equal(request.validateMetricsContext.callCount, 1)
       })
 
+      it('called db.createSigninCode once', () => {
+        assert.equal(db.createSigninCode.callCount, 1)
+      })
+
       it('called sms.send correctly', () => {
         assert.equal(sms.send.callCount, 1)
         const args = sms.send.args[0]
@@ -156,6 +172,10 @@ describe('/sms', () => {
 
       it('called request.validateMetricsContext once', () => {
         assert.equal(request.validateMetricsContext.callCount, 1)
+      })
+
+      it('called db.createSigninCode once', () => {
+        assert.equal(db.createSigninCode.callCount, 1)
       })
 
       it('called sms.send correctly', () => {
@@ -190,6 +210,10 @@ describe('/sms', () => {
         assert.equal(request.validateMetricsContext.callCount, 1)
       })
 
+      it('did not call db.createSigninCode', () => {
+        assert.equal(db.createSigninCode.callCount, 0)
+      })
+
       it('did not call sms.send', () => {
         assert.equal(sms.send.callCount, 0)
       })
@@ -222,6 +246,10 @@ describe('/sms', () => {
 
       it('called request.validateMetricsContext once', () => {
         assert.equal(request.validateMetricsContext.callCount, 1)
+      })
+
+      it('did not call db.createSigninCode', () => {
+        assert.equal(db.createSigninCode.callCount, 0)
       })
 
       it('did not call sms.send', () => {
@@ -260,6 +288,10 @@ describe('/sms', () => {
 
     it('called request.validateMetricsContext once', () => {
       assert.equal(request.validateMetricsContext.callCount, 1)
+    })
+
+    it('called db.createSigninCode once', () => {
+      assert.equal(db.createSigninCode.callCount, 1)
     })
 
     it('called sms.send once', () => {
