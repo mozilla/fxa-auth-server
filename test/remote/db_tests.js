@@ -675,10 +675,14 @@ describe('remote db', function() {
 
         // Stub crypto.randomBytes to return a duplicate code
         sinon.stub(crypto, 'randomBytes', (size, callback) => {
-          callback(null, previousCode)
-
           // Reinstate the real crypto.randomBytes after we've returned a duplicate
           crypto.randomBytes.restore()
+
+          if (! callback) {
+            return previousCode
+          }
+
+          callback(null, previousCode)
         })
 
         // Create a signinCode with crypto.randomBytes rigged to return a duplicate
