@@ -736,7 +736,7 @@ var conf = convict({
       format: 'url',
       env: 'SMS_INSTALL_FIREFOX_LINK'
     },
-    signinCodesBaseUri: {
+    installFirefoxWithSigninCodeBaseUri: {
       doc: 'Base URI for the SMS template when the signinCodes feature is active',
       default: 'https://accounts.firefox.com/m',
       format: 'url',

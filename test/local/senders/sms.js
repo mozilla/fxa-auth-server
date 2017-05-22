@@ -66,7 +66,7 @@ describe('lib/senders/sms:', () => {
         apiSecret: 'bar',
         balanceThreshold: 1,
         installFirefoxLink: 'https://baz/qux',
-        signinCodesBaseUri: 'https://wibble',
+        installFirefoxWithSigninCodeBaseUri: 'https://wibble',
         useMock: false
       })
     })
