@@ -731,10 +731,16 @@ var conf = convict({
       env: 'SMS_SENDER_IDS'
     },
     installFirefoxLink: {
-      doc: 'Base URI for the installFirefox SMS template',
-      default: 'https://accounts.firefox.com/m',
+      doc: 'Link for the installFirefox SMS template',
+      default: 'https://mzl.la/firefoxapp',
       format: 'url',
       env: 'SMS_INSTALL_FIREFOX_LINK'
+    },
+    signinCodesBaseUri: {
+      doc: 'Base URI for the SMS template when the signinCodes feature is active',
+      default: 'https://accounts.firefox.com/m',
+      format: 'url',
+      env: 'SMS_SIGNIN_CODES_BASE_URI'
     },
     throttleWaitTime: {
       doc: 'The number of seconds to wait if throttled by the SMS service provider',

@@ -35,7 +35,7 @@ function runTest (route, request) {
   })
 }
 
-describe('/sms', () => {
+describe('/sms with the signinCodes feature included in the payload', () => {
   let log, signinCode, db, config, routes, route, request
 
   beforeEach(() => {
@@ -60,6 +60,7 @@ describe('/sms', () => {
         email: 'foo@example.org',
         uid: 'bar'
       },
+      features: [ 'signinCodes' ],
       log: log,
       payload: {
         messageId: 1,
@@ -309,6 +310,67 @@ describe('/sms', () => {
       assert.equal(err.output.payload.reason, 'wibble')
       assert.equal(err.output.payload.reasonCode, 7)
     })
+  })
+})
+
+describe('/sms without the signinCodes feature included in the payload', () => {
+  let log, signinCode, db, config, routes, route, request
+
+  beforeEach(() => {
+    log = mocks.spyLog()
+    signinCode = Buffer.from('++//ff0=', 'base64')
+    db = mocks.mockDB({ signinCode })
+    config = {
+      sms: {
+        enabled: true,
+        senderIds: {
+          CA: '16474909977',
+          GB: 'Firefox',
+          US: '15036789977'
+        },
+        isStatusGeoEnabled: true
+      }
+    }
+    routes = makeRoutes({ log, db, config })
+    route = getRoute(routes, '/sms')
+    request = mocks.mockRequest({
+      credentials: {
+        email: 'foo@example.org',
+        uid: 'bar'
+      },
+      log: log,
+      payload: {
+        phoneNumber: '+18885083401',
+        messageId: 1,
+        metricsContext: {
+          flowBeginTime: Date.now(),
+          flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+        }
+      }
+    })
+    sms.send = sinon.spy(() => P.resolve())
+    return runTest(route, request)
+  })
+
+  it('called log.begin', () => {
+    assert.equal(log.begin.callCount, 1)
+  })
+
+  it('called request.validateMetricsContext', () => {
+    assert.equal(request.validateMetricsContext.callCount, 1)
+  })
+
+  it('did not call db.createSigninCode', () => {
+    assert.equal(db.createSigninCode.callCount, 0)
+  })
+
+  it('called sms.send correctly', () => {
+    assert.equal(sms.send.callCount, 1)
+    assert.equal(sms.send.args[0][4], undefined)
+  })
+
+  it('called log.flowEvent', () => {
+    assert.equal(log.flowEvent.callCount, 2)
   })
 })
 

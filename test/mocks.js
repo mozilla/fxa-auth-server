@@ -390,7 +390,8 @@ function mockRequest (data) {
     app: {
       acceptLanguage: 'en-US',
       clientAddress: data.clientAddress || '63.245.221.32',
-      locale: data.locale || 'en-US'
+      locale: data.locale || 'en-US',
+      features: new Set(data.features)
     },
     auth: {
       credentials: data.credentials

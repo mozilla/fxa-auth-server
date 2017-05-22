@@ -66,6 +66,7 @@ describe('lib/senders/sms:', () => {
         apiSecret: 'bar',
         balanceThreshold: 1,
         installFirefoxLink: 'https://baz/qux',
+        signinCodesBaseUri: 'https://wibble',
         useMock: false
       })
     })
@@ -90,15 +91,15 @@ describe('lib/senders/sms:', () => {
     assert.equal(Object.keys(sms).length, 2, 'sms has no other methods')
   })
 
-  it('sends a valid sms', () => {
-    return sms.send('+442078553000', 'Firefox', 'installFirefox', 'en', Buffer.from('++//ff0=', 'base64'))
+  it('sends a valid sms without a signinCode', () => {
+    return sms.send('+442078553000', 'Firefox', 'installFirefox', 'en')
       .then(() => {
         assert.equal(sendSms.callCount, 1, 'nexmo.message.sendSms was called once')
         const args = sendSms.args[0]
         assert.equal(args.length, 4, 'nexmo.message.sendSms was passed four arguments')
         assert.equal(args[0], 'Firefox', 'nexmo.message.sendSms was passed the correct sender id')
         assert.equal(args[1], '+442078553000', 'nexmo.message.sendSms was passed the correct phone number')
-        assert.equal(args[2], 'As requested, here is a link to install Firefox on your mobile device: https://baz/qux/--__ff0', 'nexmo.message.sendSms was passed the correct message')
+        assert.equal(args[2], 'As requested, here is a link to install Firefox on your mobile device: https://baz/qux', 'nexmo.message.sendSms was passed the correct message')
         assert.equal(typeof args[3], 'function', 'nexmo.message.sendSms was passed a callback function')
 
         assert.equal(log.trace.callCount, 1, 'log.trace was called once')
@@ -118,6 +119,20 @@ describe('lib/senders/sms:', () => {
           templateName: 'installFirefox',
           acceptLanguage: 'en'
         }, 'log.info was passed the correct data')
+
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+        assert.equal(checkBalance.callCount, 0, 'checkBalance was not called')
+      })
+  })
+
+  it('sends a valid sms with a signinCode', () => {
+    return sms.send('+442078553000', 'Firefox', 'installFirefox', 'en', Buffer.from('++//ff0=', 'base64'))
+      .then(() => {
+        assert.equal(sendSms.callCount, 1, 'nexmo.message.sendSms was called once')
+        assert.equal(sendSms.args[0][2], 'As requested, here is a link to install Firefox on your mobile device: https://wibble/--__ff0', 'nexmo.message.sendSms was passed the correct message')
+
+        assert.equal(log.trace.callCount, 1, 'log.trace was called once')
+        assert.equal(log.info.callCount, 1, 'log.info was called once')
 
         assert.equal(log.error.callCount, 0, 'log.error was not called')
         assert.equal(checkBalance.callCount, 0, 'checkBalance was not called')
