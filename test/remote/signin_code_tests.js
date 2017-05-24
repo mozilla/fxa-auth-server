@@ -11,10 +11,18 @@ const error = require('../../lib/error')
 const config = require('../../config').getProperties()
 const crypto = require('crypto')
 
-describe('remote signinCodes', () => {
+const SMS_SIGNIN_CODE = /https:\/\/accounts\.firefox\.com\/m\/([A-Za-z0-9_-]+)/
+
+describe('remote signinCodes', function () {
   let server
 
+  this.timeout(10000)
+
   before(() => {
+    // We have to send an SMS to get a valid signinCode
+    config.sms.enabled = true
+    config.sms.useMock = true
+
     return TestServer.start(config)
       .then(result => {
         server = result
@@ -22,21 +30,37 @@ describe('remote signinCodes', () => {
   })
 
   it('POST /signinCodes/consume invalid code', () => {
-    return Client.create(config.publicUrl, server.uniqueEmail(), 'wibble')
+    const client = new Client(config.publicUrl)
+    return client.consumeSigninCode(crypto.randomBytes(config.signinCodeSize), {
+      metricsContext: {
+        flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        flowBeginTime: Date.now()
+      }
+    })
+      .then(result => assert.fail('/signinCodes/consume should fail'))
+      .catch(err => {
+        assert.ok(err)
+        assert.equal(err.code, 400)
+        assert.equal(err.errno, error.ERRNO.INVALID_SIGNIN_CODE)
+        assert.equal(err.message, 'Invalid signin code')
+      })
+  })
+
+  it('POST /signinCodes/consume valid code', () => {
+    const email = server.uniqueEmail()
+    return Client.create(config.publicUrl, email, 'wibble')
       .then(client => {
-        return client.consumeSigninCode(crypto.randomBytes(config.signinCodeSize), {
-          metricsContext: {
-            flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-            flowBeginTime: Date.now()
-          }
-        })
-          .then(result => assert.fail('/signinCodes/consume should fail'))
-          .catch(err => {
-            assert.ok(err)
-            assert.equal(err.code, 400)
-            assert.equal(err.errno, error.ERRNO.INVALID_SIGNIN_CODE)
-            assert.equal(err.message, 'Invalid signin code')
+        return client.smsSend('+18885083401', 1, [ 'signinCodes' ], server.mailbox)
+          .then(result => {
+            return client.consumeSigninCode(SMS_SIGNIN_CODE.exec(result.text)[1], {
+              metricsContext: {
+                flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+                flowBeginTime: Date.now()
+              }
+            })
           })
+          .then(result => assert.deepEqual(result, { email }, '/signinCodes/consume should return the email address'))
+          .catch(err => assert.fail('/signinCodes/consume should succeed'))
       })
   })
 
