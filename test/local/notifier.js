@@ -38,20 +38,49 @@ describe('notifier', () => {
       cb(null, event)
     })
 
-    notifier.send({
-      event: {
-        stuff: true
-      }
-    })
+    const evt = {
+      event: 'verified',
+      data: { 'asdf': 42 }
+    }
+
+    notifier.send(evt)
 
     assert.deepEqual(log.trace.args[0][0], {
       op: 'Notifier.publish',
       data: {
         TopicArn: 'arn:aws:sns:us-west-2:927034868275:foo',
-        Message: '{\"event\":{\"stuff\":true}}'
+        Message: '{\"asdf\":42,\"event\":\"verified\"}'
       },
       success: true
     })
+    assert.equal(log.error.called, false)
+  })
+
+  it('does not publish config events', () => {
+    const config = {
+      get: (key) => {
+        if (key === 'snsTopicArn') {
+          return 'arn:aws:sns:us-west-2:927034868275:foo'
+        }
+      }
+    }
+
+    const notifier = proxyquire(`${ROOT_DIR}/lib/notifier`, {
+      '../config': config
+    })(log)
+
+    notifier.__sns.publish = sinon.spy((event, cb) => {
+      cb(null, event)
+    })
+
+    const evt = {
+      event: 'config',
+      data: { 'something': 99 }
+    }
+
+    notifier.send(evt)
+
+    assert.equal(log.trace.called, false)
     assert.equal(log.error.called, false)
   })
 
@@ -67,9 +96,12 @@ describe('notifier', () => {
       '../config': config
     })(log)
 
-    notifier.send({
-      stuff: true
-    }, () => {
+    const evt = {
+      event: 'verified',
+      data: { 'somethingelse': 99 }
+    }
+
+    notifier.send(evt, () => {
       assert.deepEqual(log.trace.args[0][0], {
         op: 'Notifier.publish',
         data: {
