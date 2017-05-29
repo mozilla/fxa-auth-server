@@ -130,7 +130,7 @@ function makeRoutes (options) {
   const log = options.log || mocks.mockLog()
   const db = options.db || mocks.mockDb()
   const customs = options.customs || mocks.mockCustoms()
-  return require('../../../lib/routes/signin-codes')(log, db, { signinCodeSize: 6 }, customs)
+  return require('../../../lib/routes/signin-codes')(log, db, customs)
 }
 
 function runTest (route, request) {
