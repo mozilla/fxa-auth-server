@@ -31,12 +31,19 @@ describe('remote signinCodes', function () {
 
   it('POST /signinCodes/consume invalid code', () => {
     const client = new Client(config.publicUrl)
-    return client.consumeSigninCode(crypto.randomBytes(config.signinCodeSize), {
-      metricsContext: {
-        flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        flowBeginTime: Date.now()
+    return client.consumeSigninCode(
+      crypto.randomBytes(config.signinCodeSize)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, ''),
+      {
+        metricsContext: {
+          flowId: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          flowBeginTime: Date.now()
+        }
       }
-    })
+    )
       .then(result => assert.fail('/signinCodes/consume should fail'))
       .catch(err => {
         assert.ok(err)

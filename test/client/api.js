@@ -676,10 +676,7 @@ module.exports = config => {
       'POST',
       `${this.baseURL}/signinCodes/consume`,
       null,
-      {
-        code: code.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-        metricsContext
-      }
+      { code, metricsContext }
     )
   }
 
