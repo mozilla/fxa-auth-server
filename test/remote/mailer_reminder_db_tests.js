@@ -14,8 +14,10 @@ var testHelper = require('../mailer_helper')
 
 var DB = require('../../lib/senders/db')()
 
-describe('mailer reminder db', () => {
+describe('mailer reminder db', function () {
   let dbServer, dbConn
+
+  this.timeout(10000)
 
   before(() => {
     return dbConn = TestServer.start(config)
