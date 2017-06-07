@@ -822,8 +822,8 @@ describe('/recovery_email', () => {
       })
     })
 
-    it('/recovery_email/enabled disabled with unverified session', () => {
-      route = getRoute(accountRoutes, '/recovery_email/enabled')
+    it('/recovery_email/check_can_add_secondary_address disabled with unverified session', () => {
+      route = getRoute(accountRoutes, '/recovery_email/check_can_add_secondary_address')
       mockRequest.auth.credentials.tokenVerified = false
       mockRequest.auth.credentials.email = 'asdf@mozilla.com'
       return runTest(route, mockRequest, (res) => {
@@ -831,8 +831,8 @@ describe('/recovery_email', () => {
       })
     })
 
-    it('/recovery_email/enabled disabled with invalid email', () => {
-      route = getRoute(accountRoutes, '/recovery_email/enabled')
+    it('/recovery_email/check_can_add_secondary_address disabled with invalid email', () => {
+      route = getRoute(accountRoutes, '/recovery_email/check_can_add_secondary_address')
       mockRequest.auth.credentials.tokenVerified = true
       mockRequest.auth.credentials.email = 'email@notvalid.com'
       return runTest(route, mockRequest, (res) => {
@@ -840,8 +840,8 @@ describe('/recovery_email', () => {
       })
     })
 
-    it('/recovery_email/enabled enabled with verified session', () => {
-      route = getRoute(accountRoutes, '/recovery_email/enabled')
+    it('/recovery_email/check_can_add_secondary_address enabled with verified session', () => {
+      route = getRoute(accountRoutes, '/recovery_email/check_can_add_secondary_address')
       mockRequest.auth.credentials.tokenVerified = true
       mockRequest.auth.credentials.email = 'asdf@mozilla.com'
       return runTest(route, mockRequest, (res) => {
