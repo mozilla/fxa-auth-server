@@ -682,7 +682,7 @@ describe('remote db', function() {
         ])
       })
       .then(results => {
-        results.forEach(result => assert.deepEqual(result, { email: ACCOUNT.email }, 'db.consumeSigninCode should return the email address'))
+        results.forEach(result => assert.equal(result.email, ACCOUNT.email, 'db.consumeSigninCode should return the email address'))
 
         // Attempt to consume a consumed signinCode
         return db.consumeSigninCode(previousCode)
