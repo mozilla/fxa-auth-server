@@ -1,3 +1,13 @@
+<a name="1.88.2"></a>
+## [1.88.2](https://github.com/mozilla/fxa-auth-server/compare/v1.88.1...v1.88.2) (2017-06-13)
+
+
+### Bug Fixes
+
+* **email:** Escape device name in HTML emails. ([947fef0](https://github.com/mozilla/fxa-auth-server/commit/947fef0))
+
+
+
 <a name="1.88.1"></a>
 ## [1.88.1](https://github.com/mozilla/fxa-auth-server/compare/v1.88.0...v1.88.1) (2017-06-01)
 
