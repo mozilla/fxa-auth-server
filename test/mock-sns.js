@@ -29,7 +29,7 @@ function MockSNS (options, config) {
         // HACK: Enable remote tests to see what was sent
         mailer.sendMail({
           from: config.smtp.sender,
-          to: `sms.${phoneNumber}@restmail.net`,
+          to: `sms.${params.PhoneNumber}@restmail.net`,
           subject: 'MockSNS.publish',
           text: params.Message
         }, () => {
