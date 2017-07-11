@@ -42,8 +42,6 @@ const DB = proxyquire('../../lib/db', { redis: {
   UnblockCode
 )
 
-var TOKEN_FRESHNESS_THRESHOLD = require('../../lib/tokens/session_token').TOKEN_FRESHNESS_THRESHOLD
-
 var zeroBuffer16 = Buffer('00000000000000000000000000000000', 'hex').toString('hex')
 var zeroBuffer32 = Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex').toString('hex')
 
@@ -165,13 +163,6 @@ describe('remote db', function() {
           return sessionToken
         })
         .then(function(sessionToken) {
-          sessionToken.lastAccessTime -= 59 * 60 * 1000
-          return db.updateSessionToken(sessionToken, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:41.0) Gecko/20100101 Firefox/41.0')
-        })
-        .then(function() {
-          return db.sessionToken(tokenId)
-        })
-        .then(function(sessionToken) {
           // override lastAccessTimeUpdates flag
           lastAccessTimeUpdates.enabled = false
           return db.updateSessionToken(sessionToken)
@@ -181,17 +172,9 @@ describe('remote db', function() {
           assert.equal(redisSetSpy.lastCall, null, 'session token was not updated if lastAccessTimeUpdates flag is false')
           // reset lastAccessTimeUpdates flag
           lastAccessTimeUpdates.enabled = true
-          return
-        })
-        .then(function() {
-          return db.sessions(account.uid)
-        })
-        .then(function(sessionTokens) {
-          assert.equal(redisSetSpy.lastCall, null, 'session token was not updated if token.update call succeeds')
           return db.sessionToken(tokenId)
         })
         .then(function(sessionToken) {
-          sessionToken.lastAccessTime -= TOKEN_FRESHNESS_THRESHOLD
           return db.updateSessionToken(sessionToken, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:41.0) Gecko/20100101 Firefox/41.0')
         })
         .then(function(sessionTokens) {
@@ -393,9 +376,9 @@ describe('remote db', function() {
             assert.equal(device.uaDeviceType, null, 'device.uaDeviceType is correct')
 
             return db.deleteDevice(account.uid, deviceInfo.id)
-            .catch(function () {
-              assert(false, 'deleting a device should not have failed')
-            })
+              .catch(function () {
+                assert(false, 'deleting a device should not have failed')
+              })
           })
           .then(function () {
             // Fetch all of the devices for the account
