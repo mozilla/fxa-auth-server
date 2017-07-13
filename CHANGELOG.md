@@ -1,3 +1,13 @@
+<a name="1.90.3"></a>
+## [1.90.3](https://github.com/mozilla/fxa-auth-server/compare/v1.90.2...v1.90.3) (2017-07-13)
+
+
+### Bug Fixes
+
+* **nodejs:** update to node:4.8.4-alpine ([2945ef9](https://github.com/mozilla/fxa-auth-server/commit/2945ef9))
+
+
+
 <a name="1.90.2"></a>
 ## [1.90.2](https://github.com/mozilla/fxa-auth-server/compare/v1.90.1...v1.90.2) (2017-07-06)
 
