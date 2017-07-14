@@ -1,3 +1,61 @@
+<a name="1.91.1"></a>
+## [1.91.1](https://github.com/mozilla/fxa-auth-server/compare/v1.91.0...v1.91.1) (2017-07-12)
+
+
+### Bug Fixes
+
+* **nodejs:** update to 6.11.1 for security fixes ([b653e4c](https://github.com/mozilla/fxa-auth-server/commit/b653e4c))
+
+
+
+<a name="1.91.0"></a>
+# [1.91.0](https://github.com/mozilla/fxa-auth-server/compare/v1.90.2...v1.91.0) (2017-07-12)
+
+
+### Bug Fixes
+
+* **hawk:** key passed to hawk must be a Buffer ([8d2a861](https://github.com/mozilla/fxa-auth-server/commit/8d2a861))
+* **nodejs:** update to node:4.8.4-alpine ([2945ef9](https://github.com/mozilla/fxa-auth-server/commit/2945ef9))
+* **push:** Don't notify the originating device about pwd change. (#1931) r=mhammond,vladiko ([baed71d](https://github.com/mozilla/fxa-auth-server/commit/baed71d))
+* **server:** return sane user agent from /account/sessions ([2f10d1b](https://github.com/mozilla/fxa-auth-server/commit/2f10d1b))
+* **tests:** update db tests to match recent session token changes (#1986), r=@vbudhram ([aecb7f1](https://github.com/mozilla/fxa-auth-server/commit/aecb7f1))
+
+### chore
+
+* **docs:** git add generated api docs in precommit hook ([a1f3373](https://github.com/mozilla/fxa-auth-server/commit/a1f3373))
+* **package:** update api docs on precommit (#1972) r=vladikoff ([7d59790](https://github.com/mozilla/fxa-auth-server/commit/7d59790))
+
+### Features
+
+* **account:** receive marketingOptIn when verifying email codes ([1d2a9f4](https://github.com/mozilla/fxa-auth-server/commit/1d2a9f4))
+* **account:** send marketingOptIn to attached services on registration ([ea93642](https://github.com/mozilla/fxa-auth-server/commit/ea93642)), closes [#1973](https://github.com/mozilla/fxa-auth-server/issues/1973)
+* **email:** When primary email gated, send to secondary email if avalible (#1954), r=@seanmo ([979968a](https://github.com/mozilla/fxa-auth-server/commit/979968a))
+* **node:** upgrade to Nodejs 6!!! ([c9be152](https://github.com/mozilla/fxa-auth-server/commit/c9be152))
+
+### Refactor
+
+* **lib:** use strings instead of buffers for as much as possible ([0cfd39c](https://github.com/mozilla/fxa-auth-server/commit/0cfd39c))
+* **routes:** break out device-related routes to a separate module ([ba5c927](https://github.com/mozilla/fxa-auth-server/commit/ba5c927))
+* **server:** eliminate some unnecessary serial invocation (#1965), r=@vbudhram ([91f8e43](https://github.com/mozilla/fxa-auth-server/commit/91f8e43))
+
+
+
+<a name="1.90.2"></a>
+## [1.90.2](https://github.com/mozilla/fxa-auth-server/compare/v1.90.1...v1.90.2) (2017-07-06)
+
+
+
+
+<a name="1.90.1"></a>
+## [1.90.1](https://github.com/mozilla/fxa-auth-server/compare/v1.90.0...v1.90.1) (2017-07-05)
+
+
+### Bug Fixes
+
+* **server:** stop using raw user agent string for browser name ([14f0bf9](https://github.com/mozilla/fxa-auth-server/commit/14f0bf9))
+
+
+
 <a name="1.90.0"></a>
 # [1.90.0](https://github.com/mozilla/fxa-auth-server/compare/v1.89.1...v1.90.0) (2017-06-28)
 

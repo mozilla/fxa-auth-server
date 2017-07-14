@@ -264,6 +264,7 @@ include additional response properties:
 * `errno: 111`: serverTime
 * `errno: 114`: retryAfter, retryAfterLocalized, verificationMethod, verificationReason
 * `errno: 120`: email
+* `errno: 124`: deviceId
 * `errno: 125`: verificationMethod, verificationReason
 * `errno: 126`: email
 * `errno: 130`: region
@@ -405,13 +406,6 @@ if the url has a query parameter of `keys=true`.
   <!--begin-request-body-post-accountcreate-metricsContext-->
   
   <!--end-request-body-post-accountcreate-metricsContext-->
-
-* `marketingOptIn`: *boolean*
-
-  <!--begin-request-body-post-accountcreate-marketingOptIn-->
-  Set to true if the user has opted-in to our marketing. When verified,
-  the auth-server will notify Basket.
-  <!--end-request-body-post-accountcreate-marketingOptIn-->
 
 ##### Response body
 
@@ -910,6 +904,13 @@ not just the one being attached to the Firefox account.
   <!--begin-request-body-post-recovery_emailverify_code-type-->
   The type of code being verified.
   <!--end-request-body-post-recovery_emailverify_code-type-->
+
+* `marketingOptIn`: *boolean*
+
+  <!--begin-request-body-post-recovery_emailverify_code-marketingOptIn-->
+  Set to true if the user has opted-in to our marketing. When verified,
+  the auth-server will notify Basket.
+  <!--end-request-body-post-recovery_emailverify_code-marketingOptIn-->
 
 ##### Error responses
 

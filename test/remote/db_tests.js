@@ -136,7 +136,7 @@ describe('remote db', function() {
         })
         .then(function(sessions) {
           assert.equal(sessions.length, 1, 'sessions contains one item')
-          assert.equal(Object.keys(sessions[0]).length, 16, 'session has correct number of properties')
+          assert.equal(Object.keys(sessions[0]).length, 17, 'session has correct number of properties')
           assert.equal(typeof sessions[0].tokenId, 'string', 'tokenId property is not a buffer')
           assert.equal(sessions[0].uid, account.uid, 'uid property is correct')
           assert.ok(sessions[0].createdAt >= account.createdAt, 'createdAt property seems correct')
@@ -145,6 +145,7 @@ describe('remote db', function() {
           assert.equal(sessions[0].uaOS, 'Mac OS X', 'uaOS property is correct')
           assert.equal(sessions[0].uaOSVersion, '10.10', 'uaOSVersion property is correct')
           assert.equal(sessions[0].uaDeviceType, null, 'uaDeviceType property is correct')
+          assert.equal(sessions[0].uaFormFactor, null, 'uaFormFactor property is correct')
           assert.equal(sessions[0].lastAccessTime, sessions[0].createdAt, 'lastAccessTime property is correct')
           return db.sessionToken(tokenId)
         })
@@ -155,6 +156,7 @@ describe('remote db', function() {
           assert.equal(sessionToken.uaOS, 'Mac OS X')
           assert.equal(sessionToken.uaOSVersion, '10.10')
           assert.equal(sessionToken.uaDeviceType, null)
+          assert.equal(sessionToken.uaFormFactor, null)
           assert.equal(sessionToken.lastAccessTime, sessionToken.createdAt)
           assert.deepEqual(sessionToken.uid, account.uid)
           assert.equal(sessionToken.email, account.email)
@@ -250,14 +252,18 @@ describe('remote db', function() {
     'device registration',
     () => {
       redisGetSpy.returns(P.resolve(null))
-      var sessionToken
-      var deviceInfo = {
+      let sessionToken, anotherSessionToken
+      const deviceInfo = {
         id: crypto.randomBytes(16).toString('hex'),
         name: '',
         type: 'mobile',
         pushCallback: 'https://foo/bar',
         pushPublicKey: base64url(Buffer.concat([Buffer.from('\x04'), crypto.randomBytes(64)])),
         pushAuthKey: base64url(crypto.randomBytes(16))
+      }
+      const conflictingDeviceInfo = {
+        id: crypto.randomBytes(16).toString('hex'),
+        name: 'wibble'
       }
       return db.emailRecord(account.email)
           .then(function (emailRecord) {
@@ -309,11 +315,12 @@ describe('remote db', function() {
             assert.equal(device.pushPublicKey, deviceInfo.pushPublicKey, 'device.pushPublicKey is correct')
             assert.equal(device.pushAuthKey, deviceInfo.pushAuthKey, 'device.pushAuthKey is correct')
             // Attempt to create a device with a duplicate session token
-            return db.createDevice(account.uid, sessionToken.tokenId, deviceInfo)
+            return db.createDevice(account.uid, sessionToken.tokenId, conflictingDeviceInfo)
               .then(function () {
                 assert(false, 'adding a device with a duplicate session token should have failed')
               }, function (err) {
                 assert.equal(err.errno, 124, 'err.errno')
+                assert.equal(err.output.payload.deviceId, deviceInfo.id)
               })
           })
           .then(function () {
@@ -337,6 +344,7 @@ describe('remote db', function() {
             assert.equal(device.uaOS, 'Android', 'device.uaOS is correct')
             assert.equal(device.uaOSVersion, '4.4', 'device.uaOSVersion is correct')
             assert.equal(device.uaDeviceType, 'mobile', 'device.uaDeviceType is correct')
+            assert.equal(device.uaFormFactor, null, 'device.uaFormFactor is correct')
             deviceInfo.id = device.id
             deviceInfo.name = 'wibble'
             deviceInfo.type = 'desktop'
@@ -352,15 +360,39 @@ describe('remote db', function() {
                 assert(false, 'updating a new device or existing session token should not have failed')
               })
           })
-          .then(function (results) {
-            var sessionTokens = results[1]
-            redisGetSpy.returns(P.resolve(JSON.stringify(sessionTokens)))
+          .then(results => {
+            redisGetSpy.returns(P.resolve(JSON.stringify(results[1])))
+
+            // Create another session token
+            return db.createSessionToken(sessionToken, 'Mozilla/5.0 (Android 7.1.2; Mobile; rv:56.0) Gecko/56.0 Firefox/56.0')
+          })
+          .then(result =>{
+            anotherSessionToken = result
+            // Create another device
+            return db.createDevice(account.uid, anotherSessionToken.tokenId, conflictingDeviceInfo)
+          })
+          .then(() =>{
+            // Attempt to update a device with a duplicate session token
+            return db.updateDevice(account.uid, anotherSessionToken.tokenId, deviceInfo)
+              .then(function () {
+                assert(false, 'updating a device with a duplicate session token should have failed')
+              }, function (err) {
+                assert.equal(err.errno, 124, 'err.errno')
+                assert.equal(err.output.payload.deviceId, conflictingDeviceInfo.id)
+              })
+          })
+          .then(() =>{
             // Fetch all of the devices for the account
             return db.devices(account.uid)
           })
           .then(function (devices) {
-            assert.equal(devices.length, 1, 'devices array contains one item')
-            return devices[0]
+            assert.equal(devices.length, 2, 'devices array contains two items')
+
+            if (devices[0].id === deviceInfo.id) {
+              return devices[0]
+            }
+
+            return devices[1]
           })
           .then(function (device) {
             assert.ok(device.lastAccessTime > 0, 'device.lastAccessTime is set')
@@ -374,8 +406,11 @@ describe('remote db', function() {
             assert.equal(device.uaOS, 'Mac OS X', 'device.uaOS is correct')
             assert.equal(device.uaOSVersion, '10.10', 'device.uaOSVersion is correct')
             assert.equal(device.uaDeviceType, null, 'device.uaDeviceType is correct')
-
-            return db.deleteDevice(account.uid, deviceInfo.id)
+            // Delete the devices
+            return P.all([
+              db.deleteDevice(account.uid, deviceInfo.id),
+              db.deleteDevice(account.uid, conflictingDeviceInfo.id)
+            ])
               .catch(function () {
                 assert(false, 'deleting a device should not have failed')
               })
