@@ -39,7 +39,12 @@ const DB = proxyquire('../../lib/db', { redis: {
     del: redisDelSpy
   })
 }})(
-  { lastAccessTimeUpdates, signinCodeSize: config.signinCodeSize , redis: { enabled: true }},
+  {
+    lastAccessTimeUpdates,
+    signinCodeSize: config.signinCodeSize,
+    redis: { enabled: true },
+    tokenLifetimes: {}
+  },
   log,
   Token,
   UnblockCode
