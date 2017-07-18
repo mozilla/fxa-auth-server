@@ -23,7 +23,10 @@ const lastAccessTimeUpdates = {
   sampleRate: 1
 }
 const Token = require('../../lib/tokens')(log, {
-  lastAccessTimeUpdates: lastAccessTimeUpdates
+  lastAccessTimeUpdates: lastAccessTimeUpdates,
+  tokenLifetimes: {
+    sessionTokenWithoutDevice: 2419200000
+  }
 })
 const redisGetSpy = sinon.stub()
 const redisSetSpy = sinon.stub()
@@ -160,19 +163,36 @@ describe('remote db', function() {
           assert.equal(sessions[0].isMemoryToken, undefined, 'isMemoryToken property is correct')
           return db.sessionToken(tokenId)
         })
-        .then(function(sessionToken) {
-          assert.deepEqual(sessionToken.tokenId, tokenId, 'token id matches')
+        .then(sessionToken => {
+          assert.equal(sessionToken.tokenId, tokenId, 'token id matches')
           assert.equal(sessionToken.uaBrowser, 'Firefox')
           assert.equal(sessionToken.uaBrowserVersion, '41')
           assert.equal(sessionToken.uaOS, 'Mac OS X')
           assert.equal(sessionToken.uaOSVersion, '10.10')
           assert.equal(sessionToken.uaDeviceType, null)
           assert.equal(sessionToken.lastAccessTime, sessionToken.createdAt)
-          assert.deepEqual(sessionToken.uid, account.uid)
+          assert.equal(sessionToken.uid, account.uid)
           assert.equal(sessionToken.email, account.email)
-          assert.deepEqual(sessionToken.emailCode, account.emailCode)
+          assert.equal(sessionToken.emailCode, account.emailCode)
           assert.equal(sessionToken.emailVerified, account.emailVerified)
-          return sessionToken
+          assert.equal(sessionToken.lifetime, Infinity)
+          return db.sessionWithDevice(tokenId)
+            .then(sessionTokenWithDevice => {
+              assert.equal(sessionTokenWithDevice.tokenId, sessionToken.tokenId)
+              assert.equal(sessionTokenWithDevice.uaBrowser, sessionToken.uaBrowser)
+              assert.equal(sessionTokenWithDevice.uaBrowserVersion, sessionToken.uaBrowserVersion)
+              assert.equal(sessionTokenWithDevice.uaOS, sessionToken.uaOS)
+              assert.equal(sessionTokenWithDevice.uaOSVersion, sessionToken.uaOSVersion)
+              assert.equal(sessionTokenWithDevice.uaDeviceType, sessionToken.uaDeviceType)
+              assert.equal(sessionTokenWithDevice.lastAccessTime, sessionToken.lastAccessTime)
+              assert.equal(sessionTokenWithDevice.createdAt, sessionToken.createdAt)
+              assert.equal(sessionTokenWithDevice.uid, sessionToken.uid)
+              assert.equal(sessionTokenWithDevice.email, sessionToken.email)
+              assert.equal(sessionTokenWithDevice.emailCode, sessionToken.emailCode)
+              assert.equal(sessionTokenWithDevice.emailVerified, sessionToken.emailVerified)
+              assert.equal(sessionTokenWithDevice.lifetime < Infinity, true)
+              return sessionToken
+            })
         })
         .then(function(sessionToken) {
           // override lastAccessTimeUpdates flag
