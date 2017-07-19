@@ -32,6 +32,10 @@
     "enabled": true,
     "sampleRate": 1
   },
+  "devicesCache": {
+    "enabled": true,
+    "sampleRate": 1
+  },
   "redis": {
     "enabled": true
   }

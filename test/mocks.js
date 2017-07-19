@@ -12,6 +12,7 @@ const P = require('../lib/promise')
 const crypto = require('crypto')
 const config = require('../config').getProperties()
 const error = require('../lib/error')
+const devicesCache = require('../lib/routes/utils/devices_cache')
 
 const CUSTOMS_METHOD_NAMES = [
   'check',
@@ -478,6 +479,11 @@ function mockRequest (data) {
     query: data.query || {},
     setMetricsFlowCompleteSignal: metricsContext.setFlowCompleteSignal,
     stashMetricsContext: metricsContext.stash,
-    validateMetricsContext: metricsContext.validate
+    validateMetricsContext: metricsContext.validate,
+    server: {
+      methods: {
+        devices: devicesCache
+      }
+    }
   }
 }

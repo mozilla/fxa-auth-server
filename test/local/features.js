@@ -22,7 +22,8 @@ const config = {
   signinConfirmation: {},
   signinUnblock: {},
   securityHistory: {},
-  secondaryEmail: {}
+  secondaryEmail: {},
+  devicesCache: {}
 }
 
 const MODULE_PATH = '../../lib/features'
@@ -39,7 +40,7 @@ describe('features', () => {
       assert.notEqual(require(MODULE_PATH).schema, null, 'features.schema is not null')
 
       assert.equal(typeof features, 'object', 'object type should be exported')
-      assert.equal(Object.keys(features).length, 3, 'object should have correct number of properties')
+      assert.equal(Object.keys(features).length, 4, 'object should have correct number of properties')
       assert.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
       assert.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
       assert.equal(typeof features.isSecondaryEmailEnabled, 'function', 'isSecondaryEmailEnabled should be function')
@@ -177,6 +178,28 @@ describe('features', () => {
       config.lastAccessTimeUpdates.enabled = false
       config.lastAccessTimeUpdates.sampleRate = 0.03
       assert.equal(features.isLastAccessTimeEnabledForUser(uid, email), false, 'should return false when feature is disabled')
+    }
+  )
+
+  it(
+    'isDevicesCacheEnabledForUser',
+    () => {
+      const uid = 'foo'
+      // First 27 characters are ignored, last 13 are 0.02 * 0xfffffffffffff
+      hashResult = '000000000000000000000000000051eb851eb852'
+
+      config.devicesCache.enabled = true
+      config.devicesCache.sampleRate = 0
+
+      config.devicesCache.sampleRate = 0.03
+      assert.equal(features.isDevicesCacheEnabledForUser(uid), true, 'should return true when sample rate matches')
+
+      config.devicesCache.sampleRate = 0.02
+      assert.equal(features.isDevicesCacheEnabledForUser(uid), false, 'should return false when sample rate does not match')
+
+      config.devicesCache.enabled = false
+      config.devicesCache.sampleRate = 0.03
+      assert.equal(features.isDevicesCacheEnabledForUser(uid), false, 'should return false when feature is disabled')
     }
   )
 
