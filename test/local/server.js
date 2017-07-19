@@ -284,6 +284,16 @@ function getConfig () {
     metrics: {
       flow_id_expiry: 7200000,
       flow_id_key: 'wibble'
+    },
+    devicesCache: {
+      enabled: true,
+      keyPrefix: 'prefix',
+      expiresIn: 10000,
+      generateTimeout: 10000
+    },
+    redis: {
+      host: 'localhost',
+      port: '6379'
     }
   }
 }

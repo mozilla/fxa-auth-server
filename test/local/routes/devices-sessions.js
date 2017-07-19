@@ -32,6 +32,9 @@ function makeRoutes (options, requireMocks) {
   config.push = {
     allowedServerRegex: /^https:\/\/updates\.push\.services\.mozilla\.com(\/.*)?$/
   }
+  config.devicesCache = {
+    enabled: config.enabled || true
+  }
 
   const log = options.log || mocks.mockLog()
   const db = options.db || mocks.mockDB()
@@ -43,6 +46,21 @@ function makeRoutes (options, requireMocks) {
     log, db, config, customs, push,
     options.devices || require('../../../lib/devices')(log, db, push)
   )
+}
+
+function runDevicesListTest (route, request, assertions) {
+  return new P(function (resolve, reject) {
+    route.handler(request, function (response) {
+      if (response instanceof Error) {
+        reject(response)
+      } else {
+        return {
+          header: function() { resolve(response) }
+        }
+      }
+    })
+  })
+    .then(assertions)
 }
 
 function runTest (route, request, assertions) {
@@ -82,6 +100,9 @@ describe('/account/device', function () {
       name: 'my awesome device'
     }
   })
+  mockRequest.server.methods.devices.cache = { drop: () => {} }
+  sinon.stub(mockRequest.server.methods.devices.cache, 'drop', (req, funct) => funct())
+
   var mockDevices = mocks.mockDevices()
   var mockLog = mocks.spyLog()
   var accountRoutes = makeRoutes({
@@ -460,7 +481,7 @@ describe('/account/devices', function () {
     })
     var route = getRoute(accountRoutes, '/account/devices')
 
-    return runTest(route, mockRequest, function (response) {
+    return runDevicesListTest(route, mockRequest, function (response) {
       assert.ok(Array.isArray(response), 'response is array')
       assert.equal(response.length, 4, 'response contains 4 items')
 
@@ -487,6 +508,71 @@ describe('/account/devices', function () {
       assert.equal(mockDevices.synthesizeName.callCount, 1, 'mockDevices.synthesizeName was called once')
       assert.equal(mockDevices.synthesizeName.args[0].length, 1, 'mockDevices.synthesizeName was passed one argument')
       assert.equal(mockDevices.synthesizeName.args[0][0], unnamedDevice, 'mockDevices.synthesizeName was passed unnamed device')
+    })
+  })
+
+  it('should cache devices if the config is turned on', () => {
+    const mockRequest = mocks.mockRequest({
+      credentials: {
+        uid: crypto.randomBytes(16).toString('hex'),
+        tokenId: crypto.randomBytes(16).toString('hex')
+      },
+      payload: {}
+    })
+    const mockDB = mocks.mockDB({
+      devices: [
+        { name: 'current session', type: 'mobile', sessionToken: mockRequest.auth.credentials.tokenId }
+      ]
+    })
+    const mockDevices = mocks.mockDevices()
+
+    const config = {
+      devicesCache: {
+        enabled: true
+      },
+      i18n: {
+        supportedLanguages: [],
+        defaultLanguage: []
+      }
+    }
+    const devicesCache = proxyquire('../../../lib/routes/utils/devices_cache', {
+      '../../../config': config,
+      '../../features': () => ({isDevicesCacheEnabledForUser: () => true})
+    })
+    return devicesCache(mockRequest, mockDB, mockDevices, (err, result, ttl) => {
+      assert.equal(ttl, null)
+    })
+  })
+
+  it('should not cache devices if the config is turned on', () => {
+    const mockRequest = mocks.mockRequest({
+      credentials: {
+        uid: crypto.randomBytes(16).toString('hex'),
+        tokenId: crypto.randomBytes(16).toString('hex')
+      },
+      payload: {}
+    })
+    const mockDB = mocks.mockDB({
+      devices: [
+        { name: 'current session', type: 'mobile', sessionToken: mockRequest.auth.credentials.tokenId }
+      ]
+    })
+    const mockDevices = mocks.mockDevices()
+
+    const config = {
+      getProperties: () => ({
+        devicesCache: {
+          enabled: false
+        },
+        i18n: {
+          supportedLanguages: [],
+          defaultLanguage: 'en'
+        }
+      })
+    }
+    const devicesCache = proxyquire('../../../lib/routes/utils/devices_cache', {'../../../config': config})
+    return devicesCache(mockRequest, mockDB, mockDevices, (err, result, ttl) => {
+      assert.equal(ttl, 0)
     })
   })
 

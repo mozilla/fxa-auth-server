@@ -360,6 +360,38 @@ var conf = convict({
       doc: 'which key prefix to store sessions in redis under'
     }
   },
+  devicesCache: {
+    expiresIn: {
+      default: '1 hour',
+      format: 'duration',
+      doc: 'how long before devices cache expires',
+      env: 'DEVICES_CACHE_EXPIRES_IN'
+    },
+    generateTimeout: {
+      default: '11 seconds',
+      format: 'duration',
+      doc: 'how long hapi will wait for db result when using cache before timing out',
+      env: 'DEVICES_CACHE_GENERATE_TIMEOUT'
+    },
+    enabled: {
+      default: true,
+      format: Boolean,
+      doc: 'Enable redis cache for devices',
+      env: 'DEVICES_CACHE_ENABLED'
+    },
+    sampleRate: {
+      default: 0.3,
+      format: Number,
+      doc: 'sample rate for devices redis cache, between 0..1',
+      env: 'DEVICES_CACHE_SAMPLE_RATE'
+    },
+    keyPrefix: {
+      default: 'fxa-devices',
+      format: String,
+      doc: 'redis device cache prefix',
+      env: 'DEVICES_CACHE_PREFIX'
+    }
+  },
   tokenLifetimes: {
     accountResetToken: {
       format: 'duration',
