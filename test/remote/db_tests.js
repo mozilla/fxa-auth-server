@@ -29,7 +29,7 @@ const Token = require('../../lib/tokens')(log, {
 var zeroBuffer16 = Buffer('00000000000000000000000000000000', 'hex').toString('hex')
 var zeroBuffer32 = Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex').toString('hex')
 
-let account, secondEmail
+let DB, account, secondEmail
 
 const redisOptions = [true, false]
 redisOptions.forEach((redisEnabled) => {
@@ -40,20 +40,20 @@ redisOptions.forEach((redisEnabled) => {
 
     let redisGetSpy, redisSetSpy, redisDelSpy
 
-    const DB = proxyquire('../../lib/db', { redis: {
-      createClient: () => ({
-        getAsync: redisGetSpy,
-        setAsync: redisSetSpy,
-        del: redisDelSpy
-      })
-    }})(
-      { lastAccessTimeUpdates, signinCodeSize: config.signinCodeSize , redis: { enabled: redisEnabled }},
-      log,
-      Token,
-      UnblockCode
-    )
-
     before(() => {
+      DB = proxyquire('../../lib/db', { redis: {
+        createClient: () => ({
+          getAsync: redisGetSpy,
+          setAsync: redisSetSpy,
+          del: redisDelSpy
+        })
+      }})(
+        { lastAccessTimeUpdates, signinCodeSize: config.signinCodeSize , redis: { enabled: redisEnabled }},
+        log,
+        Token,
+        UnblockCode
+      )
+
       if (redisEnabled) {
         redisGetSpy = sinon.stub()
         redisSetSpy = sinon.stub()
