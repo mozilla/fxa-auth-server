@@ -125,17 +125,6 @@ describe('SessionToken, tokenLifetimes.sessionTokenWithoutDevice > 0', () => {
       })
   })
 
-  it('SessionToken.fromHex creates non-expired token if deviceId is missing and createdAt is too old', () => {
-    return SessionToken.create(TOKEN)
-      .then(token => SessionToken.fromHex(token.data, {
-        createdAt: Date.now() - MAX_AGE_WITHOUT_DEVICE - 1
-      }))
-      .then(token => {
-        assert.equal(token.ttl() > 0, true)
-        assert.equal(token.expired(), false)
-      })
-  })
-
   it(
     'create with NaN createdAt',
     () => {

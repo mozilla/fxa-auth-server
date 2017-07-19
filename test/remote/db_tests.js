@@ -180,24 +180,8 @@ describe('remote db', function() {
           assert.equal(sessionToken.email, account.email)
           assert.equal(sessionToken.emailCode, account.emailCode)
           assert.equal(sessionToken.emailVerified, account.emailVerified)
-          assert.equal(sessionToken.lifetime, Infinity)
-          return db.sessionWithDevice(tokenId)
-            .then(sessionTokenWithDevice => {
-              assert.equal(sessionTokenWithDevice.tokenId, sessionToken.tokenId)
-              assert.equal(sessionTokenWithDevice.uaBrowser, sessionToken.uaBrowser)
-              assert.equal(sessionTokenWithDevice.uaBrowserVersion, sessionToken.uaBrowserVersion)
-              assert.equal(sessionTokenWithDevice.uaOS, sessionToken.uaOS)
-              assert.equal(sessionTokenWithDevice.uaOSVersion, sessionToken.uaOSVersion)
-              assert.equal(sessionTokenWithDevice.uaDeviceType, sessionToken.uaDeviceType)
-              assert.equal(sessionTokenWithDevice.lastAccessTime, sessionToken.lastAccessTime)
-              assert.equal(sessionTokenWithDevice.createdAt, sessionToken.createdAt)
-              assert.equal(sessionTokenWithDevice.uid, sessionToken.uid)
-              assert.equal(sessionTokenWithDevice.email, sessionToken.email)
-              assert.equal(sessionTokenWithDevice.emailCode, sessionToken.emailCode)
-              assert.equal(sessionTokenWithDevice.emailVerified, sessionToken.emailVerified)
-              assert.equal(sessionTokenWithDevice.lifetime < Infinity, true)
-              return sessionToken
-            })
+          assert.equal(sessionToken.lifetime < Infinity, true)
+          return sessionToken
         })
         .then(function(sessionToken) {
           // override lastAccessTimeUpdates flag
@@ -350,6 +334,11 @@ describe('remote db', function() {
             assert.equal(device.pushCallback, deviceInfo.pushCallback, 'device.pushCallback is correct')
             assert.equal(device.pushPublicKey, deviceInfo.pushPublicKey, 'device.pushPublicKey is correct')
             assert.equal(device.pushAuthKey, deviceInfo.pushAuthKey, 'device.pushAuthKey is correct')
+            // Fetch the session token
+            return db.sessionToken(sessionToken.tokenId)
+          })
+          .then(sessionToken => {
+            assert.equal(sessionToken.lifetime, Infinity)
             // Attempt to create a device with a duplicate session token
             return db.createDevice(account.uid, sessionToken.tokenId, conflictingDeviceInfo)
               .then(function () {
