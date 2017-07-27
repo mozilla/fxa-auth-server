@@ -627,6 +627,12 @@ var conf = convict({
     }
   },
   signinUnblock: {
+    maxAttempts: {
+      doc: 'How many times each code can be used',
+      default: 5,
+      format: Number,
+      env: 'SIGNIN_UNBLOCK_CODE_MAX_ATTEMPTS'
+    },
     codeLength: {
       doc: 'Number of alphanumeric digits to make up an unblockCode',
       default: 8,

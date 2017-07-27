@@ -1010,7 +1010,7 @@ describe('/account/login', function () {
         describe('with unblock code', () => {
 
           it('invalid code', () => {
-            mockDB.consumeUnblockCode = () => P.reject(error.invalidUnblockCode())
+            mockDB.tryUnblockCode = () => P.reject(error.invalidUnblockCode())
             return runTest(route, mockRequestWithUnblockCode).then(() => assert.ok(false), err => {
               assert.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               assert.equal(err.output.statusCode, 400, 'correct status code is returned')
@@ -1023,7 +1023,7 @@ describe('/account/login', function () {
 
           it('expired code', () => {
             // test 5 seconds old, to reduce flakiness of test
-            mockDB.consumeUnblockCode = () => P.resolve({ createdAt: Date.now() - (config.signinUnblock.codeLifetime + 5000) })
+            mockDB.tryUnblockCode = () => P.resolve({ createdAt: Date.now() - (config.signinUnblock.codeLifetime + 5000) })
             return runTest(route, mockRequestWithUnblockCode).then(() => assert.ok(false), err => {
               assert.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               assert.equal(err.output.statusCode, 400, 'correct status code is returned')
@@ -1046,7 +1046,7 @@ describe('/account/login', function () {
           })
 
           it('valid code', () => {
-            mockDB.consumeUnblockCode = () => P.resolve({ createdAt: Date.now() })
+            mockDB.tryUnblockCode = () => P.resolve({ createdAt: Date.now() })
             return runTest(route, mockRequestWithUnblockCode, (res) => {
               assert.equal(mockLog.flowEvent.callCount, 4)
               assert.equal(mockLog.flowEvent.args[0][0].event, 'account.login.blocked', 'first event was account.login.blocked')
