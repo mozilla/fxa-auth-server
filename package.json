@@ -56,6 +56,7 @@
     "inert": "4.0.2",
     "jed": "0.5.4",
     "joi": "9.0.4",
+    "jsonwebtoken": "7.4.1",
     "memcached": "2.2.2",
     "moment-timezone": "0.5.11",
     "mozlog": "2.0.6",
