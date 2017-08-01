@@ -1,3 +1,15 @@
+<a name="1.92.1"></a>
+## [1.92.1](https://github.com/mozilla/fxa-auth-server/compare/v1.92.0...v1.92.1) (2017-08-01)
+
+
+### Bug Fixes
+
+* **db:** update perf patch to use object ([bbdaf22](https://github.com/mozilla/fxa-auth-server/commit/bbdaf22))
+* **redis:** detect if redis is enable in session token delete ([6f4a545](https://github.com/mozilla/fxa-auth-server/commit/6f4a545))
+* **redisSessions:** improve redis session lookup performance (#2026) r=vladikoff,rfk ([b533fb9](https://github.com/mozilla/fxa-auth-server/commit/b533fb9)), closes [#2025](https://github.com/mozilla/fxa-auth-server/issues/2025)
+
+
+
 <a name="1.92.0"></a>
 # [1.92.0](https://github.com/mozilla/fxa-auth-server/compare/v1.91.3...v1.92.0) (2017-07-26)
 
