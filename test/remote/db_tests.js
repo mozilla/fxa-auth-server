@@ -44,6 +44,9 @@ const DB = proxyquire('../../lib/db', {
     })
   }
 })({
+  signinUnblock: {
+    maxAttempts: 2
+  },
   lastAccessTimeUpdates,
   signinCodeSize: config.signinCodeSize,
   redis: { enabled: true },
@@ -762,10 +765,10 @@ describe('remote db', function() {
   )
 
   it(
-    'unblock code',
+    'consume unblock code',
     () => {
       var unblockCode
-      return db.createUnblockCode(account.uid)
+      return db.createUnblockCode(account.uid, 3)
         .then(function(_unblockCode) {
           assert.ok(_unblockCode)
           unblockCode = _unblockCode
@@ -805,6 +808,49 @@ describe('remote db', function() {
             assert.equal(msg, '' + err, 'consumeUnblockCode() fails with the correct message')
           }
         )
+    }
+  )
+
+  it(
+    'try unblock code',
+    () => {
+      var unblockCode
+      return db.createUnblockCode(account.uid)
+        .then((_unblockCode) => {
+          assert.ok(_unblockCode)
+          unblockCode = _unblockCode
+
+          return db.tryUnblockCode(account.uid, 'NOTREAL')
+        })
+        .then(() => {
+          assert(false, 'tryUnblockCode() with an invalid unblock code should not succeed')
+        },
+        function (err) {
+          assert.equal(err.errno, 127, 'tryUnblockCode() fails with the correct error code')
+          var msg = 'Error: Invalid unblock code'
+          assert.equal(msg, '' + err, 'tryUnblockCode() fails with the correct message')
+        }
+      )
+      // try unblock code twice, after second attempt it should be removed
+      .then(() => {
+        return db.tryUnblockCode(account.uid, unblockCode)
+      })
+      .then(() => {
+        return db.tryUnblockCode(account.uid, unblockCode)
+      })
+      .then(() => {
+        return db.tryUnblockCode(account.uid, unblockCode)
+      }, function (err) {
+        assert(false, 'tryUnblockCode() with a valid unblock code should succeed')
+      })
+      .then(() => {
+        assert(false, 'tryUnblockCode() with an invalid unblock code should not succeed')
+      },
+      function (err) {
+        assert.equal(err.errno, 127, 'tryUnblockCode() fails with the correct error code')
+        var msg = 'Error: Invalid unblock code'
+        assert.equal(msg, '' + err, 'tryUnblockCode() fails with the correct message')
+      })
     }
   )
 

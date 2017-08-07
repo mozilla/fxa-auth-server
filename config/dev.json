@@ -33,6 +33,9 @@
     "sampleRate": 1
   },
   "redis": {
-    "enabled": true
+  "enabled": true
+  },
+  "signinUnblock": {
+    "forcedEmailAddresses": "^(block.*@restmail\\.net|.+@mozilla\\.com)$"
   }
 }

@@ -61,6 +61,7 @@ const DB_METHOD_NAMES = [
   'securityEvents',
   'sessions',
   'sessionToken',
+  'tryUnblockCode',
   'updateDevice',
   'updateLocale',
   'updateSessionToken',
