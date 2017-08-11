@@ -9,5 +9,5 @@ fi
 
 ./scripts/gen_keys.js
 ./scripts/gen_vapid_keys.js
-./scripts/mocha-coverage.js -R dot $glob
+./scripts/mocha-coverage.js $glob
 grunt eslint copyright
