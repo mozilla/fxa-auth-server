@@ -8,6 +8,7 @@ const assert = require('insist')
 const sinon = require('sinon')
 const log = {
   activityEvent: sinon.spy(),
+  amplitudeEvent: sinon.spy(),
   error: sinon.spy(),
   flowEvent: sinon.spy()
 }
@@ -15,6 +16,13 @@ const events = require('../../../lib/metrics/events')(log)
 const mocks = require('../../mocks')
 
 describe('metrics/events', () => {
+  afterEach(() => {
+    log.activityEvent.reset()
+    log.amplitudeEvent.reset()
+    log.error.reset()
+    log.flowEvent.reset()
+  })
+
   it('interface is correct', () => {
     assert.equal(typeof events, 'object', 'events is object')
     assert.notEqual(events, null, 'events is not null')
@@ -44,11 +52,10 @@ describe('metrics/events', () => {
         }, 'argument was correct')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
-      }).finally(() => {
-        log.error.reset()
       })
   })
 
@@ -78,12 +85,11 @@ describe('metrics/events', () => {
           uid: 'baz'
         }, 'argument was event data')
 
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
       })
   })
 
@@ -106,12 +112,11 @@ describe('metrics/events', () => {
           service: 'bar'
         }, 'argument was event data')
 
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
       })
   })
 
@@ -129,12 +134,11 @@ describe('metrics/events', () => {
           userAgent: 'test user-agent'
         }, 'argument was event data')
 
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
       })
   })
 
@@ -175,11 +179,10 @@ describe('metrics/events', () => {
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -224,11 +227,10 @@ describe('metrics/events', () => {
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -266,11 +268,10 @@ describe('metrics/events', () => {
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -308,11 +309,10 @@ describe('metrics/events', () => {
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -349,11 +349,10 @@ describe('metrics/events', () => {
         }, 'argument was event data')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -403,11 +402,9 @@ describe('metrics/events', () => {
         assert.equal(metricsContext.clear.args[0].length, 0, 'metricsContext.clear was passed no arguments')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
-        metricsContext.clear.reset()
         Date.now.restore()
       })
   })
@@ -436,11 +433,10 @@ describe('metrics/events', () => {
         }, 'argument was correct')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
-      }).finally(() => {
-        log.error.reset()
       })
   })
 
@@ -466,11 +462,9 @@ describe('metrics/events', () => {
         }, 'argument was correct')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
-      }).finally(() => {
-        metricsContext.gather.reset()
-        log.error.reset()
       })
   })
 
@@ -514,12 +508,10 @@ describe('metrics/events', () => {
           userAgent: 'test user-agent'
         }, 'flow event data was correct')
 
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        log.activityEvent.reset()
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -542,12 +534,10 @@ describe('metrics/events', () => {
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
 
+        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
-        metricsContext.gather.reset()
       })
   })
 
@@ -571,12 +561,26 @@ describe('metrics/events', () => {
     return events.emit.call(request, 'account.signed', data)
       .then(() => {
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
+
+        assert.equal(log.amplitudeEvent.callCount, 1, 'log.amplitudeEvent was called once')
+        assert.equal(log.amplitudeEvent.args[0].length, 1, 'log.amplitudeEvent was passed one argument')
+        assert.equal(log.amplitudeEvent.args[0][0].event_type, 'fxa_activity - cert_signed', 'log.amplitudeEvent was passed correct event_type')
+        assert.deepEqual(log.amplitudeEvent.args[0][0].event_properties, {
+          device_id: undefined,
+          service: 'content-server'
+        }, 'log.amplitudeEvent was passed correct event properties')
+        assert.deepEqual(log.amplitudeEvent.args[0][0].user_properties, {
+          flow_id: 'bar',
+          ua_browser: request.app.ua.browser,
+          ua_version: request.app.ua.browserVersion,
+          ua_os: request.app.ua.os,
+          fxa_uid: 'baz'
+        }, 'log.amplitudeEvent was passed correct event properties')
+
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
       })
   })
 
@@ -599,15 +603,14 @@ describe('metrics/events', () => {
     }
     return events.emit.call(request, 'account.signed', data)
       .then(() => {
+        assert.equal(log.amplitudeEvent.callCount, 1, 'log.amplitudeEvent was called once')
+        assert.equal(log.amplitudeEvent.args[0][0].event_properties.service, 'sync', 'log.amplitudeEvent was passed correct service')
+
         assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
         assert.equal(metricsContext.gather.callCount, 1, 'metricsContext.gather was called once')
         assert.equal(log.flowEvent.callCount, 1, 'log.flowEvent was called once')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.activityEvent.reset()
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
       })
   })
 
@@ -660,8 +663,6 @@ describe('metrics/events', () => {
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -699,8 +700,6 @@ describe('metrics/events', () => {
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -738,8 +737,6 @@ describe('metrics/events', () => {
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -777,8 +774,6 @@ describe('metrics/events', () => {
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
-        metricsContext.gather.reset()
-        log.flowEvent.reset()
         Date.now.restore()
       })
   })
@@ -851,8 +846,6 @@ describe('metrics/events', () => {
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
         assert.equal(metricsContext.clear.callCount, 0, 'metricsContext.clear was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
-      }).finally(() => {
-        log.flowEvent.reset()
       })
   })
 })

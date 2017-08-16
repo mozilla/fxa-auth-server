@@ -157,7 +157,7 @@ describe('/account/reset', function () {
       assert.equal(mockMetricsContext.setFlowCompleteSignal.callCount, 1, 'metricsContext.setFlowCompleteSignal was called once')
       args = mockMetricsContext.setFlowCompleteSignal.args[0]
       assert.equal(args.length, 1, 'metricsContext.setFlowCompleteSignal was passed one argument')
-      assert.deepEqual(args[0], 'account.signed', 'argument was event name')
+      assert.equal(args[0], 'account.signed', 'argument was event name')
 
       assert.equal(mockMetricsContext.stash.callCount, 2, 'metricsContext.stash was called twice')
 
@@ -376,8 +376,9 @@ describe('/account/create', () => {
 
       assert.equal(mockMetricsContext.setFlowCompleteSignal.callCount, 1, 'metricsContext.setFlowCompleteSignal was called once')
       args = mockMetricsContext.setFlowCompleteSignal.args[0]
-      assert.equal(args.length, 1, 'metricsContext.setFlowCompleteSignal was passed one argument')
-      assert.deepEqual(args[0], 'account.signed', 'argument was event name')
+      assert.equal(args.length, 2, 'metricsContext.setFlowCompleteSignal was passed two arguments')
+      assert.equal(args[0], 'account.signed', 'first argument was event name')
+      assert.equal(args[1], 'registration', 'second argument was flow type')
 
       var securityEvent = mockDB.securityEvent
       assert.equal(securityEvent.callCount, 1, 'db.securityEvent is called')
@@ -622,8 +623,9 @@ describe('/account/login', function () {
 
       assert.equal(mockMetricsContext.setFlowCompleteSignal.callCount, 1, 'metricsContext.setFlowCompleteSignal was called once')
       args = mockMetricsContext.setFlowCompleteSignal.args[0]
-      assert.equal(args.length, 1, 'metricsContext.setFlowCompleteSignal was passed one argument')
-      assert.deepEqual(args[0], 'account.signed', 'argument was event name')
+      assert.equal(args.length, 2, 'metricsContext.setFlowCompleteSignal was passed two arguments')
+      assert.equal(args[0], 'account.signed', 'argument was event name')
+      assert.equal(args[1], 'login', 'second argument was flow type')
 
       assert.equal(mockMailer.sendVerifyLoginEmail.callCount, 1, 'mailer.sendVerifyLoginEmail was called')
       args = mockMailer.sendVerifyLoginEmail.args[0]
