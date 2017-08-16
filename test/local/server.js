@@ -100,7 +100,8 @@ describe('lib/server', () => {
           response = 'ok'
           return instance.inject({
             headers: {
-              'accept-language': 'fr-CH, fr;q=0.9, en-GB, en;q=0.5'
+              'accept-language': 'fr-CH, fr;q=0.9, en-GB, en;q=0.5',
+              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:57.0) Gecko/20100101 Firefox/57.0'
             },
             method: 'POST',
             url: '/account/create',
@@ -118,6 +119,12 @@ describe('lib/server', () => {
           assert.ok(args[1])
           assert.equal(args[1].path, '/account/create')
           assert.equal(args[1].app.locale, 'en')
+          assert.equal(args[1].app.uaBrowser, 'Firefox')
+          assert.equal(args[1].app.uaBrowserVersion, '57')
+          assert.equal(args[1].app.uaOS, 'Mac OS X')
+          assert.equal(args[1].app.uaOSVersion, '10.11')
+          assert.equal(args[1].app.uaDeviceType, null)
+          assert.equal(args[1].app.uaFormFactor, null)
         })
 
         it('called log.summary correctly', () => {
@@ -151,7 +158,8 @@ describe('lib/server', () => {
           response = 'ok'
           return instance.inject({
             headers: {
-              'accept-language': 'fr-CH, fr;q=0.9'
+              'accept-language': 'fr-CH, fr;q=0.9',
+              'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1'
             },
             method: 'POST',
             url: '/account/create',
@@ -163,6 +171,12 @@ describe('lib/server', () => {
           assert.equal(log.begin.callCount, 1)
           const args = log.begin.args[0]
           assert.equal(args[1].app.locale, 'en')
+          assert.equal(args[1].app.uaBrowser, 'Chrome Mobile iOS')
+          assert.equal(args[1].app.uaBrowserVersion, '56')
+          assert.equal(args[1].app.uaOS, 'iOS')
+          assert.equal(args[1].app.uaOSVersion, '10.3')
+          assert.equal(args[1].app.uaDeviceType, 'mobile')
+          assert.equal(args[1].app.uaFormFactor, 'iPhone')
         })
 
         it('called log.summary once', () => {
