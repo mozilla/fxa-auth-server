@@ -149,7 +149,7 @@ describe('/account/device', function () {
   })
 })
 
-describe('/account/devices/notify', function () {
+describe.skip('/account/devices/notify', function () {
   var config = {}
   var uid = uuid.v4('binary').toString('hex')
   var deviceId = crypto.randomBytes(16).toString('hex')
