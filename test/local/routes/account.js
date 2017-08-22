@@ -322,6 +322,7 @@ describe('/account/create', () => {
       assert.equal(eventData.data.email, TEST_EMAIL, 'it was for the correct email')
       assert.deepEqual(eventData.data.metricsContext, {
         flowCompleteSignal: 'account.signed',
+        flowType: undefined,
         flow_id: mockRequest.payload.metricsContext.flowId,
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         time: now
@@ -343,6 +344,7 @@ describe('/account/create', () => {
       assert.deepEqual(args[0], {
         event: 'account.created',
         flowCompleteSignal: 'account.signed',
+        flowType: undefined,
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         locale: 'en-GB',
@@ -560,7 +562,8 @@ describe('/account/login', function () {
         time: now,
         flow_id: mockRequest.payload.metricsContext.flowId,
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
-        flowCompleteSignal: 'account.signed'
+        flowCompleteSignal: 'account.signed',
+        flowType: undefined
       }, 'metrics context was correct')
 
       assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
@@ -581,6 +584,7 @@ describe('/account/login', function () {
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         flowCompleteSignal: 'account.signed',
+        flowType: undefined,
         locale: 'en-US',
         time: now,
         uid: uid,
@@ -593,6 +597,7 @@ describe('/account/login', function () {
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
         flowCompleteSignal: 'account.signed',
+        flowType: undefined,
         locale: 'en-US',
         time: now,
         userAgent: 'test user-agent'

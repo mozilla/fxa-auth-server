@@ -172,6 +172,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
+          flowType: undefined,
           locale: 'en-US',
           time,
           uid: 'deadbeef',
@@ -221,6 +222,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
+          flowType: undefined,
           locale: 'en',
           time,
           userAgent: 'foo'
@@ -261,6 +263,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
+          flowType: undefined,
           locale: 'en-US',
           time,
           uid: 'deadbeef',
@@ -302,6 +305,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
+          flowType: undefined,
           locale: 'en-US',
           time,
           uid: 'deadbeef',
@@ -343,6 +347,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: 'account.signed',
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
@@ -368,7 +373,8 @@ describe('metrics/events', () => {
         metricsContext: {
           flowId: 'bar',
           flowBeginTime: time - 2000,
-          flowCompleteSignal: 'account.reminder'
+          flowCompleteSignal: 'account.reminder',
+          flowType: 'registration'
         }
       }
     })
@@ -382,6 +388,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
+          flowType: 'registration',
           locale: 'fr',
           time,
           uid: 'qux',
@@ -392,17 +399,21 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 2000,
           flowCompleteSignal: 'account.reminder',
+          flowType: 'registration',
           locale: 'fr',
           time,
           uid: 'qux',
           userAgent: 'test user-agent'
         }, 'argument was complete event data second time')
 
+        assert.equal(log.amplitudeEvent.callCount, 1, 'log.amplitudeEvent was called once')
+        assert.equal(log.amplitudeEvent.args[0].length, 1, 'log.amplitudeEvent was passed one argument')
+        assert.equal(log.amplitudeEvent.args[0][0].event_type, 'fxa_reg - complete', 'log.amplitudeEvent was passed correct event_type')
+
         assert.equal(metricsContext.clear.callCount, 1, 'metricsContext.clear was called once')
         assert.equal(metricsContext.clear.args[0].length, 0, 'metricsContext.clear was passed no arguments')
 
         assert.equal(log.activityEvent.callCount, 0, 'log.activityEvent was not called')
-        assert.equal(log.amplitudeEvent.callCount, 0, 'log.amplitudeEvent was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       }).finally(() => {
         Date.now.restore()
@@ -503,6 +514,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 42,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           uid: 'baz',
           userAgent: 'test user-agent'
@@ -642,6 +654,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
@@ -654,6 +667,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 42,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
@@ -691,6 +705,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
@@ -728,6 +743,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
@@ -765,6 +781,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           flow_time: 1000,
           flowCompleteSignal: undefined,
+          flowType: undefined,
           locale: 'en-US',
           time,
           userAgent: 'test user-agent'
