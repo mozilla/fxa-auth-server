@@ -416,6 +416,7 @@ function mockMetricsContext (methods) {
               time: time,
               flow_id: this.payload.metricsContext.flowId,
               flow_time: time - this.payload.metricsContext.flowBeginTime,
+              flowBeginTime: this.payload.metricsContext.flowBeginTime,
               flowCompleteSignal: this.payload.metricsContext.flowCompleteSignal,
               flowType: this.payload.metricsContext.flowType
             })

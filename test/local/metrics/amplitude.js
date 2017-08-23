@@ -89,6 +89,13 @@ describe('metrics/amplitude', () => {
           },
           query: {
             service: 'melm'
+          },
+          payload: {
+            service: 'piff',
+            metricsContext: {
+              flowId: 'udge',
+              flowBeginTime: 'kwop'
+            }
           }
         }))
       })
@@ -102,13 +109,14 @@ describe('metrics/amplitude', () => {
         const args = log.amplitudeEvent.args[0]
         assert.equal(args.length, 1)
         assert.equal(args[0].event_type, 'fxa_login - email_confirmed')
+        assert.equal(args[0].session_id, 'kwop')
         assert.equal(args[0].language, 'wibble')
         assert.deepEqual(args[0].event_properties, {
           device_id: 'blee',
           service: 'melm'
         })
         assert.deepEqual(args[0].user_properties, {
-          flow_id: undefined,
+          flow_id: 'udge',
           ua_browser: 'foo',
           ua_version: 'bar',
           ua_os: 'baz',
@@ -147,6 +155,7 @@ describe('metrics/amplitude', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - created')
+        assert.equal(args[0].session_id, undefined)
         assert.equal(args[0].language, 'e')
         assert.deepEqual(args[0].event_properties, {
           device_id: 'f',
@@ -977,7 +986,8 @@ describe('metrics/amplitude', () => {
       beforeEach(() => {
         amplitude('sms.installFirefox.sent', mocks.mockRequest({}), {}, {
           flow_id: 'foo',
-          time: 'bar'
+          flowBeginTime: 'bar',
+          time: 'baz'
         })
       })
 
@@ -985,7 +995,8 @@ describe('metrics/amplitude', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].user_properties.flow_id, 'foo')
-        assert.equal(args[0].time, 'bar')
+        assert.equal(args[0].session_id, 'bar')
+        assert.equal(args[0].time, 'baz')
       })
     })
   })

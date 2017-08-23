@@ -206,11 +206,12 @@ describe('metricsContext', () => {
       }, {}).then(function (result) {
         assert.equal(typeof result, 'object', 'result is object')
         assert.notEqual(result, null, 'result is not null')
-        assert.equal(Object.keys(result).length, 5, 'result has 5 properties')
+        assert.equal(Object.keys(result).length, 6, 'result has 6 properties')
         assert.ok(result.time > time, 'result.time seems correct')
         assert.equal(result.flow_id, 'mock flow id', 'result.flow_id is correct')
         assert.ok(result.flow_time > 0, 'result.flow_time is greater than zero')
         assert.ok(result.flow_time < time, 'result.flow_time is less than the current time')
+        assert.equal(result.flowBeginTime, time, 'result.flowBeginTime is correct')
         assert.equal(result.flowCompleteSignal, 'mock flow complete signal', 'result.flowCompleteSignal is correct')
         assert.equal(result.flowType, 'mock flow type', 'result.flowType is correct')
 
@@ -265,11 +266,12 @@ describe('metricsContext', () => {
 
         assert.equal(typeof result, 'object', 'result is object')
         assert.notEqual(result, null, 'result is not null')
-        assert.equal(Object.keys(result).length, 5, 'result has 5 properties')
+        assert.equal(Object.keys(result).length, 6, 'result has 6 properties')
         assert.ok(result.time > time, 'result.time seems correct')
         assert.equal(result.flow_id, 'flowId', 'result.flow_id is correct')
         assert.ok(result.flow_time > 0, 'result.flow_time is greater than zero')
         assert.ok(result.flow_time < time, 'result.flow_time is less than the current time')
+        assert.equal(result.flowBeginTime, time, 'result.flowBeginTime is correct')
         assert.equal(result.flowCompleteSignal, 'flowCompleteSignal', 'result.flowCompleteSignal is correct')
         assert.equal(result.flowType, 'flowType', 'result.flowType is correct')
 
@@ -300,7 +302,7 @@ describe('metricsContext', () => {
 
         assert.equal(typeof result, 'object', 'result is object')
         assert.notEqual(result, null, 'result is not null')
-        assert.equal(Object.keys(result).length, 5, 'result has 5 properties')
+        assert.equal(Object.keys(result).length, 6, 'result has 6 properties')
         assert.ok(result.time > time, 'result.time seems correct')
         assert.equal(result.flow_id, 'flowId', 'result.flow_id is correct')
         assert.ok(result.flow_time > 0, 'result.flow_time is greater than zero')

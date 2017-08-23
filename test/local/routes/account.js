@@ -321,6 +321,7 @@ describe('/account/create', () => {
       assert.equal(eventData.data.service, 'sync', 'it was for sync')
       assert.equal(eventData.data.email, TEST_EMAIL, 'it was for the correct email')
       assert.deepEqual(eventData.data.metricsContext, {
+        flowBeginTime: mockRequest.payload.metricsContext.flowBeginTime,
         flowCompleteSignal: 'account.signed',
         flowType: undefined,
         flow_id: mockRequest.payload.metricsContext.flowId,
@@ -343,6 +344,7 @@ describe('/account/create', () => {
       assert.equal(args.length, 1, 'log.flowEvent was passed one argument')
       assert.deepEqual(args[0], {
         event: 'account.created',
+        flowBeginTime: mockRequest.payload.metricsContext.flowBeginTime,
         flowCompleteSignal: 'account.signed',
         flowType: undefined,
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
@@ -562,6 +564,7 @@ describe('/account/login', function () {
         time: now,
         flow_id: mockRequest.payload.metricsContext.flowId,
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
+        flowBeginTime: mockRequest.payload.metricsContext.flowBeginTime,
         flowCompleteSignal: 'account.signed',
         flowType: undefined
       }, 'metrics context was correct')
@@ -583,6 +586,7 @@ describe('/account/login', function () {
         event: 'account.login',
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
+        flowBeginTime: mockRequest.payload.metricsContext.flowBeginTime,
         flowCompleteSignal: 'account.signed',
         flowType: undefined,
         locale: 'en-US',
@@ -596,6 +600,7 @@ describe('/account/login', function () {
         event: 'email.confirmation.sent',
         flow_time: now - mockRequest.payload.metricsContext.flowBeginTime,
         flow_id: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
+        flowBeginTime: mockRequest.payload.metricsContext.flowBeginTime,
         flowCompleteSignal: 'account.signed',
         flowType: undefined,
         locale: 'en-US',
