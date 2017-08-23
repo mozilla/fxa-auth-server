@@ -400,6 +400,10 @@ describe('/account/create', () => {
       assert.equal(args[2].uaOS, 'Mac OS X')
       assert.equal(args[2].uaOSVersion, '10.10')
       assert.strictEqual(args[2].uaDeviceType, undefined)
+      assert.equal(args[2].flowId, mockRequest.payload.metricsContext.flowId)
+      assert.equal(args[2].flowBeginTime, mockRequest.payload.metricsContext.flowBeginTime)
+      assert.equal(args[2].service, 'sync')
+      assert.equal(args[2].uid, uid)
 
       assert.equal(mockLog.error.callCount, 0)
     }).finally(() => Date.now.restore())
@@ -467,7 +471,6 @@ describe('/account/login', function () {
   })
   const mockRequestWithUnblockCode = mocks.mockRequest({
     log: mockLog,
-    query: {},
     payload: {
       authPW: hexString(32),
       email: TEST_EMAIL,
@@ -476,8 +479,7 @@ describe('/account/login', function () {
       reason: 'signin',
       metricsContext: {
         flowBeginTime: Date.now(),
-        flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103',
-        service: 'dcdb5ae7add825d2'
+        flowId: 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103'
       }
     }
   })
@@ -647,6 +649,10 @@ describe('/account/login', function () {
       assert.equal(args[2].uaOS, 'Android')
       assert.equal(args[2].uaOSVersion, '6')
       assert.equal(args[2].uaDeviceType, 'mobile')
+      assert.equal(args[2].flowId, mockRequest.payload.metricsContext.flowId)
+      assert.equal(args[2].flowBeginTime, mockRequest.payload.metricsContext.flowBeginTime)
+      assert.equal(args[2].service, 'sync')
+      assert.equal(args[2].uid, uid)
 
       assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 0, 'mailer.sendNewDeviceLoginNotification was not called')
       assert.ok(! response.verified, 'response indicates account is not verified')
@@ -890,6 +896,10 @@ describe('/account/login', function () {
           assert.equal(tokenData.tokenVerificationId, null, 'sessionToken was created verified')
           assert.equal(mockMailer.sendVerifyCode.callCount, 0, 'mailer.sendVerifyLoginEmail was not called')
           assert.equal(mockMailer.sendNewDeviceLoginNotification.callCount, 1, 'mailer.sendNewDeviceLoginNotification was called')
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.args[0][2].flowId, mockRequest.payload.metricsContext.flowId)
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.args[0][2].flowBeginTime, mockRequest.payload.metricsContext.flowBeginTime)
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.args[0][2].service, 'sync')
+          assert.equal(mockMailer.sendNewDeviceLoginNotification.args[0][2].uid, uid)
           assert.ok(response.verified, 'response indicates account is verified')
         })
       })

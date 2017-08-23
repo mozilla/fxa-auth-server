@@ -122,6 +122,7 @@ describe('/password', () => {
         assert.equal(mockMailer.sendRecoveryCode.getCall(0).args[2].location.city, 'Mountain View')
         assert.equal(mockMailer.sendRecoveryCode.getCall(0).args[2].location.country, 'United States')
         assert.equal(mockMailer.sendRecoveryCode.getCall(0).args[2].timeZone, 'America/Los_Angeles')
+        assert.equal(mockMailer.sendRecoveryCode.getCall(0).args[2].uid, uid)
       })
     }
   )
@@ -177,6 +178,7 @@ describe('/password', () => {
       return runRoute(passwordRoutes, '/password/forgot/resend_code', mockRequest)
         .then(function(response) {
           assert.equal(mockMailer.sendRecoveryCode.callCount, 1, 'mailer.sendRecoveryCode was called once')
+          assert.equal(mockMailer.sendRecoveryCode.args[0][2].uid, uid)
 
           assert.equal(mockRequest.validateMetricsContext.callCount, 1, 'validateMetricsContext was called')
           assert.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
@@ -317,6 +319,7 @@ describe('/password', () => {
           assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].location.city, 'Mountain View')
           assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].location.country, 'United States')
           assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].timeZone, 'America/Los_Angeles')
+          assert.equal(mockMailer.sendPasswordChangedNotification.getCall(0).args[2].uid, uid)
 
           assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
           var args = mockLog.activityEvent.args[0]
