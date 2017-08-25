@@ -329,6 +329,7 @@ module.exports = config => {
       {
         uid: uid,
         code: code,
+        userIpToken: options.userIpToken || 'a'.repeat('64'),
         service: options.service || undefined,
         type: options.type || undefined,
         verifiedEmail: options.verifiedEmail || undefined,

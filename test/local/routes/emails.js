@@ -45,13 +45,22 @@ var makeRoutes = function (options, requireMocks) {
     allowedServerRegex: /^https:\/\/updates\.push\.services\.mozilla\.com(\/.*)?$/
   }
 
+  config.userIpJwtVerification = {
+    key: 'fakeKey'
+  }
+
   var log = options.log || mocks.mockLog()
   var db = options.db || mocks.mockDB()
   var customs = options.customs || {
     check: function () { return P.resolve(true) }
   }
   var push = options.push || require('../../../lib/push')(log, db, {})
-  return proxyquire('../../../lib/routes/emails', requireMocks || {})(
+  var proxyMocks = requireMocks || {
+    jsonwebtoken: {
+      verify: (tok, key, cb) => cb(null, {ip: 'fakeIp'})
+    }
+  }
+  return proxyquire('../../../lib/routes/emails', proxyMocks)(
     log,
     db,
     options.mailer || {},
@@ -630,6 +639,8 @@ describe('/recovery_email/verify_code', function () {
       mockRequest.payload.code = dbData.secondEmailCode.toString('hex')
       mockRequest.payload.type = 'secondary'
       mockRequest.payload.verifiedEmail = dbData.secondEmail
+      mockRequest.payload.userIpToken = 'x'.repeat(64)
+      mockLog.info = sinon.spy()
 
       return runTest(route, mockRequest, function (response) {
         assert.equal(mockDB.verifyEmail.callCount, 1, 'call db.verifyEmail')
@@ -643,13 +654,51 @@ describe('/recovery_email/verify_code', function () {
         assert.equal(args.length, 3, 'mockMailer.sendPostVerifySecondaryEmail was passed correct arguments')
         assert.equal(args[1].email, dbData.email, 'correct account primary email was passed')
         assert.equal(args[2].secondaryEmail, dbData.secondEmail, 'correct secondary email was passed')
+
+        assert.equal(mockLog.info.firstCall.args[0].uid, mockRequest.payload.uid)
+        assert.equal(mockLog.info.firstCall.args[0].code, mockRequest.payload.code)
       })
         .then(function () {
+          mockLog.info.reset()
           mockDB.verifyEmail.reset()
           mockLog.activityEvent.reset()
           mockMailer.sendPostVerifySecondaryEmail.reset()
           mockPush.notifyUpdate.reset()
         })
+    })
+
+    it('ip verficiation pass', () => {
+      const jsonwebtoken = {
+        verify: () => {}
+      }
+      sinon.stub(jsonwebtoken, 'verify', (tok, key, cb) => cb(null, {ip: 'fakeIp'}))
+      const accountRoutes = makeRoutes({
+        checkPassword: function () {
+          return P.resolve(true)
+        },
+        customs: mockCustoms,
+        db: mockDB,
+        log: mockLog,
+        mailer: mockMailer,
+        push: mockPush
+      }, {
+        jsonwebtoken
+      })
+      const mockToken = 'a'.repeat('64')
+      mockRequest.payload.userIpToken = mockToken
+      const route =  getRoute(accountRoutes, '/recovery_email/verify_code')
+      return runTest(route, mockRequest, function (response) {
+        assert.equal(jsonwebtoken.verify.lastCall.args[0], mockToken)
+        assert.equal(jsonwebtoken.verify.lastCall.args[1], 'fakeKey')
+        assert.equal(mockCustoms.check.lastCall.args[3], 'fakeIp')
+      })
+      .then(function () {
+        mockLog.info.reset()
+        mockDB.verifyEmail.reset()
+        mockLog.activityEvent.reset()
+        mockMailer.sendPostVerifySecondaryEmail.reset()
+        mockPush.notifyUpdate.reset()
+      })
     })
   })
 })

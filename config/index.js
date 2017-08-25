@@ -555,6 +555,14 @@ var conf = convict({
       }
     }
   },
+  userIpJwtVerification: {
+    key: {
+      default: 'YOU MUST CHANGE ME',
+      doc: 'key used to to sign and verify a user\'s ip',
+      format: String,
+      env: 'USER_IP_VERIFICATION_KEY'
+    }
+  },
   metrics: {
     flow_id_key: {
       default: 'YOU MUST CHANGE ME',

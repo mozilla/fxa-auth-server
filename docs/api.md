@@ -252,6 +252,8 @@ for `code` and `errno` are:
   Can not change primary email to an email that does not belong to this account
 * `code: 400, errno: 149`:
   This email can not currently be used to login
+* `code: 400, errno: 150`:
+  Failed to verify ipToken with jwt
 * `code: 503, errno: 201`:
   Service unavailable
 * `code: 503, errno: 202`:
@@ -280,6 +282,7 @@ include additional response properties:
 * `errno: 133`: bouncedAt
 * `errno: 134`: bouncedAt
 * `errno: 135`: bouncedAt
+* `errno: 150`: jwtError
 * `errno: 201`: retryAfter
 * `errno: 202`: retryAfter
 
@@ -1460,6 +1463,12 @@ not just the one being attached to the Firefox account.
   
   <!--end-request-body-post-recovery_emailverify_code-code-->
 
+* `userIpToken`: *string, optional*
+
+  <!--begin-request-body-post-recovery_emailverify_code-userIpToken-->
+  
+  <!--end-request-body-post-recovery_emailverify_code-userIpToken-->
+
 * `service`: *validators.service*
 
   <!--begin-request-body-post-recovery_emailverify_code-service-->
@@ -1490,6 +1499,9 @@ not just the one being attached to the Firefox account.
 Failing requests may be caused
 by the following errors
 (this is not an exhaustive list):
+
+* `code: 400, errno: 150`:
+  Failed to verify ipToken with jwt
 
 * `code: 400, errno: 105`:
   Invalid verification code
