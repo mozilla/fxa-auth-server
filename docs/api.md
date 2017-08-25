@@ -1025,7 +1025,7 @@ and display the tab in a timely manner.
   Ignored unless `to:"all"` is specified.
   <!--end-request-body-post-accountdevicesnotify-excluded-->
 
-* `payload`: *object, required*
+* `payload`: *object, optional*
 
   <!--begin-request-body-post-accountdevicesnotify-payload-->
   Push payload,
@@ -1039,6 +1039,12 @@ and display the tab in a timely manner.
   defaults to `0`.
   <!--end-request-body-post-accountdevicesnotify-TTL-->
 
+* `endpointAction`: *string, optional*
+
+  <!--begin-request-body-post-accountdevicesnotify-endpointAction-->
+  
+  <!--end-request-body-post-accountdevicesnotify-endpointAction-->
+
 ##### Error responses
 
 Failing requests may be caused
@@ -1047,9 +1053,6 @@ by the following errors
 
 * `code: 503, errno: 202`:
   Feature not enabled
-
-* `code: 400, errno: 107`:
-  Invalid parameter in request body
 
 
 #### GET /account/devices

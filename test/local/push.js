@@ -199,7 +199,7 @@ describe('push', () => {
       var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, mockDevices, 'accountVerify')
         .then(() => {
-          assert.equal(successCalled, 2)
+          assert.equal(successCalled, 3)
         })
     }
   )
@@ -230,7 +230,7 @@ describe('push', () => {
       var options = { TTL: TTL }
       return push.sendPush(mockUid, mockDevices, 'accountVerify', options)
         .then(() => {
-          assert.equal(successCalled, 2)
+          assert.equal(successCalled, 3)
         })
     }
   )
@@ -256,7 +256,7 @@ describe('push', () => {
       var options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'accountVerify', options)
         .then(() => {
-          assert.equal(count, 2)
+          assert.equal(count, 3)
         })
     }
   )
@@ -279,7 +279,7 @@ describe('push', () => {
       var options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
         .then(() => {
-          assert.equal(endPoints.length, 2)
+          assert.equal(endPoints.length, 3)
           assert.equal(endPoints[0], mockDevices[0].pushCallback)
           assert.equal(endPoints[1], mockDevices[1].pushCallback)
         })
@@ -801,7 +801,7 @@ describe('push', () => {
       var push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDbResult, mockConfig)
       return push.sendPush(mockUid, mockDevices, 'accountVerify')
         .then(() => {
-          assert.equal(count, 2)
+          assert.equal(count, 3)
         })
     }
   )
