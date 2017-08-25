@@ -1039,6 +1039,12 @@ and display the tab in a timely manner.
   defaults to `0`.
   <!--end-request-body-post-accountdevicesnotify-TTL-->
 
+* `endpointAction`: *string, optional*
+
+  <!--begin-request-body-post-accountdevicesnotify-endpointAction-->
+  
+  <!--end-request-body-post-accountdevicesnotify-endpointAction-->
+
 ##### Error responses
 
 Failing requests may be caused
