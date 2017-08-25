@@ -1054,9 +1054,6 @@ by the following errors
 * `code: 503, errno: 202`:
   Feature not enabled
 
-* `code: 400, errno: 107`:
-  Invalid parameter in request body
-
 
 #### GET /account/devices
 
