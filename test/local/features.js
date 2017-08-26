@@ -19,6 +19,7 @@ const crypto = {
 
 const config = {
   lastAccessTimeUpdates: {},
+  pushNotificationForSignIn: {},
   signinConfirmation: {},
   signinUnblock: {},
   securityHistory: {},
@@ -192,6 +193,35 @@ describe('features', () => {
 
       config.secondaryEmail.enabled = false
       assert.equal(features.isSecondaryEmailEnabled(), false, 'should return false when secondary email is disabled in config')
+    }
+  )
+
+  it(
+    'isPushLoginVerifyEnabled',
+    () => {
+      const uid = 'foo'
+      const email = 'bar@mozilla.com'
+      // First 27 characters are ignored, last 13 are 0.02 * 0xfffffffffffff
+      hashResult = '000000000000000000000000000051eb851eb852'
+
+      config.pushNotificationForSignIn.enabled = true
+      config.pushNotificationForSignIn.sampleRate = 0
+      config.pushNotificationForSignIn.enabledEmailAddresses = /.+@mozilla\.com$/
+      assert.equal(features.isPushLoginVerifyEnabled(uid, email), true, 'should return true when email address matches')
+
+      config.pushNotificationForSignIn.enabledEmailAddresses = /.+@mozilla\.org$/
+      assert.equal(features.isPushLoginVerifyEnabled(uid, email), false, 'should return false when email address does not match')
+
+      config.pushNotificationForSignIn.sampleRate = 0.03
+      assert.equal(features.isPushLoginVerifyEnabled(uid, email), true, 'should return true when sample rate matches')
+
+      config.pushNotificationForSignIn.sampleRate = 0.02
+      assert.equal(features.isPushLoginVerifyEnabled(uid, email), false, 'should return false when sample rate does not match')
+
+      config.pushNotificationForSignIn.enabled = false
+      config.pushNotificationForSignIn.sampleRate = 0.03
+      config.pushNotificationForSignIn.enabledEmailAddresses = /.+@mozilla\.com$/
+      assert.equal(features.isPushLoginVerifyEnabled(uid, email), false, 'should return false when feature is disabled')
     }
   )
 })
