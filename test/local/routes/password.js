@@ -258,6 +258,9 @@ describe('/password', () => {
         assert.equal(mockLog.flowEvent.callCount, 2, 'log.flowEvent was called twice')
         assert.equal(mockLog.flowEvent.args[0][0].event, 'password.forgot.verify_code.start', 'password.forgot.verify_code.start event was logged')
         assert.equal(mockLog.flowEvent.args[1][0].event, 'password.forgot.verify_code.completed', 'password.forgot.verify_code.completed event was logged')
+
+        assert.equal(mockMailer.sendPasswordResetNotification.callCount, 1, 'mailer.sendPasswordResetNotification was called once')
+        assert.equal(mockMailer.sendPasswordResetNotification.args[0][2].uid, uid, 'mailer.sendPasswordResetNotification was passed uid')
       })
     }
   )
