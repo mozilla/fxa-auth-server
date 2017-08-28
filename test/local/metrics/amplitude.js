@@ -84,8 +84,7 @@ describe('metrics/amplitude', () => {
           uaFormFactor: 'qux',
           locale: 'wibble',
           credentials: {
-            deviceId: 'blee',
-            uid: 'juff'
+            uid: 'blee'
           },
           query: {
             service: 'melm'
@@ -93,6 +92,7 @@ describe('metrics/amplitude', () => {
           payload: {
             service: 'piff',
             metricsContext: {
+              deviceId: 'juff',
               flowId: 'udge',
               flowBeginTime: 'kwop'
             }
@@ -112,7 +112,7 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].session_id, 'kwop')
         assert.equal(args[0].language, 'wibble')
         assert.deepEqual(args[0].event_properties, {
-          device_id: 'blee',
+          device_id: 'juff',
           service: 'melm'
         })
         assert.deepEqual(args[0].user_properties, {
@@ -120,7 +120,7 @@ describe('metrics/amplitude', () => {
           ua_browser: 'foo',
           ua_version: 'bar',
           ua_os: 'baz',
-          fxa_uid: 'juff'
+          fxa_uid: 'blee'
         })
         assert.ok(args[0].time > Date.now() - 1000)
         assert.ok(/^[1-9][0-9]+$/.test(args[0].app_version))
@@ -138,11 +138,10 @@ describe('metrics/amplitude', () => {
           uaFormFactor: 'd',
           locale: 'e',
           credentials: {
-            deviceId: 'f',
-            uid: 'g'
+            uid: 'f'
           },
           payload: {
-            service: 'h'
+            service: 'g'
           }
         }))
       })
@@ -158,15 +157,15 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].session_id, undefined)
         assert.equal(args[0].language, 'e')
         assert.deepEqual(args[0].event_properties, {
-          device_id: 'f',
-          service: 'h'
+          device_id: undefined,
+          service: 'g'
         })
         assert.deepEqual(args[0].user_properties, {
           flow_id: undefined,
           ua_browser: 'a',
           ua_version: 'b',
           ua_os: 'c',
-          fxa_uid: 'g'
+          fxa_uid: 'f'
         })
       })
     })
@@ -955,48 +954,53 @@ describe('metrics/amplitude', () => {
       beforeEach(() => {
         amplitude('account.signed', mocks.mockRequest({
           credentials: {
-            deviceId: 'foo',
-            uid: 'bar'
+            uid: 'foo'
           },
           payload: {
-            service: 'baz'
+            service: 'bar'
           },
           query: {
-            service: 'qux'
+            service: 'baz'
           }
         }), {
-          device_id: 'zang',
-          service: 'frip',
-          uid: 'plin'
+          service: 'zang',
+          uid: 'frip'
         })
       })
 
       it('data properties were set', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
-        assert.deepEqual(args[0].event_properties, {
-          device_id: 'zang',
-          service: 'frip'
-        })
-        assert.equal(args[0].user_properties.fxa_uid, 'plin')
+        assert.equal(args[0].event_properties.service, 'zang')
+        assert.equal(args[0].user_properties.fxa_uid, 'frip')
       })
     })
 
     describe('with metricsContext', () => {
       beforeEach(() => {
-        amplitude('sms.installFirefox.sent', mocks.mockRequest({}), {}, {
-          flow_id: 'foo',
-          flowBeginTime: 'bar',
-          time: 'baz'
+        amplitude('sms.installFirefox.sent', mocks.mockRequest({
+          payload: {
+            metricsContext: {
+              deviceId: 'foo',
+              flowId: 'bar',
+              flowBeginTime: 'baz'
+            }
+          }
+        }), {}, {
+          device_id: 'plin',
+          flow_id: 'gorb',
+          flowBeginTime: 'yerx',
+          time: 'wenf'
         })
       })
 
       it('metricsContext properties were set', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
-        assert.equal(args[0].user_properties.flow_id, 'foo')
-        assert.equal(args[0].session_id, 'bar')
-        assert.equal(args[0].time, 'baz')
+        assert.equal(args[0].event_properties.device_id, 'plin')
+        assert.equal(args[0].user_properties.flow_id, 'gorb')
+        assert.equal(args[0].session_id, 'yerx')
+        assert.equal(args[0].time, 'wenf')
       })
     })
   })
