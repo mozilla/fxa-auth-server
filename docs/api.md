@@ -1049,7 +1049,7 @@ and display the tab in a timely manner.
   Ignored unless `to:"all"` is specified.
   <!--end-request-body-post-accountdevicesnotify-excluded-->
 
-* `payload`: *object, required*
+* `payload`: *object, optional*
 
   <!--begin-request-body-post-accountdevicesnotify-payload-->
   Push payload,
