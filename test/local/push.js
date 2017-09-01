@@ -265,9 +265,9 @@ describe('push', () => {
   )
 
   it(
-    'sendPush doesn\'t push to ios devices if it is triggered with a non collection changed command',
+    'sendPush doesn\'t push to ios devices if it is triggered with an unsupported command',
     () => {
-      var data = Buffer.from(JSON.stringify({command: 'randomCommand'}))
+      var data = Buffer.from(JSON.stringify({command: 'fxaccounts:non_existent_command'}))
       var endPoints = []
       var mocks = {
         'web-push': {
@@ -290,7 +290,7 @@ describe('push', () => {
   )
 
   it(
-    'sendPush pushes to ios devices if it is triggered with a collection changed command',
+    'sendPush pushes to all ios devices if it is triggered with a "collection changed" command',
     () => {
       var data = Buffer.from(JSON.stringify({command: 'sync:collection_changed'}))
       var endPoints = []
@@ -311,6 +311,70 @@ describe('push', () => {
           assert.equal(endPoints[0], mockDevices[0].pushCallback)
           assert.equal(endPoints[1], mockDevices[1].pushCallback)
           assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        })
+    }
+  )
+
+  it(
+    'sendPush pushes to ios >=9.0 devices if it is triggered with a "device connected" command',
+    () => {
+      var data = Buffer.from(JSON.stringify({command: 'fxaccounts:device_connected'}))
+      var endPoints = []
+      var mocks = {
+        'web-push': {
+          sendNotification: function (sub, payload, options) {
+            endPoints.push(sub.endpoint)
+            return P.resolve()
+          }
+        }
+      }
+
+      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
+      var options = { data: data }
+      return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        .then(() => {
+          assert.equal(endPoints.length, 2)
+          assert.equal(endPoints[0], mockDevices[0].pushCallback)
+          assert.equal(endPoints[1], mockDevices[1].pushCallback)
+          // iOS not notified due to unknown browser version
+        }).then(() => {
+          endPoints = []
+          mockDevices[2].uaBrowserVersion = '8.2'
+          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        }).then(() => {
+          assert.equal(endPoints.length, 2)
+          assert.equal(endPoints[0], mockDevices[0].pushCallback)
+          assert.equal(endPoints[1], mockDevices[1].pushCallback)
+          // iOS not notified due to unsupported browser version
+        }).then(() => {
+          endPoints = []
+          mockDevices[2].uaBrowserVersion = '9.0'
+          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        }).then(() => {
+          assert.equal(endPoints.length, 3)
+          assert.equal(endPoints[0], mockDevices[0].pushCallback)
+          assert.equal(endPoints[1], mockDevices[1].pushCallback)
+          assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        }).then(() => {
+          endPoints = []
+          mockDevices[2].uaBrowserVersion = '9.1'
+          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        }).then(() => {
+          assert.equal(endPoints.length, 3)
+          assert.equal(endPoints[0], mockDevices[0].pushCallback)
+          assert.equal(endPoints[1], mockDevices[1].pushCallback)
+          assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        }).then(() => {
+          endPoints = []
+          mockDevices[2].uaBrowserVersion = '10.2'
+          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        }).then(() => {
+          assert.equal(endPoints.length, 3)
+          assert.equal(endPoints[0], mockDevices[0].pushCallback)
+          assert.equal(endPoints[1], mockDevices[1].pushCallback)
+          assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        }).finally(() => {
+          delete mockDevices[2].uaBrowserVersion
         })
     }
   )
