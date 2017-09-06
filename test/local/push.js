@@ -267,9 +267,9 @@ describe('push', () => {
   it(
     'sendPush doesn\'t push to ios devices if it is triggered with an unsupported command',
     () => {
-      var data = Buffer.from(JSON.stringify({command: 'fxaccounts:non_existent_command'}))
-      var endPoints = []
-      var mocks = {
+      const data = Buffer.from(JSON.stringify({command: 'fxaccounts:non_existent_command'}))
+      const endPoints = []
+      const mocks = {
         'web-push': {
           sendNotification: function (sub, payload, options) {
             endPoints.push(sub.endpoint)
@@ -278,8 +278,8 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
-      var options = { data: data }
+      const push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
+      const options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
         .then(() => {
           assert.equal(endPoints.length, 2)
@@ -292,9 +292,9 @@ describe('push', () => {
   it(
     'sendPush pushes to all ios devices if it is triggered with a "collection changed" command',
     () => {
-      var data = Buffer.from(JSON.stringify({command: 'sync:collection_changed'}))
-      var endPoints = []
-      var mocks = {
+      const data = Buffer.from(JSON.stringify({command: 'sync:collection_changed'}))
+      const endPoints = []
+      const mocks = {
         'web-push': {
           sendNotification: function (sub, payload, options) {
             endPoints.push(sub.endpoint)
@@ -303,8 +303,8 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
-      var options = { data: data }
+      const push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
+      const options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
         .then(() => {
           assert.equal(endPoints.length, 3)
@@ -318,9 +318,9 @@ describe('push', () => {
   it(
     'sendPush pushes to ios >=9.0 devices if it is triggered with a "device connected" command',
     () => {
-      var data = Buffer.from(JSON.stringify({command: 'fxaccounts:device_connected'}))
-      var endPoints = []
-      var mocks = {
+      const data = Buffer.from(JSON.stringify({command: 'fxaccounts:device_connected'}))
+      let endPoints = []
+      const mocks = {
         'web-push': {
           sendNotification: function (sub, payload, options) {
             endPoints.push(sub.endpoint)
@@ -329,8 +329,8 @@ describe('push', () => {
         }
       }
 
-      var push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
-      var options = { data: data }
+      const push = proxyquire(pushModulePath, mocks)(mockLog(), mockDbResult, mockConfig)
+      const options = { data: data }
       return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
         .then(() => {
           assert.equal(endPoints.length, 2)
