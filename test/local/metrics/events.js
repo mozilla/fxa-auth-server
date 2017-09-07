@@ -594,8 +594,11 @@ describe('metrics/events', () => {
           ua_browser: request.app.ua.browser,
           ua_version: request.app.ua.browserVersion,
           ua_os: request.app.ua.os,
+          user_country: 'United States',
+          user_locale: 'en-US',
+          user_state: 'California',
           fxa_uid: 'baz'
-        }, 'log.amplitudeEvent was passed correct event properties')
+        }, 'log.amplitudeEvent was passed correct user properties')
 
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
         assert.equal(log.flowEvent.callCount, 0, 'log.flowEvent was not called')

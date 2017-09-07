@@ -33,7 +33,7 @@ describe('metrics/amplitude', () => {
 
     describe('empty event argument', () => {
       beforeEach(() => {
-        amplitude('', mocks.mockRequest({}))
+        return amplitude('', mocks.mockRequest({}))
       })
 
       it('called log.error correctly', () => {
@@ -54,7 +54,7 @@ describe('metrics/amplitude', () => {
 
     describe('missing request argument', () => {
       beforeEach(() => {
-        amplitude('foo')
+        return amplitude('foo')
       })
 
       it('called log.error correctly', () => {
@@ -75,7 +75,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.confirmed', () => {
       beforeEach(() => {
-        amplitude('account.confirmed', mocks.mockRequest({
+        return amplitude('account.confirmed', mocks.mockRequest({
           uaBrowser: 'foo',
           uaBrowserVersion: 'bar',
           uaOS: 'baz',
@@ -85,6 +85,12 @@ describe('metrics/amplitude', () => {
           locale: 'wibble',
           credentials: {
             uid: 'blee'
+          },
+          geo: {
+            location: {
+              country: 'United Kingdom',
+              state: 'England',
+            }
           },
           query: {
             service: 'melm'
@@ -122,6 +128,9 @@ describe('metrics/amplitude', () => {
           ua_browser: 'foo',
           ua_version: 'bar',
           ua_os: 'baz',
+          user_country: 'United Kingdom',
+          user_locale: 'wibble',
+          user_state: 'England',
           fxa_uid: args[0].user_id
         })
         assert.ok(args[0].time > Date.now() - 1000)
@@ -131,7 +140,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.created', () => {
       beforeEach(() => {
-        amplitude('account.created', mocks.mockRequest({
+        return amplitude('account.created', mocks.mockRequest({
           uaBrowser: 'a',
           uaBrowserVersion: 'b',
           uaOS: 'c',
@@ -169,6 +178,9 @@ describe('metrics/amplitude', () => {
           ua_browser: 'a',
           ua_version: 'b',
           ua_os: 'c',
+          user_country: 'United States',
+          user_locale: 'e',
+          user_state: 'California',
           fxa_uid: args[0].user_id
         })
       })
@@ -176,7 +188,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.login', () => {
       beforeEach(() => {
-        amplitude('account.login', mocks.mockRequest({}))
+        return amplitude('account.login', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -192,7 +204,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.login.blocked', () => {
       beforeEach(() => {
-        amplitude('account.login.blocked', mocks.mockRequest({}))
+        return amplitude('account.login.blocked', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -208,7 +220,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.login.confirmedUnblockCode', () => {
       beforeEach(() => {
-        amplitude('account.login.confirmedUnblockCode', mocks.mockRequest({}))
+        return amplitude('account.login.confirmedUnblockCode', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -224,7 +236,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.reset', () => {
       beforeEach(() => {
-        amplitude('account.reset', mocks.mockRequest({}))
+        return amplitude('account.reset', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -240,7 +252,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.signed', () => {
       beforeEach(() => {
-        amplitude('account.signed', mocks.mockRequest({}))
+        return amplitude('account.signed', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -256,7 +268,7 @@ describe('metrics/amplitude', () => {
 
     describe('account.verified', () => {
       beforeEach(() => {
-        amplitude('account.verified', mocks.mockRequest({}))
+        return amplitude('account.verified', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -272,7 +284,7 @@ describe('metrics/amplitude', () => {
 
     describe('flow.complete (sign-up)', () => {
       beforeEach(() => {
-        amplitude('flow.complete', mocks.mockRequest({}), {}, {
+        return amplitude('flow.complete', mocks.mockRequest({}), {}, {
           flowType: 'registration'
         })
       })
@@ -290,7 +302,7 @@ describe('metrics/amplitude', () => {
 
     describe('flow.complete (sign-in)', () => {
       beforeEach(() => {
-        amplitude('flow.complete', mocks.mockRequest({}), {}, {
+        return amplitude('flow.complete', mocks.mockRequest({}), {}, {
           flowType: 'login'
         })
       })
@@ -308,7 +320,7 @@ describe('metrics/amplitude', () => {
 
     describe('flow.complete (reset)', () => {
       beforeEach(() => {
-        amplitude('flow.complete', mocks.mockRequest({}))
+        return amplitude('flow.complete', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -322,7 +334,7 @@ describe('metrics/amplitude', () => {
 
     describe('sms.installFirefox.sent', () => {
       beforeEach(() => {
-        amplitude('sms.installFirefox.sent', mocks.mockRequest({}))
+        return amplitude('sms.installFirefox.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -338,7 +350,7 @@ describe('metrics/amplitude', () => {
 
     describe('device.created', () => {
       beforeEach(() => {
-        amplitude('device.created', mocks.mockRequest({}))
+        return amplitude('device.created', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -352,7 +364,9 @@ describe('metrics/amplitude', () => {
 
     describe('email.newDeviceLoginEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.newDeviceLoginEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.newDeviceLoginEmail.bounced', mocks.mockRequest({}), {
+          email_domain: 'gmail'
+        })
       })
 
       it('did not call log.error', () => {
@@ -364,12 +378,13 @@ describe('metrics/amplitude', () => {
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'login')
+        assert.equal(args[0].event_properties.email_provider, 'gmail')
       })
     })
 
     describe('email.newDeviceLoginEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.newDeviceLoginEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.newDeviceLoginEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -381,12 +396,13 @@ describe('metrics/amplitude', () => {
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'login')
+        assert.equal(args[0].event_properties.email_provider, undefined)
       })
     })
 
     describe('email.passwordChangedEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.passwordChangedEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.passwordChangedEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -403,7 +419,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.passwordChangedEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.passwordChangedEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.passwordChangedEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -420,7 +436,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.passwordResetEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.passwordResetEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.passwordResetEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -437,7 +453,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.passwordResetEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.passwordResetEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.passwordResetEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -454,7 +470,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.passwordResetRequiredEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.passwordResetRequiredEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.passwordResetRequiredEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -471,7 +487,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.passwordResetRequiredEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.passwordResetRequiredEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.passwordResetRequiredEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -488,7 +504,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postRemoveSecondaryEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.postRemoveSecondaryEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.postRemoveSecondaryEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -505,7 +521,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postRemoveSecondaryEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.postRemoveSecondaryEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.postRemoveSecondaryEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -522,7 +538,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postVerifyEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.postVerifyEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.postVerifyEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -539,7 +555,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postVerifyEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.postVerifyEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.postVerifyEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -556,7 +572,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postVerifySecondaryEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.postVerifySecondaryEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.postVerifySecondaryEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -573,7 +589,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.postVerifySecondaryEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.postVerifySecondaryEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.postVerifySecondaryEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -590,7 +606,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.recoveryEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.recoveryEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.recoveryEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -607,7 +623,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.recoveryEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.recoveryEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.recoveryEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -624,7 +640,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.unblockCode.bounced', () => {
       beforeEach(() => {
-        amplitude('email.unblockCode.bounced', mocks.mockRequest({}))
+        return amplitude('email.unblockCode.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -641,7 +657,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.unblockCode.sent', () => {
       beforeEach(() => {
-        amplitude('email.unblockCode.sent', mocks.mockRequest({}))
+        return amplitude('email.unblockCode.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -658,7 +674,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderFirstEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderFirstEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderFirstEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -675,7 +691,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderFirstEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderFirstEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderFirstEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -692,7 +708,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderSecondEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderSecondEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderSecondEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -709,7 +725,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderSecondEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderSecondEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderSecondEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -726,7 +742,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -743,7 +759,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verificationReminderEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verificationReminderEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verificationReminderEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -760,7 +776,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifyEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verifyEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verifyEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -777,7 +793,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifyEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verifyEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verifyEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -794,7 +810,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifyLoginEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verifyLoginEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verifyLoginEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -811,7 +827,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifyLoginEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verifyLoginEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verifyLoginEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -828,7 +844,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifySyncEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verifySyncEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verifySyncEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -845,7 +861,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifySyncEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verifySyncEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verifySyncEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -862,7 +878,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifySecondaryEmail.bounced', () => {
       beforeEach(() => {
-        amplitude('email.verifySecondaryEmail.bounced', mocks.mockRequest({}))
+        return amplitude('email.verifySecondaryEmail.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -879,7 +895,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.verifySecondaryEmail.sent', () => {
       beforeEach(() => {
-        amplitude('email.verifySecondaryEmail.sent', mocks.mockRequest({}))
+        return amplitude('email.verifySecondaryEmail.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -896,7 +912,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.wibble.bounced', () => {
       beforeEach(() => {
-        amplitude('email.wibble.bounced', mocks.mockRequest({}))
+        return amplitude('email.wibble.bounced', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -910,7 +926,7 @@ describe('metrics/amplitude', () => {
 
     describe('email.wibble.sent', () => {
       beforeEach(() => {
-        amplitude('email.wibble.sent', mocks.mockRequest({}))
+        return amplitude('email.wibble.sent', mocks.mockRequest({}))
       })
 
       it('did not call log.error', () => {
@@ -924,7 +940,7 @@ describe('metrics/amplitude', () => {
 
     describe('with data', () => {
       beforeEach(() => {
-        amplitude('account.signed', mocks.mockRequest({
+        return amplitude('account.signed', mocks.mockRequest({
           credentials: {
             uid: 'foo'
           },
@@ -951,7 +967,7 @@ describe('metrics/amplitude', () => {
 
     describe('with metricsContext', () => {
       beforeEach(() => {
-        amplitude('sms.installFirefox.sent', mocks.mockRequest({
+        return amplitude('sms.installFirefox.sent', mocks.mockRequest({
           payload: {
             metricsContext: {
               deviceId: 'foo',
