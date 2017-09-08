@@ -95,7 +95,7 @@ describe('lib/server', () => {
         assert.equal(log.summary.callCount, 0)
       })
 
-      describe('successful request, acceptable locale, signinCodes feature enabled:', () => {
+      describe('successful request, authenticated, acceptable locale, signinCodes feature enabled:', () => {
         let request
 
         beforeEach(() => {
@@ -186,7 +186,7 @@ describe('lib/server', () => {
           })
         })
 
-        describe('another request:', () => {
+        describe('successful request, unauthenticated, uid in payload:', () => {
           let secondRequest
 
           beforeEach(() => {
@@ -200,7 +200,8 @@ describe('lib/server', () => {
               method: 'POST',
               url: '/account/create',
               payload: {
-                features: [ 'signinCodes' ]
+                features: [ 'signinCodes' ],
+                uid: 'another fake uid'
               },
               remoteAddress: '194.12.187.0'
             }).then(response => secondRequest = response.request)
@@ -218,7 +219,6 @@ describe('lib/server', () => {
           })
 
           it('second request has its own location info', () => {
-            assert.notEqual(request, secondRequest)
             assert.notEqual(request.app.geo, secondRequest.app.geo)
             return secondRequest.app.geo.then(geo => {
               assert.equal(geo.location.city, 'Geneva')
@@ -227,6 +227,16 @@ describe('lib/server', () => {
               assert.equal(geo.location.state, 'Geneva')
               assert.equal(geo.location.stateCode, 'GE')
               assert.equal(geo.timeZone, 'Europe/Zurich')
+            })
+          })
+
+          it('second request fetched devices correctly', () => {
+            assert.notEqual(request.app.devices, secondRequest.app.devices)
+            assert.equal(db.devices.callCount, 2)
+            assert.equal(db.devices.args[1].length, 1)
+            assert.equal(db.devices.args[1][0], 'another fake uid')
+            return request.app.devices.then(devices => {
+              assert.deepEqual(devices, [ { id: 'fake device id' } ])
             })
           })
         })
