@@ -69,7 +69,9 @@ describe('lib/server', () => {
       log = mocks.spyLog()
       config = getConfig()
       routes = getRoutes()
-      db = mocks.mockDB()
+      db = mocks.mockDB({
+        devices: [ { id: 'fake device id' } ]
+      })
       translator = {
         getTranslator: sinon.spy(() => ({ en: { format: () => {}, language: 'en' } })),
         getLocale: sinon.spy(() => 'en')
@@ -99,6 +101,9 @@ describe('lib/server', () => {
         beforeEach(() => {
           response = 'ok'
           return instance.inject({
+            credentials: {
+              uid: 'fake uid'
+            },
             headers: {
               'accept-language': 'fr-CH, fr;q=0.9, en-GB, en;q=0.5',
               'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:57.0) Gecko/20100101 Firefox/57.0',
@@ -167,6 +172,17 @@ describe('lib/server', () => {
             assert.equal(geo.location.state, 'California')
             assert.equal(geo.location.stateCode, 'CA')
             assert.equal(geo.timeZone, 'America/Los_Angeles')
+          })
+        })
+
+        it('fetched devices correctly', () => {
+          assert.ok(request.app.devices)
+          assert.equal(typeof request.app.devices.then, 'function')
+          assert.equal(db.devices.callCount, 1)
+          assert.equal(db.devices.args[0].length, 1)
+          assert.equal(db.devices.args[0][0], 'fake uid')
+          return request.app.devices.then(devices => {
+            assert.deepEqual(devices, [ { id: 'fake device id' } ])
           })
         })
 
