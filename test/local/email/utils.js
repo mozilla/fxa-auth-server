@@ -100,6 +100,7 @@ describe('email utils helpers', () => {
     assert.equal(args[0], 'email.verifyEmail.sent')
     assert.deepEqual(args[1], {
       app: {
+        devices: P.resolve([]),
         geo: P.resolve({
           location: {}
         }),
@@ -139,6 +140,7 @@ describe('email utils helpers', () => {
     assert.equal(args[0], 'email.verifyLoginEmail.bounced')
     assert.deepEqual(args[1], {
       app: {
+        devices: P.resolve([]),
         geo: P.resolve({
           location: {}
         }),

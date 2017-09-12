@@ -86,6 +86,7 @@ describe('metrics/amplitude', () => {
           credentials: {
             uid: 'blee'
           },
+          devices: [ {}, {}, {} ],
           geo: {
             location: {
               country: 'United Kingdom',
@@ -125,6 +126,7 @@ describe('metrics/amplitude', () => {
         })
         assert.deepEqual(args[0].user_properties, {
           flow_id: 'udge',
+          sync_device_count: 3,
           ua_browser: 'foo',
           ua_version: 'bar',
           ua_os: 'baz',
@@ -151,6 +153,7 @@ describe('metrics/amplitude', () => {
           credentials: {
             uid: 'f'
           },
+          devices: [],
           payload: {
             service: 'g'
           }
@@ -175,6 +178,7 @@ describe('metrics/amplitude', () => {
         })
         assert.deepEqual(args[0].user_properties, {
           flow_id: undefined,
+          sync_device_count: 0,
           ua_browser: 'a',
           ua_version: 'b',
           ua_os: 'c',
@@ -188,7 +192,9 @@ describe('metrics/amplitude', () => {
 
     describe('account.login', () => {
       beforeEach(() => {
-        return amplitude('account.login', mocks.mockRequest({}))
+        return amplitude('account.login', mocks.mockRequest({}, {
+          devices: {}
+        }))
       })
 
       it('did not call log.error', () => {
@@ -199,6 +205,7 @@ describe('metrics/amplitude', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - success')
+        assert.equal(args[0].user_properties.sync_device_count, undefined)
       })
     })
 
