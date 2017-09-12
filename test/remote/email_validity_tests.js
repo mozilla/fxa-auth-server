@@ -36,8 +36,7 @@ describe('remote email validity', function() {
         'me@example.com-',
         'me@example..com',
         'me@example-.com',
-        'me@example.-com',
-        '\uD83D\uDCA9@unicodepooforyou.com'
+        'me@example.-com'
       ]
       emails.forEach(function(email, i) {
         emails[i] = Client.create(config.publicUrl, email, pwd)

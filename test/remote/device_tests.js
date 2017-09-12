@@ -226,37 +226,6 @@ describe('remote device', function() {
   )
 
   it(
-    'device registration with unsupported characters in the name',
-    () => {
-      var email = server.uniqueEmail()
-      var password = 'test password'
-      return Client.create(config.publicUrl, email, password)
-        .then(
-          function (client) {
-            var deviceInfo = {
-              id: crypto.randomBytes(16).toString('hex'),
-              name: 'unicodepooforyou: \uD83D\uDCA9',
-              type: 'mobile',
-            }
-            return client.updateDevice(deviceInfo)
-              .then(
-                function () {
-                  assert(false, 'request should have failed')
-                }
-              )
-              .catch(
-                function (err) {
-                  assert.equal(err.code, 400, 'err.code was 400')
-                  assert.equal(err.errno, 107, 'err.errno was 107')
-                  assert.equal(err.validation.keys[0], 'name', 'name was rejected')
-                }
-              )
-          }
-        )
-    }
-  )
-
-  it(
     'update device fails with bad callbackUrl',
     () => {
       var badPushCallback = 'https://updates.push.services.mozilla.com.different-push-server.technology'
