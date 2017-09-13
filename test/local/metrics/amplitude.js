@@ -132,8 +132,7 @@ describe('metrics/amplitude', () => {
           ua_os: 'baz',
           user_country: 'United Kingdom',
           user_locale: 'wibble',
-          user_state: 'England',
-          fxa_uid: args[0].user_id
+          user_state: 'England'
         })
         assert.ok(args[0].time > Date.now() - 1000)
         assert.ok(/^[1-9][0-9]+$/.test(args[0].app_version))
@@ -184,8 +183,7 @@ describe('metrics/amplitude', () => {
           ua_os: 'c',
           user_country: 'United States',
           user_locale: 'e',
-          user_state: 'California',
-          fxa_uid: args[0].user_id
+          user_state: 'California'
         })
       })
     })
@@ -968,7 +966,6 @@ describe('metrics/amplitude', () => {
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].user_id, 'frip')
         assert.equal(args[0].event_properties.service, 'zang')
-        assert.equal(args[0].user_properties.fxa_uid, args[0].user_id)
       })
     })
 
