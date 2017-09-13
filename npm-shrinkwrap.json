@@ -8976,6 +8976,43 @@
         }
       }
     },
+    "raven": {
+      "version": "2.1.2",
+      "from": "raven@2.1.2",
+      "resolved": "https://registry.npmjs.org/raven/-/raven-2.1.2.tgz",
+      "dependencies": {
+        "cookie": {
+          "version": "0.3.1",
+          "from": "cookie@0.3.1",
+          "resolved": "http://127.0.0.1:59296/cookie/-/cookie-0.3.1.tgz"
+        },
+        "json-stringify-safe": {
+          "version": "5.0.1",
+          "from": "json-stringify-safe@5.0.1",
+          "resolved": "https://registry.npmjs.org/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz"
+        },
+        "lsmod": {
+          "version": "1.0.0",
+          "from": "lsmod@1.0.0",
+          "resolved": "https://registry.npmjs.org/lsmod/-/lsmod-1.0.0.tgz"
+        },
+        "stack-trace": {
+          "version": "0.0.9",
+          "from": "stack-trace@0.0.9",
+          "resolved": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.9.tgz"
+        },
+        "timed-out": {
+          "version": "4.0.1",
+          "from": "timed-out@4.0.1",
+          "resolved": "https://registry.npmjs.org/timed-out/-/timed-out-4.0.1.tgz"
+        },
+        "uuid": {
+          "version": "3.0.0",
+          "from": "uuid@3.0.0",
+          "resolved": "https://registry.npmjs.org/uuid/-/uuid-3.0.0.tgz"
+        }
+      }
+    },
     "redis": {
       "version": "2.7.1",
       "from": "redis@2.7.1",
