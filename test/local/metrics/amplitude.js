@@ -15,11 +15,11 @@ describe('metrics/amplitude', () => {
   })
 
   it('throws if log argument is missing', () => {
-    assert.throws(() => amplitudeModule(null, { oauth: { clientIds: [] } }))
+    assert.throws(() => amplitudeModule(null, { oauth: { clientIds: {} } }))
   })
 
-  it('throws if config argument is bad', () => {
-    assert.throws(() => amplitudeModule({}, { oauth: { clientIds: {} } }))
+  it('throws if config argument is missing', () => {
+    assert.throws(() => amplitudeModule({}, { oauth: { clientIds: null } }))
   })
 
   describe('instantiate', () => {
@@ -29,10 +29,10 @@ describe('metrics/amplitude', () => {
       log = mocks.spyLog()
       amplitude = amplitudeModule(log, {
         oauth: {
-          clientIds: [
-            [ '00', 'amo' ],
-            [ '01', 'pocket' ]
-          ]
+          clientIds: {
+            0: 'amo',
+            1: 'pocket'
+          }
         }
       })
     })
@@ -105,7 +105,7 @@ describe('metrics/amplitude', () => {
             }
           },
           query: {
-            service: '00'
+            service: '0'
           },
           payload: {
             metricsContext: {
@@ -131,7 +131,7 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].session_id, 'kwop')
         assert.equal(args[0].language, 'wibble')
         assert.deepEqual(args[0].event_properties, {
-          service: '00'
+          service: '0'
         })
         assert.deepEqual(args[0].user_properties, {
           flow_id: 'udge',
@@ -166,10 +166,10 @@ describe('metrics/amplitude', () => {
           },
           devices: [],
           query: {
-            service: '00'
+            service: '0'
           },
           payload: {
-            service: '01'
+            service: '1'
           }
         }))
       })
@@ -187,7 +187,7 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].session_id, undefined)
         assert.equal(args[0].language, 'e')
         assert.deepEqual(args[0].event_properties, {
-          service: '01'
+          service: '1'
         })
         assert.deepEqual(args[0].user_properties, {
           flow_id: undefined,

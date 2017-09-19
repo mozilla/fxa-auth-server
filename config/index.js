@@ -557,9 +557,9 @@ var conf = convict({
       }
     },
     clientIds: {
-      doc: 'Mappings from client id to service name: [ [ "id1", "name-1" ], [ "id2", "name-2" ] ]',
-      format: Array,
-      default: [],
+      doc: 'Mappings from client id to service name: { "id1": "name-1", "id2": "name-2" }',
+      format: Object,
+      default: {},
       env: 'OAUTH_CLIENT_IDS'
     }
   },

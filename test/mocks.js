@@ -472,7 +472,7 @@ function generateMetricsContext(){
 function mockRequest (data, errors) {
   const events = require('../lib/metrics/events')(data.log || module.exports.mockLog(), {
     oauth: {
-      clientIds: data.clientIds || []
+      clientIds: data.clientIds || {}
     }
   })
   const metricsContext = data.metricsContext || module.exports.mockMetricsContext()

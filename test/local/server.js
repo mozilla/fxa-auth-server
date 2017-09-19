@@ -419,7 +419,7 @@ function getConfig () {
       enabled: false
     },
     oauth: {
-      clientIds: [],
+      clientIds: {},
       url: 'http://localhost:9010',
       keepAlive: false,
       extra: {
