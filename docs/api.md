@@ -32,7 +32,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/unlock/verify_code](#post-accountunlockverify_code)
     * [POST /account/reset (:lock: accountResetToken)](#post-accountreset)
     * [POST /account/destroy](#post-accountdestroy)
-  * [Devices sessions](#devices-sessions)
+  * [Devices and sessions](#devices-and-sessions)
     * [POST /account/device (:lock: sessionToken)](#post-accountdevice)
     * [POST /account/devices/notify (:lock: sessionToken)](#post-accountdevicesnotify)
     * [GET /account/devices (:lock: sessionToken)](#get-accountdevices)
@@ -846,7 +846,7 @@ by the following errors
   Incorrect password
 
 
-### Devices sessions
+### Devices and sessions
 
 #### POST /account/device
 
