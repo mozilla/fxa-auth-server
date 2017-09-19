@@ -209,7 +209,7 @@ describe('metrics/amplitude', () => {
       beforeEach(() => {
         return amplitude('account.login', mocks.mockRequest({
           query: {
-            service: '02'
+            service: '2'
           }
         }, {
           devices: {}
