@@ -14,7 +14,7 @@ const log = {
 }
 const events = require('../../../lib/metrics/events')(log, {
   oauth: {
-    clientIds: []
+    clientIds: {}
   }
 })
 const mocks = require('../../mocks')
