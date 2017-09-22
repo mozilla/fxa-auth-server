@@ -168,16 +168,22 @@ describe('email utils helpers', () => {
     })
 
     it('logs an error if message.mail is missing', () => {
-      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {})
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {}, 'wibble')
       assert.equal(log.error.callCount, 1)
       assert.equal(log.error.args[0].length, 1)
-      assert.deepEqual({ op: 'emailHeaders.missing' }, log.error.args[0][0])
+      assert.deepEqual({
+        op: 'emailHeaders.missing',
+        origin: 'wibble'
+      }, log.error.args[0][0])
     })
 
     it('logs an error if message.mail.headers is missing', () => {
-      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {} })
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {} }, 'blee')
       assert.equal(log.error.callCount, 1)
-      assert.deepEqual({ op: 'emailHeaders.missing' }, log.error.args[0][0])
+      assert.deepEqual({
+        op: 'emailHeaders.missing',
+        origin: 'blee'
+      }, log.error.args[0][0])
     })
 
     it('does not log an error if message.mail.headers is object', () => {
@@ -191,20 +197,22 @@ describe('email utils helpers', () => {
     })
 
     it('logs an error if message.mail.headers is non-object', () => {
-      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: { headers: 'foo' } })
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: { headers: 'foo' } }, 'wibble')
       assert.equal(log.error.callCount, 1)
       assert.deepEqual({
         op: 'emailHeaders.weird',
-        type: 'string'
+        type: 'string',
+        origin: 'wibble'
       }, log.error.args[0][0])
     })
 
     it('logs an error if message.headers is non-object', () => {
-      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {}, headers: 42 })
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {}, headers: 42 }, 'wibble')
       assert.equal(log.error.callCount, 1)
       assert.deepEqual({
         op: 'emailHeaders.weird',
-        type: 'number'
+        type: 'number',
+        origin: 'wibble'
       }, log.error.args[0][0])
     })
   })
