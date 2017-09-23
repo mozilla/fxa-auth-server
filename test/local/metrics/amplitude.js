@@ -130,6 +130,8 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].event_type, 'fxa_login - email_confirmed')
         assert.equal(args[0].session_id, 'kwop')
         assert.equal(args[0].language, 'wibble')
+        assert.equal(args[0].country, 'United Kingdom')
+        assert.equal(args[0].region, 'England')
         assert.deepEqual(args[0].event_properties, {
           service: '0'
         })
@@ -139,9 +141,6 @@ describe('metrics/amplitude', () => {
           ua_browser: 'foo',
           ua_version: 'bar',
           ua_os: 'baz',
-          user_country: 'United Kingdom',
-          user_locale: 'wibble',
-          user_state: 'England',
           '$append': {
             fxa_services_used: 'amo'
           }
@@ -186,6 +185,8 @@ describe('metrics/amplitude', () => {
         assert.equal(args[0].event_type, 'fxa_reg - created')
         assert.equal(args[0].session_id, undefined)
         assert.equal(args[0].language, 'e')
+        assert.equal(args[0].country, 'United States')
+        assert.equal(args[0].region, 'California')
         assert.deepEqual(args[0].event_properties, {
           service: '1'
         })
@@ -195,9 +196,6 @@ describe('metrics/amplitude', () => {
           ua_browser: 'a',
           ua_version: 'b',
           ua_os: 'c',
-          user_country: 'United States',
-          user_locale: 'e',
-          user_state: 'California',
           '$append': {
             fxa_services_used: 'pocket'
           }
