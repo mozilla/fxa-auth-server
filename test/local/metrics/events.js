@@ -627,8 +627,7 @@ describe('metrics/events', () => {
           flow_id: 'bar',
           sync_device_count: 0,
           ua_browser: request.app.ua.browser,
-          ua_version: request.app.ua.browserVersion,
-          ua_os: request.app.ua.os
+          ua_version: request.app.ua.browserVersion
         }, 'log.amplitudeEvent was passed correct user properties')
 
         assert.equal(metricsContext.gather.callCount, 0, 'metricsContext.gather was not called')
