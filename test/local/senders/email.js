@@ -678,6 +678,32 @@ describe(
       }
     )
 
+    describe('delete template versions', () => {
+      before(() => {
+        Object.keys(TEMPLATE_VERSIONS).forEach(key => TEMPLATE_VERSIONS[key] = undefined)
+      })
 
+      messageTypes.forEach(type => {
+        const message = {
+          code: 'code',
+          deviceId: 'deviceId',
+          email: 'foo@example.com',
+          locations: [],
+          service: 'sync',
+          uid: 'uid',
+          unblockCode: 'unblockCode',
+          type: 'secondary',
+          flowId: 'flowId',
+          flowBeginTime: Date.now()
+        }
+
+        it(`uses default template version for ${type}`, () => {
+          mailer.mailer.sendMail = emailConfig => {
+            assert.equal(emailConfig.headers['X-Template-Version'], 1, 'template version defaults to 1')
+          }
+          mailer[type](message)
+        })
+      })
+    })
   }
 )
