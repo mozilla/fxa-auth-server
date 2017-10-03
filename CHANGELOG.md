@@ -1,3 +1,17 @@
+<a name="1.96.4"></a>
+## [1.96.4](https://github.com/mozilla/fxa-auth-server/compare/v1.96.3...v1.96.4) (2017-10-03)
+
+
+### Bug Fixes
+
+* **sessions:** update the access time on /sign checking ([3a89acd](https://github.com/mozilla/fxa-auth-server/commit/3a89acd))
+
+### chore
+
+* **nsp:** set nsp rules ([500a0e1](https://github.com/mozilla/fxa-auth-server/commit/500a0e1))
+
+
+
 <a name="1.96.3"></a>
 ## [1.96.3](https://github.com/mozilla/fxa-auth-server/compare/v1.96.2...v1.96.3) (2017-09-25)
 
