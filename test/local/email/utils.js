@@ -183,7 +183,7 @@ describe('email utils helpers', () => {
         op: 'emailHeaders.missing',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.info.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
     })
 
     it('logs an error if message.mail.headers is missing', () => {
@@ -193,10 +193,58 @@ describe('email utils helpers', () => {
         op: 'emailHeaders.missing',
         origin: 'blee'
       }, log.error.args[0][0])
-      assert.equal(log.info.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
     })
 
-    it('does not log an error if message.mail.headers is object', () => {
+    it('does not log an error/warning if message.mail.headers is object and deviceId is set', () => {
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
+        mail: {
+          headers: {
+            'X-Device-Id': 'foo'
+          }
+        }
+      })
+      assert.equal(log.error.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
+    })
+
+    it('does not log an error/warning if message.mail.headers is object and deviceId is set (lowercase)', () => {
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
+        mail: {
+          headers: {
+            'x-device-id': 'bar'
+          }
+        }
+      })
+      assert.equal(log.error.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
+    })
+
+    it('does not log an error/warning if message.mail.headers is object and uid is set', () => {
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
+        mail: {
+          headers: {
+            'X-Uid': 'foo'
+          }
+        }
+      })
+      assert.equal(log.error.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
+    })
+
+    it('does not log an error/warning if message.mail.headers is object and uid is set (lowercase)', () => {
+      emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
+        mail: {
+          headers: {
+            'x-uid': 'bar'
+          }
+        }
+      })
+      assert.equal(log.error.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
+    })
+
+    it('logs a warning if message.mail.headers is object and deviceId and uid are missing', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
         mail: {
           headers: {
@@ -208,9 +256,9 @@ describe('email utils helpers', () => {
         }
       }, 'wibble')
       assert.equal(log.error.callCount, 0)
-      assert.equal(log.info.callCount, 1)
-      assert.equal(log.info.args[0].length, 1)
-      assert.deepEqual(log.info.args[0][0], {
+      assert.equal(log.warn.callCount, 1)
+      assert.equal(log.warn.args[0].length, 1)
+      assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
         keys: [ 'X-Template-Name', 'X-Xxx', 'X-Yyy', 'X-Zzz' ],
         template: 'foo',
@@ -218,15 +266,15 @@ describe('email utils helpers', () => {
       })
     })
 
-    it('does not log an error if message.headers is object', () => {
+    it('logs a warning if message.headers is object and deviceId and uid are missing', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {
         headers: {
           'x-template-name': 'wibble'
         }
       }, 'blee')
       assert.equal(log.error.callCount, 0)
-      assert.equal(log.info.callCount, 1)
-      assert.deepEqual(log.info.args[0][0], {
+      assert.equal(log.warn.callCount, 1)
+      assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
         keys: [ 'x-template-name' ],
         template: 'wibble',
@@ -242,7 +290,7 @@ describe('email utils helpers', () => {
         type: 'string',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.info.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
     })
 
     it('logs an error if message.headers is non-object', () => {
@@ -253,7 +301,7 @@ describe('email utils helpers', () => {
         type: 'number',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.info.callCount, 0)
+      assert.equal(log.warn.callCount, 0)
     })
   })
 })
