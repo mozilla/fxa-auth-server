@@ -260,7 +260,7 @@ describe('email utils helpers', () => {
       assert.equal(log.warn.args[0].length, 1)
       assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
-        keys: [ 'X-Template-Name', 'X-Xxx', 'X-Yyy', 'X-Zzz' ],
+        keys: 'X-Template-Name,X-Xxx,X-Yyy,X-Zzz',
         template: 'foo',
         origin: 'wibble'
       })
@@ -276,7 +276,7 @@ describe('email utils helpers', () => {
       assert.equal(log.warn.callCount, 1)
       assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
-        keys: [ 'x-template-name' ],
+        keys: 'x-template-name',
         template: 'wibble',
         origin: 'blee'
       })
