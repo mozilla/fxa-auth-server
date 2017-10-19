@@ -246,9 +246,13 @@ describe('remote db', function() {
           // Update the session token
           return db.updateSessionToken(sessionToken, '127.0.0.1', P.resolve({
             location: {
-              state: 'Mordor',
-              country: 'ME'
-            }
+              city: 'Bournemouth',
+              country: 'United Kingdom',
+              countryCode: 'GB',
+              state: 'England',
+              stateCode: 'EN'
+            },
+            timeZone: 'Europe/London'
           }))
         })
         .then(() => {
@@ -264,8 +268,12 @@ describe('remote db', function() {
           assert.equal(token.uaOSVersion, '10.10')
           assert.equal(token.uaDeviceType, null)
           assert.equal(token.uaFormFactor, null)
-          assert.equal(token.location.state, 'Mordor', 'state is correct')
-          assert.equal(token.location.country, 'ME', 'country is correct')
+          assert.equal(token.location.city, 'Bournemouth', 'city is correct')
+          assert.equal(token.location.country, 'United Kingdom', 'country is correct')
+          assert.equal(token.location.state, 'England', 'state is correct')
+          assert.equal(token.location.stateCode, 'EN', 'stateCode is correct')
+          assert.equal(token.location.countryCode, undefined, 'countryCode is not set')
+          assert.equal(token.location.timeZone, undefined, 'timeZone is not set')
           assert.ok(token.lastAccessTime)
           assert.ok(token.createdAt)
 
