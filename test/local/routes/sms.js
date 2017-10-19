@@ -205,18 +205,6 @@ describe('/sms with the signinCodes feature included in the payload', () => {
           .then((_response) => response = _response)
       })
 
-      it('called log.begin once', () => {
-        assert.equal(log.begin.callCount, 1)
-      })
-
-      it('called request.validateMetricsContext once', () => {
-        assert.equal(request.validateMetricsContext.callCount, 1)
-      })
-
-      it('called db.createSigninCode once', () => {
-        assert.equal(db.createSigninCode.callCount, 1)
-      })
-
       it('called sms.send correctly', () => {
         assert.equal(sms.send.callCount, 1)
         const args = sms.send.args[0]
@@ -238,18 +226,6 @@ describe('/sms with the signinCodes feature included in the payload', () => {
         request.payload.phoneNumber = '+49015153563252'
         return runTest(route, request)
           .then((_response) => response = _response)
-      })
-
-      it('called log.begin once', () => {
-        assert.equal(log.begin.callCount, 1)
-      })
-
-      it('called request.validateMetricsContext once', () => {
-        assert.equal(request.validateMetricsContext.callCount, 1)
-      })
-
-      it('called db.createSigninCode once', () => {
-        assert.equal(db.createSigninCode.callCount, 1)
       })
 
       it('called sms.send correctly', () => {
