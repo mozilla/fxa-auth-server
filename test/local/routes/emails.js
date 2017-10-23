@@ -429,7 +429,6 @@ describe('/recovery_email/verify_code', function () {
     query: {},
     payload: {
       code: 'e3c5b0e3f5391e134596c27519979b93',
-      marketingOptIn: false,
       service: 'sync',
       uid: uid
     }
@@ -493,7 +492,7 @@ describe('/recovery_email/verify_code', function () {
         assert.equal(mockLog.amplitudeEvent.callCount, 1, 'amplitudeEvent was called once')
         args = mockLog.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - email_confirmed', 'first call to amplitudeEvent was email_confirmed event')
-        assert.equal(args[0].user_properties.newsletter_state, undefined, 'newsletter_state was correct')
+        assert.equal(args[0].user_properties.newsletter_state, 'unsubscribed', 'newsletter_state was correct')
 
         assert.equal(mockLog.flowEvent.callCount, 2, 'flowEvent was called twice')
         assert.equal(mockLog.flowEvent.args[0][0].event, 'email.verify_code.clicked', 'first event was email.verify_code.clicked')

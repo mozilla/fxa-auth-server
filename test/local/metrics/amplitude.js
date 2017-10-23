@@ -356,7 +356,7 @@ describe('metrics/amplitude', () => {
         assert.equal(log.amplitudeEvent.callCount, 1)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - email_confirmed')
-        assert.equal(args[0].user_properties.newsletter_state, undefined)
+        assert.equal(args[0].user_properties.newsletter_state, 'unsubscribed')
       })
     })
 
