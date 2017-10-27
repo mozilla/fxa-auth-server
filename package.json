@@ -1,6 +1,6 @@
 {
   "name": "fxa-auth-server",
-  "version": "1.98.0",
+  "version": "1.98.1",
   "description": "Firefox Accounts, an identity provider for Mozilla cloud services",
   "bin": {
     "fxa-auth": "./bin/key_server.js"
@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "bump-template-versions": "node scripts/template-version-bump && git add lib/senders/templates/_versions.json",
+    "bump-template-versions": "node scripts/template-version-bump --silent && git add lib/senders/templates/_versions.json",
     "update-api-docs": "grunt newer:doc && git add docs/api.md",
     "precommit": "npm run bump-template-versions && npm run update-api-docs",
     "postinstall": "scripts/download_l10n.sh",
@@ -40,6 +40,8 @@
     "binary-split": "0.1.2",
     "bluebird": "3.4.7",
     "buffer-equal-constant-time": "1.0.1",
+    "cldr-core": "31.0.1",
+    "cldr-localenames-full": "31.0.1",
     "convict": "2.0.0",
     "email-addresses": "2.0.2",
     "fxa-geodb": "0.0.8",
