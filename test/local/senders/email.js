@@ -705,5 +705,58 @@ describe(
         })
       })
     })
+
+    describe('renders FF57 logo on FF57', () => {
+      const oldLogoUrl = 'http://image.e.mozilla.org/lib/fe9915707361037e75/m/2/fxlogojg.gif'
+      const newLogoUrl = 'https://accounts-static.cdn.mozilla.net/images/6c1e077e.firefox-logo.svg'
+      it('does not render for <FF57', () => {
+        const message = {
+          email: 'foo@example.com',
+          uaBrowser: 'Firefox',
+          uaBrowserVersion: '56'
+        }
+        mailer.mailer.sendMail = emailConfig => {
+          assert.equal(emailConfig.html.indexOf(oldLogoUrl) > 1, true, 'old logo')
+        }
+        mailer['newDeviceLoginEmail'](message)
+      })
+
+      it('renders for >=FF57 desktop', () => {
+        const message = {
+          email: 'foo@example.com',
+          uaBrowser: 'Firefox',
+          uaBrowserVersion: '57'
+        }
+        mailer.mailer.sendMail = emailConfig => {
+          assert.equal(emailConfig.html.indexOf(newLogoUrl) > 1, true, 'new logo')
+        }
+        mailer['newDeviceLoginEmail'](message)
+      })
+
+      it('renders for >=FF57 android', () => {
+        const message = {
+          email: 'foo@example.com',
+          uaBrowser: 'Firefox Android',
+          uaBrowserVersion: '57'
+        }
+        mailer.mailer.sendMail = emailConfig => {
+          assert.equal(emailConfig.html.indexOf(newLogoUrl) > 1, true, 'new logo')
+        }
+        mailer['newDeviceLoginEmail'](message)
+      })
+
+      it('renders for >=10 FxiOS', () => {
+        const message = {
+          email: 'foo@example.com',
+          uaBrowser: 'Firefox',
+          uaBrowserVersion: '10.0',
+          uaOS: 'iOS'
+        }
+        mailer.mailer.sendMail = emailConfig => {
+          assert.equal(emailConfig.html.indexOf(newLogoUrl) > 1, true, 'new logo')
+        }
+        mailer['newDeviceLoginEmail'](message)
+      })
+    })
   }
 )
