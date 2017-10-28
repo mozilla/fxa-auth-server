@@ -708,7 +708,7 @@ describe(
 
     describe('renders FF57 logo on FF57', () => {
       const oldLogoUrl = 'http://image.e.mozilla.org/lib/fe9915707361037e75/m/2/fxlogojg.gif'
-      const newLogoUrl = 'https://accounts-static.cdn.mozilla.net/images/6c1e077e.firefox-logo.svg'
+      const newLogoUrl = 'https://image.e.mozilla.org/lib/fe9915707361037e75/m/3/firefox57-logo.png'
       it('does not render for <FF57', () => {
         const message = {
           email: 'foo@example.com',
