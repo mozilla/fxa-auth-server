@@ -721,6 +721,19 @@ describe(
         mailer['newDeviceLoginEmail'](message)
       })
 
+      it('does not render for <10 on ios', () => {
+        const message = {
+          email: 'foo@example.com',
+          uaBrowser: 'Firefox',
+          uaOS: 'iOS',
+          uaBrowserVersion: '9.3'
+        }
+        mailer.mailer.sendMail = emailConfig => {
+          assert.equal(emailConfig.html.indexOf(oldLogoUrl) > 1, true, 'old logo')
+        }
+        mailer['newDeviceLoginEmail'](message)
+      })
+
       it('renders for >=FF57 desktop', () => {
         const message = {
           email: 'foo@example.com',
@@ -745,7 +758,7 @@ describe(
         mailer['newDeviceLoginEmail'](message)
       })
 
-      it('renders for >=10 FxiOS', () => {
+      it('renders for >=10 FxiOS on ios', () => {
         const message = {
           email: 'foo@example.com',
           uaBrowser: 'Firefox',
