@@ -1,3 +1,13 @@
+<a name="1.98.3"></a>
+## [1.98.3](https://github.com/mozilla/fxa-auth-server/compare/v1.98.2...v1.98.3) (2017-11-03)
+
+
+### Bug Fixes
+
+* **logo:** fix FF57 logo width and height (#2204) r=@ryanfeeley ([4076fa3](https://github.com/mozilla/fxa-auth-server/commit/4076fa3)), closes [#2204](https://github.com/mozilla/fxa-auth-server/issues/2204) [#2203](https://github.com/mozilla/fxa-auth-server/issues/2203)
+
+
+
 <a name="1.98.2"></a>
 ## [1.98.2](https://github.com/mozilla/fxa-auth-server/compare/v1.98.1...v1.98.2) (2017-10-30)
 
