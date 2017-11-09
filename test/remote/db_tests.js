@@ -35,6 +35,7 @@ const redisDelSpy = sinon.stub()
 const DB = proxyquire('../../lib/db', {
   redis: {
     createClient: () => ({
+      on () {},
       getAsync: redisGetSpy,
       setAsync: redisSetSpy,
       del: redisDelSpy
