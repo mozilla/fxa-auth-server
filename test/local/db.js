@@ -213,14 +213,32 @@ describe('redis enabled', () => {
       setAsync: sinon.spy(() => P.resolve()),
       del: sinon.spy(() => P.resolve())
     }
+    const createClient = sinon.spy(() => redis)
     log = mocks.mockLog()
     tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool },
-      redis: { createClient: () => redis }
-    })({ tokenLifetimes, redis: {enabled: true} }, log, tokens, {})
+      redis: { createClient }
+    })({
+      tokenLifetimes,
+      redis: {
+        enabled: true,
+        host: 'foo',
+        port: 'bar',
+        sessionsKeyPrefix: 'baz'
+      }
+    }, log, tokens, {})
     return DB.connect({})
       .then(result => {
+        assert.equal(createClient.callCount, 1, 'redis.createClient was called once')
+        assert.equal(createClient.args[0].length, 1, 'redis.createClient was passed one argument')
+        assert.deepEqual(createClient.args[0][0], {
+          host: 'foo',
+          port: 'bar',
+          prefix: 'baz',
+          enable_offline_queue: false
+        }, 'redis.createClient was passed correct settings')
+
         assert.equal(redis.on.callCount, 1, 'redis.on was called once')
         assert.equal(redis.on.args[0].length, 2, 'redis.on was passed two arguments')
         assert.equal(redis.on.args[0][0], 'error', 'redis.on was called for the `error` event')
