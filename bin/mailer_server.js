@@ -4,6 +4,10 @@
 
 'use strict'
 
+// Only `require()` the newrelic module if explicity enabled.
+// If required, modules will be instrumented.
+require('../lib/newrelic')()
+
 var restify = require('restify')
 var safeJsonFormatter = require('restify-safe-json-formatter')
 var config = require('../config')
