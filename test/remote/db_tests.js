@@ -89,6 +89,8 @@ describe('remote db', function() {
         }
         return db.createEmail(account.uid, emailData)
       })
+      // Ensure redis is empty for the uid
+      .then(() => redis.delAsync(account.uid))
   })
 
   it(
@@ -128,10 +130,8 @@ describe('remote db', function() {
     () => {
       let tokenId
 
-      // Ensure redis is empty for the uid
-      return redis.delAsync(account.uid)
-        // Fetch all sessions for the account
-        .then(() => db.sessions(account.uid))
+      // Fetch all sessions for the account
+      return db.sessions(account.uid)
         .then(sessions => {
           assert.ok(Array.isArray(sessions), 'sessions is array')
           assert.equal(sessions.length, 0, 'sessions is empty')
@@ -354,9 +354,7 @@ describe('remote db', function() {
         name: 'wibble'
       }
 
-      // Ensure redis is empty for the uid
-      return redis.delAsync(account.uid)
-          .then(() => db.emailRecord(account.email))
+      return db.emailRecord(account.email)
           .then((emailRecord) => {
             emailRecord.tokenVerificationId = account.tokenVerificationId
             emailRecord.uaBrowser = 'Firefox Mobile'
