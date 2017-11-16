@@ -228,24 +228,35 @@ describe('redis enabled', () => {
         sessionsKeyPrefix: 'baz'
       }
     }, log, tokens, {})
-    return DB.connect({})
-      .then(result => {
-        assert.equal(createClient.callCount, 1, 'redis.createClient was called once')
-        assert.equal(createClient.args[0].length, 1, 'redis.createClient was passed one argument')
-        assert.deepEqual(createClient.args[0][0], {
-          host: 'foo',
-          port: 'bar',
-          prefix: 'baz',
-          enable_offline_queue: false
-        }, 'redis.createClient was passed correct settings')
 
-        assert.equal(redis.on.callCount, 1, 'redis.on was called once')
-        assert.equal(redis.on.args[0].length, 2, 'redis.on was passed two arguments')
-        assert.equal(redis.on.args[0][0], 'error', 'redis.on was called for the `error` event')
-        assert.equal(typeof redis.on.args[0][1], 'function', 'redis.on was passed event handler')
+    const promise = DB.connect({})
+      .then(result => db = result)
 
-        db = result
-      })
+    assert.equal(createClient.callCount, 1, 'redis.createClient was called once')
+    assert.equal(createClient.args[0].length, 1, 'redis.createClient was passed one argument')
+    assert.deepEqual(createClient.args[0][0], {
+      host: 'foo',
+      port: 'bar',
+      prefix: 'baz',
+      enable_offline_queue: false
+    }, 'redis.createClient was passed correct settings')
+
+    assert.equal(redis.on.callCount, 2, 'redis.on was called twice')
+
+    let args = redis.on.args[0]
+    assert.equal(args.length, 2, 'redis.on was passed two arguments first time')
+    assert.equal(args[0], 'error', 'redis.on was called for the `error` event')
+    assert.equal(typeof args[1], 'function', 'redis.on was passed event handler')
+
+    args = redis.on.args[1]
+    assert.equal(args.length, 2, 'redis.on was passed two arguments second time')
+    assert.equal(args[0], 'ready', 'redis.on was called for the `ready` event')
+    assert.equal(typeof args[1], 'function', 'redis.on was passed event handler')
+    assert.notEqual(args[1], redis.on.args[0][1], 'event handlers are different')
+
+    args[1]()
+
+    return promise
   })
 
   it('should not call redis or the db in db.devices if uid is falsey', () => {
