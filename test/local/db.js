@@ -273,6 +273,8 @@ describe('redis enabled', () => {
         assert.equal(redis.get.callCount, 1)
         assert.equal(redis.get.args[0].length, 1)
         assert.equal(redis.get.args[0][0], 'wibble')
+
+        assert.equal(log.error.callCount, 0)
       })
   })
 
@@ -326,6 +328,42 @@ describe('redis enabled', () => {
         assert.equal(release.args[0].length, 1)
         assert.equal(release.args[0][0], redis)
       })
+  })
+
+  describe('redisConnection.get rejects', () => {
+    beforeEach(() => {
+      redis.get = sinon.spy(() => P.reject({ message: 'mock redis.get error' }))
+    })
+
+    it('should log the error in db.sessions', () => {
+      return db.sessions('wibble')
+        .then(() => {
+          assert.equal(redis.get.callCount, 1)
+
+          assert.equal(log.error.callCount, 1)
+          assert.equal(log.error.args[0].length, 1)
+          assert.deepEqual(log.error.args[0][0], {
+            op: 'redis.get.error',
+            key: 'wibble',
+            err: 'mock redis.get error'
+          })
+        })
+    })
+
+    it('should log the error in db.devices', () => {
+      return db.devices('wibble')
+        .then(() => {
+          assert.equal(redis.get.callCount, 1)
+
+          assert.equal(log.error.callCount, 1)
+          assert.equal(log.error.args[0].length, 1)
+          assert.deepEqual(log.error.args[0][0], {
+            op: 'redis.get.error',
+            key: 'wibble',
+            err: 'mock redis.get error'
+          })
+        })
+    })
   })
 
   describe('deleteSessionToken reads falsey value from redis:', () => {

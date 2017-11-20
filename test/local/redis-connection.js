@@ -53,10 +53,6 @@ describe('redis-connection:', () => {
       assert.equal(args.length, 1)
       assert.equal(args[0], 'wibble')
     })
-
-    it('did not call log.error', () => {
-      assert.equal(log.error.callCount, 0)
-    })
   })
 
   describe('redisConnection.set:', () => {
@@ -198,29 +194,19 @@ describe('redis-connection:', () => {
     })
 
     describe('redisConnection.get:', () => {
-      let result
+      let error
 
       beforeEach(() => {
         return connection.get('wibble')
-          .then(r => result = r)
+          .catch(e => error = e)
       })
 
-      it('returned false', () => {
-        assert.ok(result === false)
+      it('rejected', () => {
+        assert.deepEqual(error, { message: 'mock get error' })
       })
 
       it('called redisClient.get', () => {
         assert.equal(redisClient.getAsync.callCount, 1)
-      })
-
-      it('called log.error correctly', () => {
-        assert.equal(log.error.callCount, 1)
-        assert.equal(log.error.args[0].length, 1)
-        assert.deepEqual(log.error.args[0][0], {
-          op: 'redis.get.error',
-          key: 'wibble',
-          err: 'mock get error'
-        })
       })
     })
 
