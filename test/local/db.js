@@ -237,10 +237,12 @@ describe('redis enabled', () => {
     }, log, tokens, {})
     return DB.connect({})
       .then(result => {
+        db = result
+
         assert.equal(acquire.callCount, 1, 'redisPool.acquire was called once')
         assert.equal(acquire.args[0].length, 0, 'redisPool.acquire was passed no arguments')
 
-        db = result
+        acquire.reset()
       })
   })
 
@@ -299,8 +301,8 @@ describe('redis enabled', () => {
   it('should call redisPool.acquire, redisConnection.update and redisPool.release in db.updateSessionToken', () => {
     return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
       .then(() => {
-        assert.equal(acquire.callCount, 2)
-        assert.equal(acquire.args[1].length, 0)
+        assert.equal(acquire.callCount, 1)
+        assert.equal(acquire.args[0].length, 0)
 
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
@@ -316,8 +318,8 @@ describe('redis enabled', () => {
   it('should call redisPool.acquire, redisConnection.update and redisPool.release in db.deleteSessionToken', () => {
     return db.deleteSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
       .then(() => {
-        assert.equal(acquire.callCount, 2)
-        assert.equal(acquire.args[1].length, 0)
+        assert.equal(acquire.callCount, 1)
+        assert.equal(acquire.args[0].length, 0)
 
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
@@ -377,7 +379,7 @@ describe('redis enabled', () => {
           () => assert.equal(false, 'db.updateSessionToken should have rejected'),
           error => {
             assert.equal(error.message, 'mock redis.update error')
-            assert.equal(acquire.callCount, 2)
+            assert.equal(acquire.callCount, 1)
             assert.equal(redis.update.callCount, 1)
             assert.equal(release.callCount, 1)
           }
@@ -390,7 +392,7 @@ describe('redis enabled', () => {
           () => assert.equal(false, 'db.deleteSessionToken should have rejected'),
           error => {
             assert.equal(error.message, 'mock redis.update error')
-            assert.equal(acquire.callCount, 2)
+            assert.equal(acquire.callCount, 1)
             assert.equal(redis.update.callCount, 1)
             assert.equal(release.callCount, 1)
           }
