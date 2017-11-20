@@ -21,7 +21,10 @@ describe('pool.acquire:', () => {
 
   before(() => {
     return P.all([ redis.acquire(), redis.acquire() ])
-      .then(results => connections = results)
+      .then(results => {
+        connections = results
+        return connections[0].del('foo')
+      })
   })
 
   after(() => {
@@ -85,7 +88,8 @@ describe('pool.acquire:', () => {
 
   describe('update non-existent key:', () => {
     before(() => {
-      return connections[0].update('wibble', () => 'blee')
+      return connections[0].del('wibble')
+        .then(() => connections[0].update('wibble', () => 'blee'))
     })
 
     it('data was updated', () => {
