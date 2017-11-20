@@ -366,6 +366,38 @@ describe('redis enabled', () => {
     })
   })
 
+  describe('redisConnection.update rejects', () => {
+    beforeEach(() => {
+      redis.update = sinon.spy(() => P.reject({ message: 'mock redis.update error' }))
+    })
+
+    it('should release the connection in db.updateSessionToken', () => {
+      return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
+        .then(
+          () => assert.equal(false, 'db.updateSessionToken should have rejected'),
+          error => {
+            assert.equal(error.message, 'mock redis.update error')
+            assert.equal(acquire.callCount, 2)
+            assert.equal(redis.update.callCount, 1)
+            assert.equal(release.callCount, 1)
+          }
+        )
+    })
+
+    it('should release the connection in db.deleteSessionToken', () => {
+      return db.deleteSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
+        .then(
+          () => assert.equal(false, 'db.deleteSessionToken should have rejected'),
+          error => {
+            assert.equal(error.message, 'mock redis.update error')
+            assert.equal(acquire.callCount, 2)
+            assert.equal(redis.update.callCount, 1)
+            assert.equal(release.callCount, 1)
+          }
+        )
+    })
+  })
+
   describe('deleteSessionToken reads falsey value from redis:', () => {
     let result
 
