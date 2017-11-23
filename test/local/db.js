@@ -220,7 +220,7 @@ describe('redis enabled', () => {
       './pool': function () { return pool },
       './redis': (...args) => {
         assert.equal(args.length, 2, 'redisPool was passed two arguments')
-        assert.equal(args[0].redis, 'mock redis config', 'redisPool was passed config')
+        assert.equal(args[0], 'mock redis config', 'redisPool was passed config')
         assert.equal(args[1], log, 'redisPool was passed log')
         return redis
       }

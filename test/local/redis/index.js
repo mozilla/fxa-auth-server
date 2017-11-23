@@ -20,7 +20,7 @@ describe('redis disabled:', () => {
     pool = { acquire: sinon.spy() }
     result = proxyquire(`${LIB_DIR}/redis`, {
       './pool': pool
-    })({ redis: { enabled: false } }, log)
+    })({ enabled: false }, log)
   })
 
   it('did not call pool.acquire', () => {
@@ -43,7 +43,7 @@ describe('redis enabled:', () => {
   let config, log, connection, dispose, pool, initialisePool, redis
 
   beforeEach(() => {
-    config = { redis: { enabled: true } }
+    config = { enabled: true }
     log = mocks.mockLog()
     connection = {
       get: sinon.spy(() => 'mock get result'),

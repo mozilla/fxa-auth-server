@@ -37,16 +37,14 @@ describe('redis/pool:', () => {
       redis: { createClient: redisCreateClient },
       './connection': redisConnection
     })({
-      redis: {
-        host: 'foo',
-        port: 'bar',
-        sessionsKeyPrefix: 'baz',
-        retryCount: 3,
-        initialBackoff: 100,
-        maxConnections: 'qux',
-        minConnections: 'wibble',
-        maxPending: 'blee'
-      }
+      host: 'foo',
+      port: 'bar',
+      sessionsKeyPrefix: 'baz',
+      retryCount: 3,
+      initialBackoff: 100,
+      maxConnections: 'qux',
+      minConnections: 'wibble',
+      maxPending: 'blee'
     }, log)
   })
 

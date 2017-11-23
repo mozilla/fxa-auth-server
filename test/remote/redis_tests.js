@@ -12,9 +12,7 @@ const P = require(`${ROOT_DIR}/lib/promise`)
 
 const log = { info () {}, error () {} }
 
-const redis = require(`${ROOT_DIR}/lib/redis`)({
-  redis: Object.assign({}, config.redis, {  enabled: true })
-}, log)
+const redis = require(`${ROOT_DIR}/lib/redis`)(Object.assign({}, config.redis, { enabled: true }), log)
 
 describe('redis.set:', () => {
   before(() => {
@@ -159,7 +157,7 @@ describe('reentrant updates of different keys:', () => {
   let error
 
   before(() => {
-    const redisPool = require(`${ROOT_DIR}/lib/redis/pool`)(config, log)
+    const redisPool = require(`${ROOT_DIR}/lib/redis/pool`)(config.redis, log)
     const redisConnection = redisPool.acquire()
     return P.using(
       redisConnection,
