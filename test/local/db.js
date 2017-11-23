@@ -126,7 +126,7 @@ describe('db with redis disabled', () => {
     tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool },
-      './redis-pool': () => {}
+      './redis': () => {}
     })({ tokenLifetimes }, log, tokens, {})
     return DB.connect({})
       .then(result => db = result)
@@ -200,7 +200,7 @@ describe('redis enabled', () => {
     sessionTokenWithoutDevice: 2419200000
   }
 
-  let pool, redis, acquire, release, log, tokens, db
+  let pool, redis, log, tokens, db
 
   beforeEach(() => {
     pool = {
@@ -214,17 +214,15 @@ describe('redis enabled', () => {
       del: sinon.spy(() => P.resolve()),
       update: sinon.spy(() => P.resolve())
     }
-    acquire = sinon.spy(() => P.resolve(redis))
-    release = sinon.spy()
     log = mocks.mockLog()
     tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool },
-      './redis-pool': (...args) => {
+      './redis': (...args) => {
         assert.equal(args.length, 2, 'redisPool was passed two arguments')
         assert.equal(args[0].redis, 'mock redis config', 'redisPool was passed config')
         assert.equal(args[1], log, 'redisPool was passed log')
-        return { acquire, release }
+        return redis
       }
     })({
       tokenLifetimes,
@@ -236,14 +234,7 @@ describe('redis enabled', () => {
       }
     }, log, tokens, {})
     return DB.connect({})
-      .then(result => {
-        db = result
-
-        assert.equal(acquire.callCount, 1, 'redisPool.acquire was called once')
-        assert.equal(acquire.args[0].length, 0, 'redisPool.acquire was passed no arguments')
-
-        acquire.reset()
-      })
+      .then(result => db = result)
   })
 
   it('should not call redis or the db in db.devices if uid is falsey', () => {
@@ -269,7 +260,7 @@ describe('redis enabled', () => {
       })
   })
 
-  it('should call redisConnection.get in db.sessions', () => {
+  it('should call redis.get in db.sessions', () => {
     return db.sessions('wibble')
       .then(() => {
         assert.equal(redis.get.callCount, 1)
@@ -280,7 +271,7 @@ describe('redis enabled', () => {
       })
   })
 
-  it('should call redisConnection.del in db.deleteAccount', () => {
+  it('should call redis.del in db.deleteAccount', () => {
     return db.deleteAccount({ uid: 'wibble' })
       .then(() => {
         assert.equal(redis.del.callCount, 1)
@@ -289,7 +280,7 @@ describe('redis enabled', () => {
       })
   })
 
-  it('should call redisConnection.del in db.resetAccount', () => {
+  it('should call redis.del in db.resetAccount', () => {
     return db.resetAccount({ uid: 'wibble' }, {})
       .then(() => {
         assert.equal(redis.del.callCount, 1)
@@ -298,41 +289,27 @@ describe('redis enabled', () => {
       })
   })
 
-  it('should call redisPool.acquire, redisConnection.update and redisPool.release in db.updateSessionToken', () => {
+  it('should call redis.update in db.updateSessionToken', () => {
     return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
       .then(() => {
-        assert.equal(acquire.callCount, 1)
-        assert.equal(acquire.args[0].length, 0)
-
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'blee')
         assert.equal(typeof redis.update.args[0][1], 'function')
-
-        assert.equal(release.callCount, 1)
-        assert.equal(release.args[0].length, 1)
-        assert.equal(release.args[0][0], redis)
       })
   })
 
-  it('should call redisPool.acquire, redisConnection.update and redisPool.release in db.deleteSessionToken', () => {
+  it('should call redis.update in db.deleteSessionToken', () => {
     return db.deleteSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
       .then(() => {
-        assert.equal(acquire.callCount, 1)
-        assert.equal(acquire.args[0].length, 0)
-
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'blee')
         assert.equal(typeof redis.update.args[0][1], 'function')
-
-        assert.equal(release.callCount, 1)
-        assert.equal(release.args[0].length, 1)
-        assert.equal(release.args[0][0], redis)
       })
   })
 
-  describe('redisConnection.get rejects', () => {
+  describe('redis.get rejects', () => {
     beforeEach(() => {
       redis.get = sinon.spy(() => P.reject({ message: 'mock redis.get error' }))
     })
@@ -368,34 +345,46 @@ describe('redis enabled', () => {
     })
   })
 
-  describe('redisConnection.update rejects', () => {
+  describe('redis.del rejects', () => {
+    beforeEach(() => {
+      redis.del = sinon.spy(() => P.reject({ message: 'mock redis.del error' }))
+    })
+
+    it('db.deleteAccount should reject', () => {
+      return db.deleteAccount({ uid: 'wibble' })
+        .then(
+          () => assert.equal(false, 'db.deleteAccount should have rejected'),
+          error => assert.equal(error.message, 'mock redis.del error')
+        )
+    })
+
+    it('db.resetAccount should reject', () => {
+      return db.resetAccount({ uid: 'wibble' }, {})
+        .then(
+          () => assert.equal(false, 'db.resetAccount should have rejected'),
+          error => assert.equal(error.message, 'mock redis.del error')
+        )
+    })
+  })
+
+  describe('redis.update rejects', () => {
     beforeEach(() => {
       redis.update = sinon.spy(() => P.reject({ message: 'mock redis.update error' }))
     })
 
-    it('should release the connection in db.updateSessionToken', () => {
+    it('db.updateSessionToken should reject', () => {
       return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
         .then(
           () => assert.equal(false, 'db.updateSessionToken should have rejected'),
-          error => {
-            assert.equal(error.message, 'mock redis.update error')
-            assert.equal(acquire.callCount, 1)
-            assert.equal(redis.update.callCount, 1)
-            assert.equal(release.callCount, 1)
-          }
+          error => assert.equal(error.message, 'mock redis.update error')
         )
     })
 
-    it('should release the connection in db.deleteSessionToken', () => {
+    it('db.deleteSessionToken should reject', () => {
       return db.deleteSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
         .then(
           () => assert.equal(false, 'db.deleteSessionToken should have rejected'),
-          error => {
-            assert.equal(error.message, 'mock redis.update error')
-            assert.equal(acquire.callCount, 1)
-            assert.equal(redis.update.callCount, 1)
-            assert.equal(release.callCount, 1)
-          }
+          error => assert.equal(error.message, 'mock redis.update error')
         )
     })
   })

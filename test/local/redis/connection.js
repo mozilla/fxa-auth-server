@@ -4,15 +4,15 @@
 
 'use strict'
 
-const LIB_DIR = '../../lib'
+const LIB_DIR = '../../../lib'
 
 const assert = require('insist')
-const mocks = require('../mocks')
+const mocks = require('../../mocks')
 const P = require(`${LIB_DIR}/promise`)
-const redisConnection = require(`${LIB_DIR}/redis-connection`)
+const redisConnection = require(`${LIB_DIR}/redis/connection`)
 const sinon = require('sinon')
 
-describe('redis-connection:', () => {
+describe('redis/connection:', () => {
   let log, redisClient, redisMulti, connection, getValue
 
   beforeEach(() => {
@@ -24,7 +24,8 @@ describe('redis-connection:', () => {
       delAsync: sinon.spy(() => P.resolve()),
       watchAsync: sinon.spy(() => P.resolve()),
       multi: sinon.spy(() => redisMulti),
-      unwatch: sinon.spy()
+      unwatch: sinon.spy(),
+      quit: sinon.spy()
     }
     redisMulti = {
       execAsync: sinon.spy(() => P.resolve(true)),
@@ -33,6 +34,10 @@ describe('redis-connection:', () => {
     }
     connection = redisConnection(log, redisClient)
     getValue = sinon.spy(() => 'mock value')
+  })
+
+  it('redisConnection.isValid returns true', () => {
+    assert.ok(connection.isValid() === true)
   })
 
   describe('redisConnection.get:', () => {
@@ -185,6 +190,74 @@ describe('redis-connection:', () => {
 
     it('did not call log.error', () => {
       assert.equal(log.error.callCount, 0)
+    })
+  })
+
+  describe('redisConnection.destroy:', () => {
+    let resolved
+
+    beforeEach(done => {
+      connection.destroy()
+        .then(() => resolved = true)
+      setImmediate(done)
+    })
+
+    it('called redisClient.quit correctly', () => {
+      assert.equal(redisClient.quit.callCount, 1)
+      assert.equal(redisClient.quit.args[0].length, 0)
+    })
+
+    it('called redisClient.on correctly', () => {
+      assert.equal(redisClient.on.callCount, 1)
+      const args = redisClient.on.args[0]
+      assert.equal(args.length, 2)
+      assert.equal(args[0], 'end')
+      assert.equal(typeof args[1], 'function')
+    })
+
+    it('did not resolve', () => {
+      assert.equal(resolved, undefined)
+    })
+
+    it('redisConnection.isValid returns false', () => {
+      assert.ok(connection.isValid() === false)
+    })
+
+    describe('redisConnection.destroy:', () => {
+      let innerResolved
+
+      beforeEach(done => {
+        connection.destroy()
+          .then(() => innerResolved = true)
+        setImmediate(done)
+      })
+
+      it('did not call redisClient.quit a second time', () => {
+        assert.equal(redisClient.quit.callCount, 1)
+      })
+
+      it('did not call redisClient.on a second time', () => {
+        assert.equal(redisClient.on.callCount, 1)
+      })
+
+      it('did not resolve', () => {
+        assert.equal(innerResolved, undefined)
+      })
+
+      describe('end event handler:', () => {
+        beforeEach(done => {
+          redisClient.on.args[0][1]()
+          setImmediate(done)
+        })
+
+        it('resolved the outer promise', () => {
+          assert.equal(resolved, true)
+        })
+
+        it('resolved the inner promise', () => {
+          assert.equal(innerResolved, true)
+        })
+      })
     })
   })
 

@@ -382,7 +382,13 @@ var conf = convict({
       default: 10,
       env: 'REDIS_POOL_MAX_CONNECTIONS',
       format: 'int',
-      doc: 'Connection limit for Redis'
+      doc: 'Maximum connection count for Redis'
+    },
+    minConnections: {
+      default: 2,
+      env: 'REDIS_POOL_MIN_CONNECTIONS',
+      format: 'int',
+      doc: 'Minimum connection count for Redis'
     },
     maxPending: {
       default: 1000,
@@ -390,11 +396,17 @@ var conf = convict({
       format: 'int',
       doc: 'Pending request limit for Redis'
     },
-    timeout: {
-      default: '2 seconds',
+    retryCount: {
+      default: 5,
+      env: 'REDIS_POOL_RETRY_COUNT',
+      format: 'int',
+      doc: 'Retry limit for Redis connection attempts'
+    },
+    initialBackoff: {
+      default: '100 milliseconds',
       env: 'REDIS_POOL_TIMEOUT',
       format: 'duration',
-      doc: 'Time limit for pending Redis connections'
+      doc: 'Initial backoff for Redis connection retries, increases exponentially with each attempt'
     }
   },
   tokenLifetimes: {

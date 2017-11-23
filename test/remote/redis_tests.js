@@ -12,233 +12,217 @@ const P = require(`${ROOT_DIR}/lib/promise`)
 
 const log = { info () {}, error () {} }
 
-const redis = require(`${ROOT_DIR}/lib/redis-pool`)({
+const redis = require(`${ROOT_DIR}/lib/redis`)({
   redis: Object.assign({}, config.redis, {  enabled: true })
 }, log)
 
-describe('pool.acquire:', () => {
-  let connections
+describe('redis.set:', () => {
+  before(() => {
+    return redis.set('foo', 'bar')
+  })
+
+  it('redis.get reads data', () => {
+    return P.all([ redis.get('foo'), redis.get('foo') ])
+      .then(results => results.forEach(result => assert.equal(result, 'bar')))
+  })
+})
+
+describe('concurrent sets:', () => {
+  before(() => {
+    return P.all([ redis.set('foo', '1'), redis.set('foo', '2') ])
+  })
+
+  it('data was set', () => {
+    return redis.get('foo')
+      .then(result => assert.ok(result === '1' || result === '2'))
+  })
+})
+
+describe('redis.del:', () => {
+  before(() => {
+    return redis.del('foo')
+  })
+
+  it('data was deleted', () => {
+    return redis.get('foo')
+      .then(result => assert.ok(result === null))
+  })
+})
+
+describe('redis.update:', () => {
+  before(() => {
+    return redis.set('foo', 'bar')
+      .then(() => redis.update('foo', oldValue => `${oldValue}2`))
+  })
+
+  it('data was set', () => {
+    return redis.get('foo')
+      .then(result => assert.equal(result, 'bar2'))
+  })
+})
+
+describe('update non-existent key:', () => {
+  before(() => {
+    return redis.del('wibble')
+      .then(() => redis.update('wibble', () => 'blee'))
+  })
+
+  it('data was set', () => {
+    return redis.get('wibble')
+      .then(result => assert.equal(result, 'blee'))
+  })
+})
+
+describe('update existing key to falsey value:', () => {
+  before(() => {
+    return redis.update('wibble', () => '')
+  })
+
+  it('data was deleted', () => {
+    return redis.get('wibble')
+      .then(result => assert.ok(result === null))
+  })
+})
+
+describe('concurrent updates of the same key:', () => {
+  const errors = []
+  let winner
 
   before(() => {
-    return P.all([ redis.acquire(), redis.acquire() ])
-      .then(results => {
-        connections = results
-        return connections[0].del('foo')
+    let resolve, sum = 0
+    const synchronisationPromise = new P(r => resolve = r)
+
+    return P.all([ 1, 2 ].map(value => {
+      return redis.update('foo', createUpdateHandler(value))
+        .then(() => winner = value)
+        .catch(error => errors.push(error))
+    }))
+
+    function createUpdateHandler (value) {
+      return () => {
+        sum += value
+        if (sum === 3) {
+          resolve()
+        }
+        return synchronisationPromise
+          .then(() => value)
+      }
+    }
+  })
+
+  it('one update failed', () => {
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].message, 'Unspecified error')
+    assert.equal(errors[0].errno, 999)
+  })
+
+  it('the other update completed successfully', () => {
+    return redis.get('foo')
+      .then(result => assert.equal(result, winner))
+  })
+})
+
+describe('concurrent updates of different keys:', () => {
+  before(() => {
+    let resolve, values = ''
+    const synchronisationPromise = new P(r => resolve = r)
+
+    return P.all([
+      redis.update('foo', createUpdateHandler('bar')),
+      redis.update('baz', createUpdateHandler('qux'))
+    ])
+
+    function createUpdateHandler (value) {
+      return () => {
+        values += value
+        if (values.length === 6) {
+          resolve()
+        }
+        return synchronisationPromise
+          .then(() => value)
+      }
+    }
+  })
+
+  it('first update completed successfully', () => {
+    return redis.get('foo')
+      .then(result => assert.equal(result, 'bar'))
+  })
+
+  it('second update completed successfully', () => {
+    return redis.get('baz')
+      .then(result => assert.equal(result, 'qux'))
+  })
+})
+
+describe('reentrant updates of different keys:', () => {
+  let error
+
+  before(() => {
+    const redisPool = require(`${ROOT_DIR}/lib/redis/pool`)(config, log)
+    const redisConnection = redisPool.acquire()
+    return P.using(
+      redisConnection,
+      connection => connection.update('foo', oldFoo => {
+        return connection.update('baz', oldBaz => `${oldBaz}2`)
+          .catch(e => error = e)
+          .then(() => `${oldFoo}2`)
       })
+    )
   })
 
-  after(() => {
-    return P.all(connections.map(connection => redis.release(connection)))
-      .then(() => redis.drain())
-      .then(() => redis.clear())
+  it('first update completed successfully', () => {
+    return redis.get('foo')
+      .then(result => assert.equal(result, 'bar2'))
   })
 
-  it('first connection reads null', () => {
-    return connections[0].get('foo')
+  it('second update failed', () => {
+    assert.ok(error)
+    assert.equal(error.message, 'Unspecified error')
+    assert.equal(error.errno, 999)
+    return redis.get('baz')
+      .then(result => assert.equal(result, 'qux'))
+  })
+})
+
+describe('set concurrently with update:', () => {
+  let error
+
+  before(() => {
+    return redis.update('foo', () => redis.set('foo', 'blee').then(() => 'wibble'))
+      .catch(e => error = e)
+  })
+
+  it('update failed', () => {
+    assert.ok(error)
+    assert.equal(error.message, 'Unspecified error')
+    assert.equal(error.errno, 999)
+  })
+
+  it('data was set', () => {
+    return redis.get('foo')
+      .then(result => assert.equal(result, 'blee'))
+  })
+})
+
+describe('del concurrently with update:', () => {
+  let error
+
+  before(() => {
+    return redis.set('foo', 'bar')
+      .then(() => redis.update('foo', () => redis.del('foo').then(() => 'baz')))
+      .catch(e => error = e)
+  })
+
+  it('update failed', () => {
+    assert.ok(error)
+    assert.equal(error.message, 'Unspecified error')
+    assert.equal(error.errno, 999)
+  })
+
+  it('data was deleted', () => {
+    return redis.get('foo')
       .then(result => assert.ok(result === null))
-  })
-
-  it('second connection reads null', () => {
-    return connections[1].get('foo')
-      .then(result => assert.ok(result === null))
-  })
-
-  describe('connection.set:', () => {
-    before(() => {
-      return connections[0].set('foo', 'bar')
-    })
-
-    it('first connection reads data', () => {
-      return connections[0].get('foo')
-        .then(result => assert.equal(result, 'bar'))
-    })
-
-    it('second connection reads data', () => {
-      return connections[1].get('foo')
-        .then(result => assert.equal(result, 'bar'))
-    })
-  })
-
-  describe('concurrent sets:', () => {
-    before(() => {
-      return P.all(connections.map((connection, index) => connection.set('foo', `${index}`)))
-    })
-
-    it('data was set', () => {
-      return connections[0].get('foo')
-        .then(result => assert.ok(result === '0' || result === '1'))
-    })
-  })
-
-  describe('connection.update:', () => {
-    before(() => {
-      return connections[0].update('foo', oldValue => `${oldValue}2`)
-    })
-
-    it('first connection reads data', () => {
-      return connections[0].get('foo')
-        .then(result => assert.equal(result[1], '2'))
-    })
-
-    it('second connection reads data', () => {
-      return connections[1].get('foo')
-        .then(result => assert.equal(result[1], '2'))
-    })
-  })
-
-  describe('update non-existent key:', () => {
-    before(() => {
-      return connections[0].del('wibble')
-        .then(() => connections[0].update('wibble', () => 'blee'))
-    })
-
-    it('data was updated', () => {
-      return connections[1].get('wibble')
-        .then(result => assert.equal(result, 'blee'))
-    })
-  })
-
-  describe('update existing key to falsey value:', () => {
-    before(() => {
-      return connections[0].update('wibble', () => '')
-    })
-
-    it('data was updated', () => {
-      return connections[1].get('wibble')
-        .then(result => assert.ok(result === null))
-    })
-  })
-
-  describe('concurrent updates of the same key:', () => {
-    const errors = []
-    let successIndex
-
-    before(() => {
-      return P.all(
-        connections.map(
-          (connection, index) => {
-            return connection.update('foo', () => `${index}`)
-              .then(() => successIndex = index)
-              .catch(error => errors.push(error))
-          }
-        )
-      )
-    })
-
-    it('one update failed', () => {
-      assert.equal(errors.length, 1)
-      assert.equal(errors[0].message, 'Unspecified error')
-      assert.equal(errors[0].errno, 999)
-    })
-
-    it('the other update completed successfully', () => {
-      return connections[0].get('foo')
-        .then(result => assert.equal(result, successIndex))
-    })
-  })
-
-  describe('concurrent updates of different keys:', () => {
-    before(() => {
-      return P.all([
-        connections[0].update('foo', () => 'bar'),
-        connections[1].update('baz', () => 'qux')
-      ])
-    })
-
-    it('first update completed successfully', () => {
-      return connections[1].get('foo')
-        .then(result => assert.equal(result, 'bar'))
-    })
-
-    it('second update completed successfully', () => {
-      return connections[0].get('baz')
-        .then(result => assert.equal(result, 'qux'))
-    })
-  })
-
-  describe('reentrant updates of different keys:', () => {
-    let error
-
-    before(() => {
-      return P.all([
-        connections[0].update('foo', oldValue => `${oldValue}2`),
-        connections[0].update('baz', oldValue => `${oldValue}2`).catch(e => error = e)
-      ])
-    })
-
-    it('first update completed successfully', () => {
-      return connections[0].get('foo')
-        .then(result => assert.equal(result, 'bar2'))
-    })
-
-    it('second update failed', () => {
-      assert.ok(error)
-      assert.equal(error.message, 'Unspecified error')
-      assert.equal(error.errno, 999)
-      return connections[0].get('baz')
-        .then(result => assert.equal(result, 'qux'))
-    })
-  })
-
-  describe('set concurrently with update:', () => {
-    let error
-
-    before(() => {
-      return P.all([
-        connections[0].update('foo', () => 'wibble').catch(e => error = e),
-        connections[1].set('foo', 'blee')
-      ])
-    })
-
-    it('update failed', () => {
-      assert.ok(error)
-      assert.equal(error.message, 'Unspecified error')
-      assert.equal(error.errno, 999)
-    })
-
-    it('data was set', () => {
-      return connections[0].get('foo')
-        .then(result => assert.equal(result, 'blee'))
-    })
-  })
-
-  describe('connection.del:', () => {
-    before(() => {
-      return connections[0].del('foo')
-    })
-
-    it('first connection reads null', () => {
-      return connections[0].get('foo')
-        .then(result => assert.ok(result === null))
-    })
-
-    it('second connection reads null', () => {
-      return connections[1].get('foo')
-        .then(result => assert.ok(result === null))
-    })
-  })
-
-  describe('del concurrently with update:', () => {
-    let error
-
-    before(() => {
-      return connections[0].set('foo', 'bar')
-        .then(() => P.all([
-          connections[0].update('foo', () => 'baz').catch(e => error = e),
-          connections[1].del('foo')
-        ]))
-    })
-
-    it('update failed', () => {
-      assert.ok(error)
-      assert.equal(error.message, 'Unspecified error')
-      assert.equal(error.errno, 999)
-    })
-
-    it('data was deleted', () => {
-      return connections[0].get('foo')
-        .then(result => assert.ok(result === null))
-    })
   })
 })
 
