@@ -132,7 +132,7 @@ describe('db with redis disabled', () => {
       .then(result => db = result)
   })
 
-  it('should not call redis when reading sessions', () => {
+  it('db.sessions succeeds without a redis instance', () => {
     results.pool = []
     return db.sessions('fakeUid')
       .then(result => {
@@ -143,7 +143,7 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('should not call redis when reading devices', () => {
+  it('db.devices succeeds without a redis instance', () => {
     results.pool = []
     return db.devices('fakeUid')
       .then(result => {
@@ -154,7 +154,7 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('should not call redis when deleting account', () => {
+  it('db.deleteAccount succeeds without a redis instance', () => {
     return db.deleteAccount({ uid: 'fakeUid' })
       .then(() => {
         assert.equal(pool.del.callCount, 1)
@@ -163,7 +163,7 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('should not call redis when deleting sessionTokens', () => {
+  it('db.deleteSessionToken succeeds without a redis instance', () => {
     return db.deleteSessionToken({ id: 'foo', uid: 'bar'})
       .then(() => {
         assert.equal(pool.del.callCount, 1)
@@ -172,7 +172,7 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('should not call redis when resetting account', () => {
+  it('db.resetAccount succeeds without a redis instance', () => {
     const start = Date.now()
     return db.resetAccount({ uid: 'fakeUid' }, {})
       .then(() => {
@@ -186,7 +186,7 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('should not call redis when updating sessionTokens', () => {
+  it('db.updateSessionToken succeeds without a redis instance', () => {
     return db.updateSessionToken({ id: 'foo', uid: 'bar' })
       .then(() => {
         assert.equal(pool.get.callCount, 0)
