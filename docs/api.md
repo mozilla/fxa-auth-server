@@ -2332,7 +2332,7 @@ by the following errors
 
 :lock: HAWK-authenticated with session token
 <!--begin-route-post-sessionverifytoken-->
-
+Verify a session using a token code.
 <!--end-route-post-sessionverifytoken-->
 
 ##### Request body
@@ -2340,13 +2340,13 @@ by the following errors
 * `uid`: *string, max(32), regex(HEX_STRING), required*
 
   <!--begin-request-body-post-sessionverifytoken-uid-->
-  
+  The uid associated with the token code
   <!--end-request-body-post-sessionverifytoken-uid-->
 
 * `code`: *string, min(0), max(1024), required*
 
   <!--begin-request-body-post-sessionverifytoken-code-->
-  
+  The code
   <!--end-request-body-post-sessionverifytoken-code-->
 
 
