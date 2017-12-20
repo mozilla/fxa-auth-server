@@ -11,6 +11,7 @@ const mocks = require('../../mocks')
 const P = require('../../../lib/promise')
 
 let log, db, customs, routes, route, request, response
+const TEST_EMAIL = 'test@email.com'
 
 describe('/session/verify/token', () => {
   describe('should verify code', () => {
@@ -28,12 +29,13 @@ describe('/session/verify/token', () => {
       assert.equal(args[1], request)
     })
 
-    it('called customs.checkIpOnly correctly', () => {
-      assert.equal(customs.checkIpOnly.callCount, 1)
-      const args = customs.checkIpOnly.args[0]
-      assert.equal(args.length, 2)
+    it('called customs.check correctly', () => {
+      assert.equal(customs.check.callCount, 1)
+      const args = customs.check.args[0]
+      assert.equal(args.length, 3)
       assert.equal(args[0], request)
-      assert.equal(args[1], 'verifyTokenCode')
+      assert.equal(args[1], TEST_EMAIL)
+      assert.equal(args[2], 'verifyTokenCode')
     })
 
     it('called db.verifyTokenCode correctly', () => {
@@ -70,12 +72,13 @@ describe('/session/verify/token', () => {
       assert.equal(args[1], request)
     })
 
-    it('called customs.checkIpOnly correctly', () => {
-      assert.equal(customs.checkIpOnly.callCount, 1)
-      const args = customs.checkIpOnly.args[0]
-      assert.equal(args.length, 2)
+    it('called customs.check correctly', () => {
+      assert.equal(customs.check.callCount, 1)
+      const args = customs.check.args[0]
+      assert.equal(args.length, 3)
       assert.equal(args[0], request)
-      assert.equal(args[1], 'verifyTokenCode')
+      assert.equal(args[1], TEST_EMAIL)
+      assert.equal(args[2], 'verifyTokenCode')
     })
 
     it('called db.verifyTokenCode correctly', () => {
@@ -104,6 +107,9 @@ function setup(results, errors) {
   routes = makeRoutes({log, db, customs})
   route = getRoute(routes, '/session/verify/token')
   request = mocks.mockRequest({
+    credentials: {
+      email: TEST_EMAIL
+    },
     log: log,
     payload: {
       uid: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',

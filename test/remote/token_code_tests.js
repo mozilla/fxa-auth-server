@@ -36,54 +36,54 @@ describe('remote tokenCodes', function () {
     return Client.login(config.publicUrl, email, password, {
       verificationMethod: 'email-2fa'
     })
-      .then((res) => {
-        client = res
-        assert.equal(res.verificationMethod, 'email-2fa', 'sets correct verification method')
-        return client.verifyTokenCode('BADCODE')
-      })
-      .then(() => {
-        assert.fail('consumed invalid code')
-      }, (err) => {
-        assert.equal(err.errno, error.ERRNO.INVALID_TOKEN_VERIFICATION_CODE, 'correct errno')
-        return client.emailStatus()
-      })
-      .then((status) => {
-        assert.equal(status.verified, false, 'account is not verified')
-        assert.equal(status.emailVerified, true, 'email is verified')
-        assert.equal(status.sessionVerified, false, 'session is not verified')
-      })
+    .then((res) => {
+      client = res
+      assert.equal(res.verificationMethod, 'email-2fa', 'sets correct verification method')
+      return client.verifyTokenCode('BADCODE')
+    })
+    .then(() => {
+      assert.fail('consumed invalid code')
+    }, (err) => {
+      assert.equal(err.errno, error.ERRNO.INVALID_TOKEN_VERIFICATION_CODE, 'correct errno')
+      return client.emailStatus()
+    })
+    .then((status) => {
+      assert.equal(status.verified, false, 'account is not verified')
+      assert.equal(status.emailVerified, true, 'email is verified')
+      assert.equal(status.sessionVerified, false, 'session is not verified')
+    })
   })
 
   it('should consume valid code', () => {
     return Client.login(config.publicUrl, email, password, {
       verificationMethod: 'email-2fa'
     })
-      .then((res) => {
-        client = res
-        assert.equal(res.verificationMethod, 'email-2fa', 'sets correct verification method')
-        return client.emailStatus()
-      })
-      .then((status) => {
-        assert.equal(status.verified, false, 'account is not verified')
-        assert.equal(status.emailVerified, true, 'email is verified')
-        assert.equal(status.sessionVerified, false, 'session is not verified')
-        return server.mailbox.waitForEmail(email)
-      })
-      .then((emailData) => {
-        assert.equal(emailData.headers['x-template-name'], 'verifyLoginCodeEmail', 'sign-in code sent')
-        code = emailData.headers['x-signin-verify-code']
-        assert.ok(code, 'code is sent')
-        return client.verifyTokenCode(code)
-      })
-      .then((res) => {
-        assert.ok(res, 'verified successful response')
-        return client.emailStatus()
-      })
-      .then((status) => {
-        assert.equal(status.verified, true, 'account is verified')
-        assert.equal(status.emailVerified, true, 'email is verified')
-        assert.equal(status.sessionVerified, true, 'session is verified')
-      })
+    .then((res) => {
+      client = res
+      assert.equal(res.verificationMethod, 'email-2fa', 'sets correct verification method')
+      return client.emailStatus()
+    })
+    .then((status) => {
+      assert.equal(status.verified, false, 'account is not verified')
+      assert.equal(status.emailVerified, true, 'email is verified')
+      assert.equal(status.sessionVerified, false, 'session is not verified')
+      return server.mailbox.waitForEmail(email)
+    })
+    .then((emailData) => {
+      assert.equal(emailData.headers['x-template-name'], 'verifyLoginCodeEmail', 'sign-in code sent')
+      code = emailData.headers['x-signin-verify-code']
+      assert.ok(code, 'code is sent')
+      return client.verifyTokenCode(code)
+    })
+    .then((res) => {
+      assert.ok(res, 'verified successful response')
+      return client.emailStatus()
+    })
+    .then((status) => {
+      assert.equal(status.verified, true, 'account is verified')
+      assert.equal(status.emailVerified, true, 'email is verified')
+      assert.equal(status.sessionVerified, true, 'session is verified')
+    })
   })
 
   after(() => {
