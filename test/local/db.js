@@ -309,6 +309,228 @@ describe('redis enabled', () => {
       })
   })
 
+  it('db.devices handles old-format token objects from redis', () => {
+    const oldResult = {
+      blee: {
+        lastAccessTime: 42,
+        uaBrowser: 'Firefox',
+        uaBrowserVersion: '59',
+        uaOS: 'Mac OS X',
+        uaOSVersion: '10.11',
+        uaDeviceType: null,
+        uaFormFactor: null,
+        location: {
+          city: 'Bournemouth',
+          state: 'England',
+          stateCode: 'EN',
+          country: 'United Kingdom',
+          countryCode: 'GB'
+        }
+      }
+    }
+    redis.get = sinon.spy(() => P.resolve(JSON.stringify(oldResult)))
+    pool.get = sinon.spy(() => P.resolve([ { id: 'device-id', sessionTokenId: 'blee' } ]))
+    return db.devices('wibble')
+      .then(result => assert.deepEqual(result, [
+        {
+          id: 'device-id',
+          sessionToken: 'blee',
+          name: undefined,
+          type: undefined,
+          pushCallback: undefined,
+          pushPublicKey: undefined,
+          pushAuthKey: undefined,
+          pushEndpointExpired: false,
+          lastAccessTime: 42,
+          uaBrowser: 'Firefox',
+          uaBrowserVersion: '59',
+          uaOS: 'Mac OS X',
+          uaOSVersion: '10.11',
+          uaDeviceType: null,
+          uaFormFactor: null,
+          location: {
+            city: 'Bournemouth',
+            state: 'England',
+            stateCode: 'EN',
+            country: 'United Kingdom',
+            countryCode: 'GB'
+          }
+        }
+      ]))
+  })
+
+  it('db.devices handles new-format token objects from redis', () => {
+    const newResult = {
+      blee: [
+        1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0,
+        'Mountain View', 'California', 'CA', 'United States', 'US'
+      ]
+    }
+    redis.get = sinon.spy(() => P.resolve(JSON.stringify(newResult)))
+    pool.get = sinon.spy(() => P.resolve([ { id: 'device-id', sessionTokenId: 'blee' } ]))
+    return db.devices('wibble')
+      .then(result => assert.deepEqual(result, [
+        {
+          id: 'device-id',
+          sessionToken: 'blee',
+          name: undefined,
+          type: undefined,
+          pushCallback: undefined,
+          pushPublicKey: undefined,
+          pushAuthKey: undefined,
+          pushEndpointExpired: false,
+          lastAccessTime: 1,
+          uaBrowser: 'Firefox Focus',
+          uaBrowserVersion: '4.0.1',
+          uaOS: 'Android',
+          uaOSVersion: '8.1',
+          uaDeviceType: 'mobile',
+          uaFormFactor: null,
+          location: {
+            city: 'Mountain View',
+            state: 'California',
+            stateCode: 'CA',
+            country: 'United States',
+            countryCode: 'US'
+          }
+        }
+      ]))
+  })
+
+  it('db.sessions handles old-format token objects from redis', () => {
+    const oldResult = {
+      blee: {
+        lastAccessTime: 1,
+        uaBrowser: 'Firefox Focus',
+        uaBrowserVersion: '4.0.1',
+        uaOS: 'Android',
+        uaOSVersion: '8.1',
+        uaDeviceType: 'mobile',
+        uaFormFactor: null,
+        location: {
+          city: 'Mountain View',
+          state: 'California',
+          stateCode: 'CA',
+          country: 'United States',
+          countryCode: 'US'
+        }
+      }
+    }
+    redis.get = sinon.spy(() => P.resolve(JSON.stringify(oldResult)))
+    pool.get = sinon.spy(() => P.resolve([ { tokenId: 'blee', deviceId: 'device-id' } ]))
+    return db.sessions('wibble')
+      .then(result => assert.deepEqual(result, [
+        {
+          id: 'blee',
+          deviceId: 'device-id',
+          lastAccessTime: 1,
+          uaBrowser: 'Firefox Focus',
+          uaBrowserVersion: '4.0.1',
+          uaOS: 'Android',
+          uaOSVersion: '8.1',
+          uaDeviceType: 'mobile',
+          uaFormFactor: null,
+          location: {
+            city: 'Mountain View',
+            state: 'California',
+            stateCode: 'CA',
+            country: 'United States',
+            countryCode: 'US'
+          }
+        }
+      ]))
+  })
+
+  it('db.sessions handles new-format token objects from redis', () => {
+    const newResult = {
+      blee: [
+        42, 'Firefox', '59', 'Mac OS X', '10.11', 0, 0,
+        'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
+      ]
+    }
+    redis.get = sinon.spy(() => P.resolve(JSON.stringify(newResult)))
+    pool.get = sinon.spy(() => P.resolve([ { tokenId: 'blee', deviceId: 'device-id' } ]))
+    return db.sessions('wibble')
+      .then(result => assert.deepEqual(result, [
+        {
+          id: 'blee',
+          deviceId: 'device-id',
+          lastAccessTime: 42,
+          uaBrowser: 'Firefox',
+          uaBrowserVersion: '59',
+          uaOS: 'Mac OS X',
+          uaOSVersion: '10.11',
+          uaDeviceType: null,
+          uaFormFactor: null,
+          location: {
+            city: 'Bournemouth',
+            state: 'England',
+            stateCode: 'EN',
+            country: 'United Kingdom',
+            countryCode: 'GB'
+          }
+        }
+      ]))
+  })
+
+  it('db.updateSessionToken handles old-format and new-format token objects from redis', () => {
+    return db.updateSessionToken({
+      id: 'wibble',
+      uid: 'blee',
+      lastAccessTime: 42,
+      uaBrowser: 'Firefox',
+      uaBrowserVersion: '59',
+      uaOS: 'Mac OS X',
+      uaOSVersion: '10.11',
+      uaDeviceType: null,
+      uaFormFactor: null,
+    }, P.resolve({
+      location: {
+        city: 'Bournemouth',
+        state: 'England',
+        stateCode: 'EN',
+        country: 'United Kingdom',
+        countryCode: 'GB'
+      }
+    }))
+      .then(() => {
+        assert.equal(redis.update.callCount, 1)
+        const getUpdatedValue = redis.update.args[0][1]
+        assert.equal(typeof getUpdatedValue, 'function')
+
+        const result = getUpdatedValue(JSON.stringify({
+          old: {
+            lastAccessTime: 1,
+            uaBrowser: 'Firefox Focus',
+            uaBrowserVersion: '4.0.1',
+            uaOS: 'Android',
+            uaOSVersion: '8.1',
+            uaDeviceType: 'mobile',
+            uaFormFactor: null,
+            location: {
+              city: 'Mountain View',
+              state: 'California',
+              stateCode: 'CA',
+              country: 'United States',
+              countryCode: 'US'
+            }
+          },
+          new: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0 ]
+        }))
+        assert.deepEqual(JSON.parse(result), {
+          wibble: [
+            42, 'Firefox', '59', 'Mac OS X', '10.11', 0, 0,
+            'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
+          ],
+          old: [
+            1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0,
+            'Mountain View', 'California', 'CA', 'United States', 'US'
+          ],
+          new: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0 ]
+        })
+      })
+  })
+
   describe('redis.get rejects', () => {
     beforeEach(() => {
       redis.get = sinon.spy(() => P.reject({ message: 'mock redis.get error' }))
