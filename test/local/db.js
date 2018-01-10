@@ -327,8 +327,8 @@ describe('redis enabled', () => {
       }
     }
     const newFormat = [
-      1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null,
-      'Mountain View', 'California', 'CA', 'United States', 'US'
+      1, [ 'Mountain View', 'California', 'CA', 'United States', 'US' ],
+      'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null
     ]
     redis.get = sinon.spy(() => P.resolve(JSON.stringify({ oldFormat, newFormat })))
     pool.get = sinon.spy(() => P.resolve([
@@ -406,8 +406,8 @@ describe('redis enabled', () => {
       }
     }
     const newFormat = [
-      42, 'Firefox', '59', 'Mac OS X', '10.11', null, null,
-      'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
+      42, [ 'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB' ],
+      'Firefox', '59', 'Mac OS X', '10.11', null, null
     ]
     redis.get = sinon.spy(() => P.resolve(JSON.stringify({ oldFormat, newFormat })))
     pool.get = sinon.spy(() => P.resolve([
@@ -497,18 +497,21 @@ describe('redis enabled', () => {
               countryCode: 'US'
             }
           },
-          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null ]
+          newFormat: [ 2, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null ]
         }))
         assert.deepEqual(JSON.parse(result), {
           wibble: [
-            42, 'Firefox', '59', 'Mac OS X', '10.11', null, null,
-            'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
+            42, [ 'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'],
+            'Firefox', '59', 'Mac OS X', '10.11', null, null
           ],
           oldFormat: [
-            1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null,
-            'Mountain View', 'California', 'CA', 'United States', 'US'
+            1, [ 'Mountain View', 'California', 'CA', 'United States', 'US' ],
+            'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null
           ],
-          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null ]
+          newFormat: [
+            2, [ null, null, null, null, null],
+            'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null
+          ]
         })
       })
   })
