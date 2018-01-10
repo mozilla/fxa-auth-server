@@ -327,7 +327,7 @@ describe('redis enabled', () => {
       }
     }
     const newFormat = [
-      1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0,
+      1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null,
       'Mountain View', 'California', 'CA', 'United States', 'US'
     ]
     redis.get = sinon.spy(() => P.resolve(JSON.stringify({ oldFormat, newFormat })))
@@ -406,7 +406,7 @@ describe('redis enabled', () => {
       }
     }
     const newFormat = [
-      42, 'Firefox', '59', 'Mac OS X', '10.11', 0, 0,
+      42, 'Firefox', '59', 'Mac OS X', '10.11', null, null,
       'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
     ]
     redis.get = sinon.spy(() => P.resolve(JSON.stringify({ oldFormat, newFormat })))
@@ -497,18 +497,18 @@ describe('redis enabled', () => {
               countryCode: 'US'
             }
           },
-          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0 ]
+          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null ]
         }))
         assert.deepEqual(JSON.parse(result), {
           wibble: [
-            42, 'Firefox', '59', 'Mac OS X', '10.11', 0, 0,
+            42, 'Firefox', '59', 'Mac OS X', '10.11', null, null,
             'Bournemouth', 'England', 'EN', 'United Kingdom', 'GB'
           ],
           oldFormat: [
-            1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0,
+            1, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null,
             'Mountain View', 'California', 'CA', 'United States', 'US'
           ],
-          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', 0 ]
+          newFormat: [ 2, 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile', null ]
         })
       })
   })
