@@ -30,7 +30,7 @@ describe('db, session tokens expire:', () => {
     tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool }
-    })({ tokenLifetimes, redis: {} }, log, tokens, {})
+    })({ tokenLifetimes, tokenPruning: {}, redis: {} }, log, tokens, {})
     return DB.connect({})
       .then(result => db = result)
   })
@@ -78,7 +78,7 @@ describe('db, session tokens do not expire:', () => {
     tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool }
-    })({ tokenLifetimes, redis: {} }, log, tokens, {})
+    })({ tokenLifetimes, tokenPruning: {}, redis: {} }, log, tokens, {})
     return DB.connect({})
       .then(result => db = result)
   })
@@ -127,7 +127,7 @@ describe('db with redis disabled', () => {
     const DB = proxyquire(`${LIB_DIR}/db`, {
       './pool': function () { return pool },
       './redis': () => {}
-    })({ tokenLifetimes }, log, tokens, {})
+    })({ tokenLifetimes, tokenPruning: {} }, log, tokens, {})
     return DB.connect({})
       .then(result => db = result)
   })
@@ -193,11 +193,23 @@ describe('db with redis disabled', () => {
         assert.equal(pool.post.callCount, 0)
       })
   })
+
+  it('db.pruneSessionToken succeeds without a redis instance', () => {
+    return db.pruneSessionToken({ id: 'foo', uid: 'bar' })
+      .then(() => {
+        assert.equal(pool.get.callCount, 0)
+        assert.equal(pool.post.callCount, 0)
+      })
+  })
 })
 
-describe('redis enabled', () => {
+describe('redis enabled, token-pruning enabled', () => {
   const tokenLifetimes = {
     sessionTokenWithoutDevice: 2419200000
+  }
+  const tokenPruning = {
+    enabled: true,
+    maxAge: 1000 * 60 * 60 * 24 * 72
   }
 
   let pool, redis, log, tokens, db
@@ -226,6 +238,7 @@ describe('redis enabled', () => {
       }
     })({
       tokenLifetimes,
+      tokenPruning,
       redis: 'mock redis config',
       lastAccessTimeUpdates: {
         enabled: true,
@@ -297,6 +310,29 @@ describe('redis enabled', () => {
         assert.equal(redis.update.args[0][0], 'blee')
         assert.equal(typeof redis.update.args[0][1], 'function')
       })
+  })
+
+  it('should call redis.update in db.pruneSessionToken', () => {
+    return db.pruneSessionToken({
+      createdAt: Date.now() - tokenPruning.maxAge - 1,
+      id: 'wibble',
+      uid: 'blee'
+    })
+      .then(() => {
+        assert.equal(redis.update.callCount, 1)
+        assert.equal(redis.update.args[0].length, 2)
+        assert.equal(redis.update.args[0][0], 'blee')
+        assert.equal(typeof redis.update.args[0][1], 'function')
+      })
+  })
+
+  it('should not call redis.update for unexpired tokens in db.pruneSessionToken', () => {
+    return db.pruneSessionToken({
+      createdAt: Date.now() - tokenPruning.maxAge + 1000,
+      id: 'wibble',
+      uid: 'blee'
+    })
+      .then(() => assert.equal(redis.update.callCount, 0))
   })
 
   it('should call redis.update in db.deleteSessionToken', () => {
@@ -516,6 +552,47 @@ describe('redis enabled', () => {
       })
   })
 
+  it('db.pruneSessionToken handles old-format and new-format token objects from redis', () => {
+    return db.pruneSessionToken({
+      id: 'expired',
+      uid: 'blee',
+      createdAt: Date.now() - tokenPruning.maxAge
+    })
+      .then(() => {
+        assert.equal(redis.update.callCount, 1)
+        const getUpdatedValue = redis.update.args[0][1]
+        assert.equal(typeof getUpdatedValue, 'function')
+
+        const result = getUpdatedValue(JSON.stringify({
+          expired: [ 1, [], 'foo', 'bar', 'baz', 'qux' ],
+          oldFormat: {
+            lastAccessTime: 2,
+            uaBrowser: 'Firefox',
+            uaBrowserVersion: '59',
+            uaOS: 'Mac OS X',
+            uaOSVersion: '10.11',
+            uaDeviceType: null,
+            uaFormFactor: null,
+            location: {
+              city: 'Mountain View',
+              state: 'California',
+              stateCode: 'CA',
+              country: 'United States',
+              countryCode: 'US'
+            }
+          },
+          newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
+        }))
+        assert.deepEqual(JSON.parse(result), {
+          oldFormat: [
+            2, [ 'Mountain View', 'California', 'CA', 'United States', 'US' ],
+            'Firefox', '59', 'Mac OS X', '10.11'
+          ],
+          newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
+        })
+      })
+  })
+
   describe('redis.get rejects', () => {
     beforeEach(() => {
       redis.get = sinon.spy(() => P.reject({ message: 'mock redis.get error' }))
@@ -587,8 +664,16 @@ describe('redis enabled', () => {
         )
     })
 
+    it('db.pruneSessionToken should reject', () => {
+      return db.pruneSessionToken({ id: 'wibble', uid: 'blee' })
+        .then(
+          () => assert.equal(false, 'db.pruneSessionToken should have rejected'),
+          error => assert.equal(error.message, 'mock redis.update error')
+        )
+    })
+
     it('db.deleteSessionToken should reject', () => {
-      return db.deleteSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
+      return db.deleteSessionToken({ id: 'wibble', uid: 'blee' })
         .then(
           () => assert.equal(false, 'db.deleteSessionToken should have rejected'),
           error => assert.equal(error.message, 'mock redis.update error')
@@ -633,6 +718,61 @@ describe('redis enabled', () => {
     it('returned object', () => {
       assert.equal(result, '{"frang":{}}')
     })
+  })
+})
+
+describe('redis enabled, token-pruning disabled', () => {
+  const tokenLifetimes = {
+    sessionTokenWithoutDevice: 2419200000
+  }
+
+  let pool, redis, log, tokens, db
+
+  beforeEach(() => {
+    pool = {
+      get: sinon.spy(() => P.resolve([])),
+      post: sinon.spy(() => P.resolve()),
+      del: sinon.spy(() => P.resolve())
+    }
+    redis = {
+      get: sinon.spy(() => P.resolve('{}')),
+      set: sinon.spy(() => P.resolve()),
+      del: sinon.spy(() => P.resolve()),
+      update: sinon.spy(() => P.resolve())
+    }
+    log = mocks.mockLog()
+    tokens = require(`${LIB_DIR}/tokens`)(log, { tokenLifetimes })
+    const DB = proxyquire(`${LIB_DIR}/db`, {
+      './pool': function () { return pool },
+      './redis': (...args) => {
+        assert.equal(args.length, 2, 'redisPool was passed two arguments')
+        assert.equal(args[0], 'mock redis config', 'redisPool was passed config')
+        assert.equal(args[1], log, 'redisPool was passed log')
+        return redis
+      }
+    })({
+      tokenLifetimes,
+      tokenPruning: {
+        enabled: false
+      },
+      redis: 'mock redis config',
+      lastAccessTimeUpdates: {
+        enabled: true,
+        sampleRate: 1,
+        earliestSaneTimestamp: 1
+      }
+    }, log, tokens, {})
+    return DB.connect({})
+      .then(result => db = result)
+  })
+
+  it('should not call redis.update in db.pruneSessionToken', () => {
+    return db.pruneSessionToken({
+      createdAt: 1,
+      id: 'wibble',
+      uid: 'blee'
+    })
+      .then(() => assert.equal(redis.update.callCount, 0))
   })
 })
 

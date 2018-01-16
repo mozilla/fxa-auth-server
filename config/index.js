@@ -432,6 +432,20 @@ var conf = convict({
       default: '4 weeks'
     }
   },
+  tokenPruning: {
+    enabled: {
+      doc: 'Turn on Redis token pruning',
+      format: Boolean,
+      default: true,
+      env: 'TOKEN_PRUNING_ENABLED'
+    },
+    maxAge: {
+      doc: 'Age at which to prune tokens from Redis, should be equal to config.pruneTokensMaxAge in fxa-auth-db-mysql',
+      format: 'duration',
+      default: '3 months',
+      env: 'TOKEN_PRUNING_MAX_AGE'
+    }
+  },
   verifierVersion: {
     doc: 'verifer version for new and changed passwords',
     format: 'int',
