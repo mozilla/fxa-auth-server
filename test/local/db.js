@@ -203,7 +203,7 @@ describe('db with redis disabled', () => {
   })
 })
 
-describe('redis enabled, token-pruning enabled', () => {
+describe('redis enabled, token-pruning enabled:', () => {
   const tokenLifetimes = {
     sessionTokenWithoutDevice: 2419200000
   }
@@ -595,7 +595,7 @@ describe('redis enabled, token-pruning enabled', () => {
       })
   })
 
-  describe('redis.get rejects', () => {
+  describe('redis.get rejects:', () => {
     beforeEach(() => {
       redis.get = sinon.spy(() => P.reject({ message: 'mock redis.get error' }))
     })
@@ -631,7 +631,7 @@ describe('redis enabled, token-pruning enabled', () => {
     })
   })
 
-  describe('redis.del rejects', () => {
+  describe('redis.del rejects:', () => {
     beforeEach(() => {
       redis.del = sinon.spy(() => P.reject({ message: 'mock redis.del error' }))
     })
@@ -653,7 +653,7 @@ describe('redis enabled, token-pruning enabled', () => {
     })
   })
 
-  describe('redis.update rejects', () => {
+  describe('redis.update rejects:', () => {
     beforeEach(() => {
       redis.update = sinon.spy(() => P.reject({ message: 'mock redis.update error' }))
     })
@@ -721,9 +721,62 @@ describe('redis enabled, token-pruning enabled', () => {
       assert.equal(result, '{"frang":{}}')
     })
   })
+
+  describe('mock db.pruneSessionTokens:', () => {
+    beforeEach(() => {
+      db.pruneSessionTokens = sinon.spy(() => P.resolve())
+    })
+
+    describe('return expired tokens from pool.get:', () => {
+      beforeEach(() => {
+        const expiryPoint = Date.now() - tokenLifetimes.sessionTokenWithoutDevice
+        pool.get = sinon.spy(() => P.resolve([
+          { tokenId: 'unexpired', createdAt: expiryPoint + 1000 },
+          { tokenId: 'expired1', createdAt: expiryPoint - 1 },
+          { tokenId: 'expired2', createdAt: 1 }
+        ]))
+      })
+
+      it('should call pruneSessionTokens in db.sessions', () => {
+        return db.sessions('foo')
+          .then(result => {
+            assert.equal(result.length, 1)
+            assert.equal(result[0].id, 'unexpired')
+
+            assert.equal(db.pruneSessionTokens.callCount, 1)
+            const args = db.pruneSessionTokens.args[0]
+            assert.equal(args.length, 2)
+            assert.equal(args[0], 'foo')
+            assert.ok(Array.isArray(args[1]))
+            assert.equal(args[1].length, 2)
+            assert.equal(args[1][0].id, 'expired1')
+            assert.equal(args[1][1].id, 'expired2')
+          })
+      })
+    })
+
+    describe('return unexpired tokens from pool.get:', () => {
+      beforeEach(() => {
+        const expiryPoint = Date.now() - tokenLifetimes.sessionTokenWithoutDevice
+        pool.get = sinon.spy(() => P.resolve([
+          { tokenId: 'unexpired1', createdAt: expiryPoint + 1000 },
+          { tokenId: 'unexpired2', createdAt: expiryPoint + 100000 },
+          { tokenId: 'unexpired3', createdAt: expiryPoint + 10000000 }
+        ]))
+      })
+
+      it('should not call pruneSessionTokens in db.sessions', () => {
+        return db.sessions('foo')
+          .then(result => {
+            assert.equal(result.length, 3)
+            assert.equal(db.pruneSessionTokens.callCount, 0)
+          })
+      })
+    })
+  })
 })
 
-describe('redis enabled, token-pruning disabled', () => {
+describe('redis enabled, token-pruning disabled:', () => {
   const tokenLifetimes = {
     sessionTokenWithoutDevice: 2419200000
   }
