@@ -424,8 +424,8 @@ describe('lib/server', () => {
             assert.equal(args[0], 'deadbeef')
           })
 
-          it('did not call db.pruneSessionToken', () => {
-            assert.equal(db.pruneSessionToken.callCount, 0)
+          it('did not call db.pruneSessionTokens', () => {
+            assert.equal(db.pruneSessionTokens.callCount, 0)
           })
         })
       })
@@ -467,12 +467,14 @@ describe('lib/server', () => {
         assert.equal(db.sessionToken.callCount, 1)
       })
 
-      it('called db.pruneSessionToken correctly', () => {
-        assert.equal(db.pruneSessionToken.callCount, 1)
-        const args = db.pruneSessionToken.args[0]
-        assert.equal(args.length, 1)
-        assert.equal(args[0].id, 'wibble')
-        assert.equal(args[0].uid, 'blee')
+      it('called db.pruneSessionTokens correctly', () => {
+        assert.equal(db.pruneSessionTokens.callCount, 1)
+        const args = db.pruneSessionTokens.args[0]
+        assert.equal(args.length, 2)
+        assert.equal(args[0], 'blee')
+        assert.ok(Array.isArray(args[1]))
+        assert.equal(args[1].length, 1)
+        assert.equal(args[1][0].id, 'wibble')
       })
     })
 

@@ -292,7 +292,7 @@ describe('remote db', function() {
 
           // Attempt to prune a session token that is younger than maxAge
           sessionToken.createdAt = Date.now() - tokenPruning.maxAge + 10000
-          return db.pruneSessionToken(sessionToken)
+          return db.pruneSessionTokens(account.uid, [ sessionToken ])
         })
         .then(() => {
           // Fetch all sessions for the account
@@ -313,7 +313,7 @@ describe('remote db', function() {
         .then(sessionToken => {
           // Prune a session token that is older than maxAge
           sessionToken.createdAt = Date.now() - tokenPruning.maxAge - 1
-          return db.pruneSessionToken(sessionToken)
+          return db.pruneSessionTokens(account.uid, [ sessionToken ])
         })
         .then(() => {
           // Fetch all sessions for the account

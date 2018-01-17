@@ -194,8 +194,8 @@ describe('db with redis disabled', () => {
       })
   })
 
-  it('db.pruneSessionToken succeeds without a redis instance', () => {
-    return db.pruneSessionToken({ id: 'foo', uid: 'bar' })
+  it('db.pruneSessionTokens succeeds without a redis instance', () => {
+    return db.pruneSessionTokens('foo', [ { id: 'bar', createdAt: 1 } ])
       .then(() => {
         assert.equal(pool.get.callCount, 0)
         assert.equal(pool.post.callCount, 0)
@@ -312,26 +312,26 @@ describe('redis enabled, token-pruning enabled', () => {
       })
   })
 
-  it('should call redis.update in db.pruneSessionToken', () => {
-    return db.pruneSessionToken({
-      createdAt: Date.now() - tokenPruning.maxAge - 1,
-      id: 'wibble',
-      uid: 'blee'
-    })
+  it('should call redis.update in db.pruneSessionTokens', () => {
+    const createdAt = Date.now() - tokenPruning.maxAge - 1
+    return db.pruneSessionTokens('foo', [
+      { id: 'bar', createdAt },
+      { id: 'baz', createdAt }
+    ])
       .then(() => {
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
-        assert.equal(redis.update.args[0][0], 'blee')
+        assert.equal(redis.update.args[0][0], 'foo')
         assert.equal(typeof redis.update.args[0][1], 'function')
       })
   })
 
-  it('should not call redis.update for unexpired tokens in db.pruneSessionToken', () => {
-    return db.pruneSessionToken({
-      createdAt: Date.now() - tokenPruning.maxAge + 1000,
-      id: 'wibble',
-      uid: 'blee'
-    })
+  it('should not call redis.update for unexpired tokens in db.pruneSessionTokens', () => {
+    const createdAt = Date.now() - tokenPruning.maxAge + 1000
+    return db.pruneSessionTokens('foo', [
+      { id: 'bar', createdAt },
+      { id: 'baz', createdAt }
+    ])
       .then(() => assert.equal(redis.update.callCount, 0))
   })
 
@@ -552,18 +552,19 @@ describe('redis enabled, token-pruning enabled', () => {
       })
   })
 
-  it('db.pruneSessionToken handles old-format and new-format token objects from redis', () => {
-    return db.pruneSessionToken({
-      id: 'expired',
-      uid: 'blee',
-      createdAt: Date.now() - tokenPruning.maxAge
-    })
+  it('db.pruneSessionTokens handles old-format and new-format token objects from redis', () => {
+    const expiryPoint = Date.now() - tokenPruning.maxAge
+    return db.pruneSessionTokens('blee', [
+      { id: 'unexpired', createdAt: expiryPoint + 1000 },
+      { id: 'expired', createdAt: expiryPoint }
+    ])
       .then(() => {
         assert.equal(redis.update.callCount, 1)
         const getUpdatedValue = redis.update.args[0][1]
         assert.equal(typeof getUpdatedValue, 'function')
 
         const result = getUpdatedValue(JSON.stringify({
+          unexpired: [ 0, [], 'foo', 'bar', 'baz', 'qux' ],
           expired: [ 1, [], 'foo', 'bar', 'baz', 'qux' ],
           oldFormat: {
             lastAccessTime: 2,
@@ -584,6 +585,7 @@ describe('redis enabled, token-pruning enabled', () => {
           newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
         }))
         assert.deepEqual(JSON.parse(result), {
+          unexpired: [ 0, [], 'foo', 'bar', 'baz', 'qux' ],
           oldFormat: [
             2, [ 'Mountain View', 'California', 'CA', 'United States', 'US' ],
             'Firefox', '59', 'Mac OS X', '10.11'
@@ -664,10 +666,10 @@ describe('redis enabled, token-pruning enabled', () => {
         )
     })
 
-    it('db.pruneSessionToken should reject', () => {
-      return db.pruneSessionToken({ id: 'wibble', uid: 'blee' })
+    it('db.pruneSessionTokens should reject', () => {
+      return db.pruneSessionTokens('wibble', [ { id: 'blee', createdAt: 1 } ])
         .then(
-          () => assert.equal(false, 'db.pruneSessionToken should have rejected'),
+          () => assert.equal(false, 'db.pruneSessionTokens should have rejected'),
           error => assert.equal(error.message, 'mock redis.update error')
         )
     })
@@ -766,12 +768,10 @@ describe('redis enabled, token-pruning disabled', () => {
       .then(result => db = result)
   })
 
-  it('should not call redis.update in db.pruneSessionToken', () => {
-    return db.pruneSessionToken({
-      createdAt: 1,
-      id: 'wibble',
-      uid: 'blee'
-    })
+  it('should not call redis.update in db.pruneSessionTokens', () => {
+    return db.pruneSessionTokens('wibble', [
+      { id: 'blee', createdAt: 1 }
+    ])
       .then(() => assert.equal(redis.update.callCount, 0))
   })
 })

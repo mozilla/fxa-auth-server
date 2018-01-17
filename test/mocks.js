@@ -58,7 +58,7 @@ const DB_METHOD_NAMES = [
   'keyFetchTokenWithVerificationStatus',
   'passwordChangeToken',
   'passwordForgotToken',
-  'pruneSessionToken',
+  'pruneSessionTokens',
   'resetAccount',
   'resetAccountTokens',
   'securityEvent',
