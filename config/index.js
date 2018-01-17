@@ -379,7 +379,7 @@ var conf = convict({
       doc: 'Key prefix for session tokens in Redis'
     },
     maxConnections: {
-      default: 10,
+      default: 100,
       env: 'REDIS_POOL_MAX_CONNECTIONS',
       format: 'int',
       doc: 'Maximum connection count for Redis'
