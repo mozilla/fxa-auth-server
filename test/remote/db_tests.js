@@ -194,7 +194,7 @@ describe('remote db', function() {
           lastAccessTimeUpdates.enabled = false
 
           // Attempt to update the session token
-          return db.updateSessionToken(sessionToken, P.resolve({}))
+          return db.updateSessionToken(sessionToken, {})
         })
         .then(result => {
           assert.equal(result, undefined)
@@ -219,7 +219,7 @@ describe('remote db', function() {
           // Update the session token
           return db.updateSessionToken(Object.assign({}, sessionToken, {
             lastAccessTime: Date.now()
-          }), P.resolve({
+          }), {
             location: {
               city: 'Bournemouth',
               country: 'United Kingdom',
@@ -228,7 +228,7 @@ describe('remote db', function() {
               stateCode: 'EN'
             },
             timeZone: 'Europe/London'
-          }))
+          })
         })
         .then(() => {
           // Fetch all sessions for the account
@@ -257,7 +257,7 @@ describe('remote db', function() {
             uaOSVersion: '4.4',
             uaDeviceType: 'mobile',
             uaFormFactor: null
-          }), P.reject())
+          }), {})
         })
         .then(tokens => {
           // Fetch all sessions for the account
@@ -466,7 +466,7 @@ describe('remote db', function() {
           // Update the device and the session token
           return P.all([
             db.updateDevice(account.uid, sessionToken.id, deviceInfo),
-            db.updateSessionToken(sessionToken, P.resolve({
+            db.updateSessionToken(sessionToken, {
               location: {
                 city: 'Mountain View',
                 country: 'United States',
@@ -475,7 +475,7 @@ describe('remote db', function() {
                 stateCode: 'CA'
               },
               timeZone: 'America/Los_Angeles'
-            }))
+            })
           ])
         })
         .then(results => {

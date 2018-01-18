@@ -290,7 +290,7 @@ describe('redis enabled', () => {
   })
 
   it('should call redis.update in db.updateSessionToken', () => {
-    return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
+    return db.updateSessionToken({ id: 'wibble', uid: 'blee' })
       .then(() => {
         assert.equal(redis.update.callCount, 1)
         assert.equal(redis.update.args[0].length, 2)
@@ -466,7 +466,7 @@ describe('redis enabled', () => {
       uaOSVersion: '10.11',
       uaDeviceType: null,
       uaFormFactor: null,
-    }, P.resolve({
+    }, {
       location: {
         city: 'Bournemouth',
         state: 'England',
@@ -474,7 +474,7 @@ describe('redis enabled', () => {
         country: 'United Kingdom',
         countryCode: 'GB'
       }
-    }))
+    })
       .then(() => {
         assert.equal(redis.update.callCount, 1)
         const getUpdatedValue = redis.update.args[0][1]
@@ -580,7 +580,7 @@ describe('redis enabled', () => {
     })
 
     it('db.updateSessionToken should reject', () => {
-      return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, P.resolve())
+      return db.updateSessionToken({ id: 'wibble', uid: 'blee' }, {})
         .then(
           () => assert.equal(false, 'db.updateSessionToken should have rejected'),
           error => assert.equal(error.message, 'mock redis.update error')
