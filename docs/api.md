@@ -55,6 +55,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [GET /password/forgot/status (:lock: passwordForgotToken)](#get-passwordforgotstatus)
   * [Session](#session)
     * [POST /session/destroy (:lock: sessionToken)](#post-sessiondestroy)
+    * [POST /session/reauth (:lock: sessionToken)](#post-sessionreauth)
     * [GET /session/status (:lock: sessionToken)](#get-sessionstatus)
     * [POST /session/duplicate (:lock: sessionToken)](#post-sessionduplicate)
   * [Sign](#sign)
@@ -2096,6 +2097,31 @@ to obtain a new `sessionToken`.
   <!--begin-request-body-post-sessiondestroy-customSessionToken-->
   Custom session token id to destroy.
   <!--end-request-body-post-sessiondestroy-customSessionToken-->
+
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+* `code: 401, errno: 110`:
+  Invalid authentication token in request signature
+
+
+#### POST /session/reauth
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-sessionrefresh-->
+Re-authenticate an existing session token.
+This is equivalent to calling `/account/login`,
+but it re-uses an existing session token
+rather than generating a new one,
+allowing the caller to maintain session state
+such a verification and device registration.
+<!--end-route-post-sessionrefresh-->
+
+##### Request body
+
 
 ##### Error responses
 

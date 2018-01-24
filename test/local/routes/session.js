@@ -12,9 +12,19 @@ const sinon = require('sinon')
 
 function makeRoutes (options) {
   options = options || {}
+  const config = options.config || {}
   const db = options.db || mocks.mockDB()
   const log = options.log || mocks.mockLog()
-  return require('../../../lib/routes/session')(log, db)
+  const mailer = options.mailer || {}
+  const Password = options.Password || require('../../../lib/crypto/password')(log, config)
+  const customs = options.customs || {
+    check: () => { return P.resolve(true) }
+  }
+  const signinUtils = options.signinUtils || require('../../../lib/routes/utils/signin')(log, config, customs, db, mailer)
+  if (options.checkPassword) {
+    signinUtils.checkPassword = options.checkPassword
+  }
+  return require('../../../lib/routes/session')(log, db, Password, config, signinUtils)
 }
 
 function runTest (route, request) {
