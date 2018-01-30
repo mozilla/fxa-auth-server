@@ -70,9 +70,11 @@ describe('bounce messages', () => {
     'should handle multiple recipients in turn',
     () => {
       const log = mockLog()
+
+
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -95,10 +97,10 @@ describe('bounce messages', () => {
       })
       return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
         assert.equal(mockDB.createEmailBounce.callCount, 2)
-        assert.equal(mockDB.emailRecord.callCount, 2)
+        assert.equal(mockDB.accountRecord.callCount, 2)
         assert.equal(mockDB.deleteAccount.callCount, 2)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
-        assert.equal(mockDB.emailRecord.args[1][0], 'foobar@example.com')
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.args[1][0], 'foobar@example.com')
         assert.equal(log.info.callCount, 6)
         assert.equal(log.info.args[5][0].op, 'accountDeleted')
         assert.equal(log.info.args[5][0].email, 'foobar@example.com')
@@ -113,7 +115,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -139,10 +141,10 @@ describe('bounce messages', () => {
         assert.equal(mockDB.createEmailBounce.callCount, 2)
         assert.equal(mockDB.createEmailBounce.args[0][0].bounceType, 'Complaint')
         assert.equal(mockDB.createEmailBounce.args[0][0].bounceSubType, complaintType)
-        assert.equal(mockDB.emailRecord.callCount, 2)
+        assert.equal(mockDB.accountRecord.callCount, 2)
         assert.equal(mockDB.deleteAccount.callCount, 2)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
-        assert.equal(mockDB.emailRecord.args[1][0], 'foobar@example.com')
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.args[1][0], 'foobar@example.com')
         assert.equal(log.info.callCount, 6)
         assert.equal(log.info.args[0][0].op, 'emailEvent')
         assert.equal(log.info.args[0][0].domain, 'other')
@@ -160,7 +162,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -181,9 +183,9 @@ describe('bounce messages', () => {
           ]
         }
       })).then(function () {
-        assert.equal(mockDB.emailRecord.callCount, 2)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
-        assert.equal(mockDB.emailRecord.args[1][0], 'verified@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 2)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.args[1][0], 'verified@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
         assert.equal(log.info.callCount, 5)
@@ -208,7 +210,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.reject(new error({}))
         })
       }
@@ -221,8 +223,8 @@ describe('bounce messages', () => {
         }
       })
       return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
         assert.equal(log.info.callCount, 2)
         assert.equal(log.info.args[1][0].op, 'handleBounce')
         assert.equal(log.info.args[1][0].email, 'test@example.com')
@@ -240,7 +242,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -260,8 +262,8 @@ describe('bounce messages', () => {
         }
       })
       return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
         assert.equal(log.info.callCount, 2)
@@ -282,7 +284,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           // Lookup only succeeds when using original, unquoted email addr.
           if (email !== 'test.@example.com') {
             return P.reject(new error.unknownAccount(email))
@@ -309,8 +311,8 @@ describe('bounce messages', () => {
       })).then(function () {
         assert.equal(mockDB.createEmailBounce.callCount, 1)
         assert.equal(mockDB.createEmailBounce.args[0][0].email, 'test.@example.com')
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test.@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test.@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test.@example.com')
       })
@@ -323,7 +325,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           // Lookup only succeeds when using original, unquoted email addr.
           if (email !== 'test..me@example.com') {
             return P.reject(new error.unknownAccount(email))
@@ -350,8 +352,8 @@ describe('bounce messages', () => {
       })).then(function () {
         assert.equal(mockDB.createEmailBounce.callCount, 1)
         assert.equal(mockDB.createEmailBounce.args[0][0].email, 'test..me@example.com')
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test..me@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test..me@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test..me@example.com')
       })
@@ -364,7 +366,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function () {
+        accountRecord: sinon.spy(function () {
           return P.reject(new error.unknownAccount())
         }),
         deleteAccount: sinon.spy(function (record) {
@@ -380,7 +382,7 @@ describe('bounce messages', () => {
         }
       })).then(function () {
         assert.equal(mockDB.createEmailBounce.callCount, 0)
-        assert.equal(mockDB.emailRecord.callCount, 0)
+        assert.equal(mockDB.accountRecord.callCount, 0)
         assert.equal(mockDB.deleteAccount.callCount, 0)
         assert.equal(log.warn.callCount, 2)
         assert.equal(log.warn.args[1][0].op, 'handleBounce.addressParseFailure')
@@ -394,7 +396,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -428,8 +430,8 @@ describe('bounce messages', () => {
       })
 
       return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
         assert.equal(log.info.callCount, 3)
@@ -449,7 +451,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
@@ -491,8 +493,8 @@ describe('bounce messages', () => {
       })
 
       return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-        assert.equal(mockDB.emailRecord.callCount, 1)
-        assert.equal(mockDB.emailRecord.args[0][0], 'test@example.com')
+        assert.equal(mockDB.accountRecord.callCount, 1)
+        assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
         assert.equal(mockDB.deleteAccount.callCount, 1)
         assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
         assert.equal(log.flowEvent.callCount, 1)
@@ -515,7 +517,7 @@ describe('bounce messages', () => {
       const log = mockLog()
       var mockDB = {
         createEmailBounce: sinon.spy(() => P.resolve({})),
-        emailRecord: sinon.spy(function (email) {
+        accountRecord: sinon.spy(function (email) {
           return P.resolve({
             uid: '123456',
             email: email,
