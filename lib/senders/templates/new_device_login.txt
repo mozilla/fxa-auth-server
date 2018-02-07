@@ -1,4 +1,4 @@
-{{ serviceHeader }}
+{{t "New sign-in to %(clientName)s" }}
 
 {{ device }}
 {{#if location}}{{ location }}{{/if}}
