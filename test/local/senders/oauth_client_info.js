@@ -84,7 +84,7 @@ describe('lib/senders/oauth_client_info:', () => {
 
     it('falls back to Firefox if non-200 response', () => {
       mocks = {
-        'request2': function (options, cb) {
+        'request': function (options, cb) {
           cb(null, {
             statusCode: 400
           }, {
@@ -172,6 +172,29 @@ describe('lib/senders/oauth_client_info:', () => {
       })
     })
 
+    it('rejects invalid client names', () => {
+      const requestMock = sinon.spy(function (options, cb) {
+        cb(null, {
+          statusCode: 200
+        }, {
+          name: Array(512).fill("a").join('')
+        })
+      })
+      mocks = {
+        'request': requestMock,
+        './log': function() {
+          return mockLog
+        }
+      }
+
+      fetch = proxyquire(`${ROOT_DIR}/lib/senders/oauth_client_info`, mocks).fetch
+
+      return fetch('24bdbfa45cd300c5').then((res) => {
+        assert.deepEqual(res, FIREFOX_CLIENT)
+        assert.ok(requestMock.calledOnce)
+      })
+
+    })
   })
 })
 
