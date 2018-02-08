@@ -177,7 +177,7 @@ describe('lib/senders/oauth_client_info:', () => {
         cb(null, {
           statusCode: 200
         }, {
-          name: Array(512).fill("a").join('')
+          name: Array(512).fill('a').join('')
         })
       })
       mocks = {
