@@ -26,7 +26,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/login](#post-accountlogin)
     * [GET /account/status (:lock::unlock: sessionToken)](#get-accountstatus)
     * [POST /account/status](#post-accountstatus)
-    * [GET /account/profile (:lock::unlock: sessionToken, oauthToken)](#get-accountprofile)
+    * [GET /account/profile (:lock: sessionToken, oauthToken)](#get-accountprofile)
     * [GET /account/keys (:lock: keyFetchToken)](#get-accountkeys)
     * [POST /account/unlock/resend_code](#post-accountunlockresend_code)
     * [POST /account/unlock/verify_code](#post-accountunlockverify_code)
@@ -66,6 +66,10 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [GET /sms/status (:lock: sessionToken)](#get-smsstatus)
   * [Token codes](#token-codes)
     * [POST /session/verify/token (:lock: sessionToken)](#post-sessionverifytoken)
+  * [Totp](#totp)
+    * [POST /totp/create (:lock: sessionToken)](#post-totpcreate)
+    * [POST /totp/destroy (:lock: sessionToken)](#post-totpdestroy)
+    * [POST /session/verify/totp (:lock: sessionToken)](#post-sessionverifytotp)
   * [Unblock codes](#unblock-codes)
     * [POST /account/login/send_unblock_code](#post-accountloginsend_unblock_code)
     * [POST /account/login/reject_unblock_code](#post-accountloginreject_unblock_code)
@@ -263,6 +267,10 @@ for `code` and `errno` are:
   Invalid token verification code
 * `code: 400, errno: 153`:
   Expired token verification code
+* `code: 400, errno: 154`:
+  A TOTP token already exists for this account.
+* `code: 400, errno: 155`:
+  A TOTP token not found.
 * `code: 503, errno: 201`:
   Service unavailable
 * `code: 503, errno: 202`:
@@ -716,7 +724,7 @@ by [fxa-customs-server](https://github.com/mozilla/fxa-customs-server).
 
 #### GET /account/profile
 
-:lock::unlock: Optionally authenticated with OAuth bearer token, or HAWK-authenticated with session token
+:lock: authenticated with OAuth bearer token, or HAWK-authenticated with session token
 <!--begin-route-get-accountprofile-->
 Get the email and locale of a user.
 
@@ -2360,6 +2368,40 @@ Verify a session using a token code.
   <!--begin-request-body-post-sessionverifytoken-code-->
   The code
   <!--end-request-body-post-sessionverifytoken-code-->
+
+
+### Totp
+
+#### POST /totp/create
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-totpcreate-->
+
+<!--end-route-post-totpcreate-->
+
+
+#### POST /totp/destroy
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-totpdestroy-->
+
+<!--end-route-post-totpdestroy-->
+
+
+#### POST /session/verify/totp
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-sessionverifytotp-->
+
+<!--end-route-post-sessionverifytotp-->
+
+##### Request body
+
+* `code`: *string, max(32), required*
+
+  <!--begin-request-body-post-sessionverifytotp-code-->
+  
+  <!--end-request-body-post-sessionverifytotp-code-->
 
 
 ### Unblock codes

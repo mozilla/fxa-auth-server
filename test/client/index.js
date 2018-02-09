@@ -481,6 +481,18 @@ module.exports = config => {
     return this.api.sendUnblockCode(email)
   }
 
+  Client.prototype.createTotpToken = function () {
+    return this.api.createTotpToken(this.sessionToken, this.uid, {})
+  }
+
+  Client.prototype.deleteTotpToken = function () {
+    return this.api.deleteTotpToken(this.sessionToken, this.uid, {})
+  }
+
+  Client.prototype.checkTotpCode = function (code) {
+    return this.api.checkTotpCode(this.sessionToken, this.uid, code)
+  }
+
   Client.prototype.resetPassword = function (newPassword, headers, options) {
     if (! this.accountResetToken) {
       throw new Error('call verifyPasswordResetCode before calling resetPassword')

@@ -803,6 +803,26 @@ var conf = convict({
     format: 'String',
     env: 'SENTRY_DSN'
   },
+  totp: {
+    serviceName: {
+      doc: 'Default service name to appear in authenticator',
+      default: 'Firefox',
+      format: 'String',
+      env: 'TOTP_SERVICE_NAME'
+    },
+    step: {
+      doc: 'Default time step size (seconds)',
+      default: 30,
+      format: Number,
+      env: 'TOTP_STEP_SIZE'
+    },
+    sharedSecret: {
+      doc: 'Only used for testing, leave empty',
+      default: '',
+      format: Number,
+      env: 'TOTP_SHARED_SECRET'
+    }
+  }
 })
 
 // handle configuration files.  you can specify a CSV list of configuration
