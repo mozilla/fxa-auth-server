@@ -26,7 +26,7 @@ function hexString(bytes) {
 var makeRoutes = function (options, requireMocks) {
   options = options || {}
 
-  var config = options.config || {}
+  const config = options.config || {}
   config.verifierVersion = config.verifierVersion || 0
   config.smtp = config.smtp ||  {}
   config.memcached = config.memcached || {
@@ -40,22 +40,26 @@ var makeRoutes = function (options, requireMocks) {
   config.signinUnblock = config.signinUnblock || {}
   config.secondaryEmail = config.secondaryEmail || {}
 
-  var log = options.log || mocks.mockLog()
-  var Password = options.Password || require('../../../lib/crypto/password')(log, config)
-  var db = options.db || mocks.mockDB()
-  var customs = options.customs || {
-    check: function () { return P.resolve(true) }
+  const log = options.log || mocks.mockLog()
+  const mailer = options.mailer || {}
+  const Password = options.Password || require('../../../lib/crypto/password')(log, config)
+  const db = options.db || mocks.mockDB()
+  const customs = options.customs || {
+    check: () => { return P.resolve(true) }
   }
-  var checkPassword = options.checkPassword || require('../../../lib/routes/utils/password_check')(log, config, Password, customs, db)
-  var push = options.push || require('../../../lib/push')(log, db, {})
+  const signinUtils = options.signinUtils || require('../../../lib/routes/utils/signin')(log, config, customs, db, mailer)
+  if (options.checkPassword) {
+    signinUtils.checkPassword = options.checkPassword
+  }
+  const push = options.push || require('../../../lib/push')(log, db, {})
   return proxyquire('../../../lib/routes/account', requireMocks || {})(
     log,
     db,
-    options.mailer || {},
+    mailer,
     Password,
     config,
     customs,
-    checkPassword,
+    signinUtils,
     push
   )
 }
@@ -63,7 +67,6 @@ var makeRoutes = function (options, requireMocks) {
 function runTest (route, request, assertions) {
   return new P(function (resolve, reject) {
     route.handler(request, function (response) {
-      //resolve(response)
       if (response instanceof Error) {
         reject(response)
       } else {
@@ -428,7 +431,6 @@ describe('/account/create', () => {
 
 describe('/account/login', function () {
   var config = {
-    newLoginNotificationEnabled: true,
     securityHistory: {
       ipProfiling: {}
     },
@@ -1106,7 +1108,7 @@ describe('/account/login', function () {
         describe('with unblock code', () => {
 
           it('invalid code', () => {
-            mockDB.consumeUnblockCode = () => P.reject(error.invalidUnblockCode())
+            mockDB.consumeUnblockCodeForEmail = () => P.reject(error.invalidUnblockCode())
             return runTest(route, mockRequestWithUnblockCode).then(() => assert.ok(false), err => {
               assert.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               assert.equal(err.output.statusCode, 400, 'correct status code is returned')
@@ -1119,7 +1121,7 @@ describe('/account/login', function () {
 
           it('expired code', () => {
             // test 5 seconds old, to reduce flakiness of test
-            mockDB.consumeUnblockCode = () => P.resolve({ createdAt: Date.now() - (config.signinUnblock.codeLifetime + 5000) })
+            mockDB.consumeUnblockCodeForEmail = () => P.resolve({ createdAt: Date.now() - (config.signinUnblock.codeLifetime + 5000) })
             return runTest(route, mockRequestWithUnblockCode).then(() => assert.ok(false), err => {
               assert.equal(err.errno, error.ERRNO.INVALID_UNBLOCK_CODE, 'correct errno is returned')
               assert.equal(err.output.statusCode, 400, 'correct status code is returned')
@@ -1132,17 +1134,8 @@ describe('/account/login', function () {
             })
           })
 
-          it('unknown account', () => {
-            mockDB.accountRecord = () => P.reject(new error.unknownAccount())
-            mockDB.emailRecord = () => P.reject(new error.unknownAccount())
-            return runTest(route, mockRequestWithUnblockCode).then(() => assert(false), err => {
-              assert.equal(err.errno, error.ERRNO.REQUEST_BLOCKED)
-              assert.equal(err.output.statusCode, 400)
-            })
-          })
-
           it('valid code', () => {
-            mockDB.consumeUnblockCode = () => P.resolve({ createdAt: Date.now() })
+            mockDB.consumeUnblockCodeForEmail = () => P.resolve({ createdAt: Date.now() })
             return runTest(route, mockRequestWithUnblockCode, (res) => {
               assert.equal(mockLog.flowEvent.callCount, 4)
               assert.equal(mockLog.flowEvent.args[0][0].event, 'account.login.blocked', 'first event was account.login.blocked')

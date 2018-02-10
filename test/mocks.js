@@ -30,6 +30,7 @@ const DB_METHOD_NAMES = [
   'accountRecord',
   'accountResetToken',
   'consumeUnblockCode',
+  'consumeUnblockCodeForEmail',
   'consumeSigninCode',
   'createAccount',
   'createDevice',
@@ -259,13 +260,14 @@ function mockDB (data, errors) {
         createdAt: opts.createdAt || Date.now(),
         data: crypto.randomBytes(32).toString('hex'),
         email: opts.email || data.email,
-        emailVerified: opts.emailVerified || data.emailVerified,
+        emailVerified: typeof opts.emailVerified !== 'undefined' ? opts.emailVerified : data.emailVerified,
         lastAuthAt: () => {
           return opts.createdAt || Date.now()
         },
         id: data.sessionTokenId,
         tokenVerificationId: opts.tokenVerificationId || data.tokenVerificationId,
         tokenVerified: ! (opts.tokenVerificationId || data.tokenVerificationId),
+        mustVerify: typeof opts.mustVerify !== 'undefined' ? opts.mustVerify : data.mustVerify,
         uaBrowser: opts.uaBrowser || data.uaBrowser,
         uaBrowserVersion: opts.uaBrowserVersion || data.uaBrowserVersion,
         uaOS: opts.uaOS || data.uaOS,
