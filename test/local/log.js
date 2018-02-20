@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 var sinon = require('sinon')
 var proxyquire = require('proxyquire')
 
@@ -29,7 +29,7 @@ describe('log', () => {
   it(
     'initialised correctly',
     () => {
-      assert.equal(mocks.mozlog.config.callCount, 1, 'mozlog.config was called once')
+      assert.calledOnce(mocks.mozlog.config)
       var args = mocks.mozlog.config.args[0]
       assert.equal(args.length, 1, 'mozlog.config was passed one argument')
       assert.equal(Object.keys(args[0]).length, 4, 'number of mozlog.config arguments was correct')
@@ -37,15 +37,15 @@ describe('log', () => {
       assert.equal(args[0].level, 'foo', 'level property was correct')
       assert.equal(args[0].stream, process.stderr, 'stream property was correct')
 
-      assert.equal(mocks.mozlog.callCount, 1, 'mozlog was called once')
+      assert.calledOnce(mocks.mozlog)
       assert.ok(mocks.mozlog.config.calledBefore(mocks.mozlog), 'mozlog was called after mozlog.config')
       assert.equal(mocks.mozlog.args[0].length, 0, 'mozlog was passed no arguments')
 
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.error.callCount, 0, 'logger.error was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.error)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
+      assert.notCalled(logger.info)
 
       assert.equal(typeof log.trace, 'function', 'log.trace method was exported')
       assert.equal(typeof log.error, 'function', 'log.error method was exported')
@@ -72,19 +72,16 @@ describe('log', () => {
         uid: 'bar'
       })
 
-      assert.equal(logger.info.callCount, 1, 'logger.info was called once')
-      const args = logger.info.args[0]
-      assert.equal(args.length, 2, 'logger.info was passed two arguments')
-      assert.equal(args[0], 'activityEvent', 'first argument was correct')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.info)
+      assert.calledWithExactly(logger.info, 'activityEvent', {
         event: 'foo',
         uid: 'bar'
-      }, 'second argument was event data')
+      })
 
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.error.callCount, 0, 'logger.error was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.error)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.info.reset()
     }
@@ -95,19 +92,16 @@ describe('log', () => {
     () => {
       log.activityEvent()
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.activityEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.activityEvent', {
         op: 'log.activityEvent',
         data: undefined
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -120,21 +114,18 @@ describe('log', () => {
         event: 'wibble'
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.activityEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.activityEvent', {
         op: 'log.activityEvent',
         data: {
           event: 'wibble'
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -147,21 +138,18 @@ describe('log', () => {
         uid: 'wibble'
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.activityEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.activityEvent', {
         op: 'log.activityEvent',
         data: {
           uid: 'wibble'
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -177,21 +165,18 @@ describe('log', () => {
         time: 1483557217331
       })
 
-      assert.equal(logger.info.callCount, 1, 'logger.info was called once')
-      const args = logger.info.args[0]
-      assert.equal(args.length, 2, 'logger.info was passed two arguments')
-      assert.equal(args[0], 'flowEvent', 'first argument was correct')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.info)
+      assert.calledWithExactly(logger.info, 'flowEvent', {
         event: 'wibble',
         flow_id: 'blee',
         flow_time: 1000,
         time: 1483557217331
-      }, 'second argument was event data')
+      })
 
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
-      assert.equal(logger.error.callCount, 0, 'logger.error was not called')
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
+      assert.notCalled(logger.error)
 
       logger.info.reset()
     }
@@ -202,19 +187,16 @@ describe('log', () => {
     () => {
       log.flowEvent()
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.flowEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.flowEvent', {
         op: 'log.flowEvent',
         data: undefined
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -229,23 +211,20 @@ describe('log', () => {
         time: 1483557217331
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.flowEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.flowEvent', {
         op: 'log.flowEvent',
         data: {
           flow_id: 'wibble',
           flow_time: 1000,
           time: 1483557217331
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -260,23 +239,20 @@ describe('log', () => {
         time: 1483557217331
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.flowEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.flowEvent', {
         op: 'log.flowEvent',
         data: {
           event: 'wibble',
           flow_time: 1000,
           time: 1483557217331
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -291,23 +267,20 @@ describe('log', () => {
         time: 1483557217331
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.flowEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.flowEvent', {
         op: 'log.flowEvent',
         data: {
           event: 'wibble',
           flow_id: 'blee',
           time: 1483557217331
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -322,23 +295,20 @@ describe('log', () => {
         flow_time: 1000
       })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-      const args = logger.error.args[0]
-      assert.equal(args.length, 2, 'logger.error was passed two arguments')
-      assert.equal(args[0], 'log.flowEvent', 'first argument was function name')
-      assert.deepEqual(args[1], {
+      assert.calledOnce(logger.error)
+      assert.calledWithExactly(logger.error, 'log.flowEvent', {
         op: 'log.flowEvent',
         data: {
           event: 'wibble',
           flow_id: 'blee',
           flow_time: 1000
         }
-      }, 'argument was correct')
+      })
 
-      assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-      assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-      assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-      assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+      assert.notCalled(logger.info)
+      assert.notCalled(logger.debug)
+      assert.notCalled(logger.critical)
+      assert.notCalled(logger.warn)
 
       logger.error.reset()
     }
@@ -347,20 +317,17 @@ describe('log', () => {
   it('.amplitudeEvent', () => {
     log.amplitudeEvent({ event_type: 'foo', device_id: 'bar', user_id: 'baz' })
 
-    assert.equal(logger.info.callCount, 1, 'logger.info was called once')
-    const args = logger.info.args[0]
-    assert.equal(args.length, 2, 'logger.info was passed two arguments')
-    assert.equal(args[0], 'amplitudeEvent', 'first argument was correct')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.info)
+    assert.calledWithExactly(logger.info, 'amplitudeEvent', {
       event_type: 'foo',
       device_id: 'bar',
       user_id: 'baz'
-    }, 'second argument was event data')
+    })
 
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.error.callCount, 0, 'logger.error was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.error)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.info.reset()
   })
@@ -368,19 +335,16 @@ describe('log', () => {
   it('.amplitudeEvent with missing data', () => {
     log.amplitudeEvent()
 
-    assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-    const args = logger.error.args[0]
-    assert.equal(args.length, 2, 'logger.error was passed two arguments')
-    assert.equal(args[0], 'amplitude.missingData', 'first argument was error op')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.error)
+    assert.calledWithExactly(logger.error, 'amplitude.missingData', {
       op: 'amplitude.missingData',
       data: undefined
-    }, 'second argument was correct')
+    })
 
-    assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.info)
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.error.reset()
   })
@@ -388,19 +352,16 @@ describe('log', () => {
   it('.amplitudeEvent with missing event_type', () => {
     log.amplitudeEvent({ device_id: 'foo', user_id: 'bar' })
 
-    assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-    const args = logger.error.args[0]
-    assert.equal(args.length, 2, 'logger.error was passed two arguments')
-    assert.equal(args[0], 'amplitude.missingData', 'first argument was error op')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.error)
+    assert.calledWithExactly(logger.error, 'amplitude.missingData', {
       op: 'amplitude.missingData',
       data: { device_id: 'foo', user_id: 'bar' }
-    }, 'second argument was correct')
+    })
 
-    assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.info)
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.error.reset()
   })
@@ -408,19 +369,16 @@ describe('log', () => {
   it('.amplitudeEvent with missing device_id and user_id', () => {
     log.amplitudeEvent({ event_type: 'foo' })
 
-    assert.equal(logger.error.callCount, 1, 'logger.error was called once')
-    const args = logger.error.args[0]
-    assert.equal(args.length, 2, 'logger.error was passed two arguments')
-    assert.equal(args[0], 'amplitude.missingData', 'first argument was error op')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.error)
+    assert.calledWithExactly(logger.error, 'amplitude.missingData', {
       op: 'amplitude.missingData',
       data: { event_type: 'foo' }
-    }, 'second argument was correct')
+    })
 
-    assert.equal(logger.info.callCount, 0, 'logger.info was not called')
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.info)
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.error.reset()
   })
@@ -428,19 +386,16 @@ describe('log', () => {
   it('.amplitudeEvent with missing device_id', () => {
     log.amplitudeEvent({ event_type: 'wibble', user_id: 'blee' })
 
-    assert.equal(logger.info.callCount, 1, 'logger.info was called once')
-    const args = logger.info.args[0]
-    assert.equal(args.length, 2, 'logger.info was passed two arguments')
-    assert.equal(args[0], 'amplitudeEvent', 'first argument was correct')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.info)
+    assert.calledWithExactly(logger.info, 'amplitudeEvent', {
       event_type: 'wibble',
       user_id: 'blee'
-    }, 'second argument was event data')
+    })
 
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.error.callCount, 0, 'logger.error was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.error)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.info.reset()
   })
@@ -448,19 +403,16 @@ describe('log', () => {
   it('.amplitudeEvent with missing user_id', () => {
     log.amplitudeEvent({ event_type: 'foo', device_id: 'bar' })
 
-    assert.equal(logger.info.callCount, 1, 'logger.info was called once')
-    const args = logger.info.args[0]
-    assert.equal(args.length, 2, 'logger.info was passed two arguments')
-    assert.equal(args[0], 'amplitudeEvent', 'first argument was correct')
-    assert.deepEqual(args[1], {
+    assert.calledOnce(logger.info)
+    assert.calledWithExactly(logger.info, 'amplitudeEvent', {
       event_type: 'foo',
       device_id: 'bar'
-    }, 'second argument was event data')
+    })
 
-    assert.equal(logger.debug.callCount, 0, 'logger.debug was not called')
-    assert.equal(logger.error.callCount, 0, 'logger.error was not called')
-    assert.equal(logger.critical.callCount, 0, 'logger.critical was not called')
-    assert.equal(logger.warn.callCount, 0, 'logger.warn was not called')
+    assert.notCalled(logger.debug)
+    assert.notCalled(logger.error)
+    assert.notCalled(logger.critical)
+    assert.notCalled(logger.warn)
 
     logger.info.reset()
   })
@@ -472,7 +424,7 @@ describe('log', () => {
       err.email = 'test@example.com'
       log.error({ op: 'unexpectedError', err: err })
 
-      assert.equal(logger.error.callCount, 1, 'logger.error was called once')
+      assert.calledOnce(logger.error)
       var args = logger.error.args[0]
       assert.equal(args[0], 'unexpectedError', 'logger.error received "op" value')
       assert.equal(Object.keys(args[1]).length, 3, 'log info has three fields')
@@ -504,12 +456,12 @@ describe('log', () => {
         code: 200
       })
 
-      assert.equal(logger.info.callCount, 1)
+      assert.calledOnce(logger.info)
       assert.equal(logger.info.args[0][1].op, 'request.summary')
-      assert.equal(emitRouteFlowEvent.callCount, 1)
+      assert.calledOnce(emitRouteFlowEvent)
       assert.equal(emitRouteFlowEvent.args[0].length, 1)
       assert.deepEqual(emitRouteFlowEvent.args[0][0], { code: 200 })
-      assert.equal(logger.error.callCount, 0)
+      assert.notCalled(logger.error)
     })
   })
 })

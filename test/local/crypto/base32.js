@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const base32 = require('../../../lib/crypto/base32')
 
 describe('base32', () => {

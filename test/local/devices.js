@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 var uuid = require('uuid')
 var crypto = require('crypto')
 const mocks = require('../mocks')
@@ -71,57 +71,47 @@ describe('devices', () => {
       it('should create', () => {
         return devices.upsert(request, sessionToken, device)
           .then(function (result) {
-            assert.deepEqual(result, {
-              id: deviceId,
-              name: device.name,
-              type: device.type,
-              createdAt: deviceCreatedAt
-            }, 'result was correct')
+          assert.deepEqual(result, {
+            id: deviceId,
+            name: device.name,
+            type: device.type,
+            createdAt: deviceCreatedAt
+          }, 'result was correct')
 
-            assert.equal(db.updateDevice.callCount, 0, 'db.updateDevice was not called')
+          assert.notCalled(db.updateDevice)
 
-            assert.equal(db.createDevice.callCount, 1, 'db.createDevice was called once')
-            var args = db.createDevice.args[0]
-            assert.equal(args.length, 3, 'db.createDevice was passed three arguments')
-            assert.deepEqual(args[0], sessionToken.uid, 'first argument was uid')
-            assert.deepEqual(args[1], sessionToken.id, 'second argument was sessionTokenId')
-            assert.equal(args[2], device, 'third argument was device')
+          assert.calledOnce(db.createDevice)
+          assert.calledWithExactly(db.createDevice, sessionToken.uid, sessionToken.id, device)
 
-            assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
-            args = log.activityEvent.args[0]
-            assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
-            assert.deepEqual(args[0], {
-              event: 'device.created',
-              service: undefined,
-              userAgent: 'test user-agent',
-              uid: sessionToken.uid,
-              device_id: deviceId,
-              is_placeholder: false
-            }, 'event data was correct')
-
-            assert.equal(log.info.callCount, 0, 'log.info was not called')
-
-            assert.equal(log.notifyAttachedServices.callCount, 1, 'log.notifyAttachedServices was called once')
-            args = log.notifyAttachedServices.args[0]
-            assert.equal(args.length, 3, 'log.notifyAttachedServices was passed three arguments')
-            assert.equal(args[0], 'device:create', 'first argument was event name')
-            assert.equal(args[1], request, 'second argument was request object')
-            assert.deepEqual(args[2], {
-              uid: sessionToken.uid,
-              id: deviceId,
-              type: device.type,
-              timestamp: deviceCreatedAt,
-              isPlaceholder: false
-            }, 'third argument was event data')
-
-            assert.equal(push.notifyDeviceConnected.callCount, 1, 'push.notifyDeviceConnected was called once')
-            args = push.notifyDeviceConnected.args[0]
-            assert.equal(args.length, 4, 'push.notifyDeviceConnected was passed four arguments')
-            assert.equal(args[0], sessionToken.uid, 'first argument was uid')
-            assert.ok(Array.isArray(args[1]), 'second argument was devices array')
-            assert.equal(args[2], device.name, 'third arguent was device name')
-            assert.equal(args[3], deviceId, 'fourth argument was device id')
+          assert.calledOnce(log.activityEvent)
+          assert.calledWithExactly(log.activityEvent, {
+            event: 'device.created',
+            service: undefined,
+            userAgent: 'test user-agent',
+            uid: sessionToken.uid,
+            device_id: deviceId,
+            is_placeholder: false
           })
+
+          assert.notCalled(log.info)
+
+          assert.calledOnce(log.notifyAttachedServices)
+          assert.calledWithExactly(log.notifyAttachedServices, 'device:create', request, {
+            uid: sessionToken.uid,
+            id: deviceId,
+            type: device.type,
+            timestamp: deviceCreatedAt,
+            isPlaceholder: false
+          })
+
+          assert.calledOnce(push.notifyDeviceConnected)
+          args = push.notifyDeviceConnected.args[0]
+          assert.equal(args.length, 4, 'push.notifyDeviceConnected was passed four arguments')
+          assert.equal(args[0], sessionToken.uid, 'first argument was uid')
+          assert.ok(Array.isArray(args[1]), 'second argument was devices array')
+          assert.equal(args[2], device.name, 'third arguent was device name')
+          assert.equal(args[3], deviceId, 'fourth argument was device id')
+        });
       })
 
       it('should not call notifyDeviceConnected with unverified token', () => {
@@ -129,22 +119,22 @@ describe('devices', () => {
         device.name = 'device with an unverified sessionToken'
         return devices.upsert(request, sessionToken, device)
           .then(function () {
-            assert.equal(push.notifyDeviceConnected.callCount, 0, 'push.notifyDeviceConnected was not called')
+            assert.notCalled(push.notifyDeviceConnected)
             sessionToken.tokenVerified = true
-          })
+          });
       })
 
       it('should create placeholders', () => {
         delete device.name
         return devices.upsert(request, sessionToken, { uaBrowser: 'Firefox' })
           .then(function (result) {
-            assert.equal(db.updateDevice.callCount, 0, 'db.updateDevice was not called')
-            assert.equal(db.createDevice.callCount, 1, 'db.createDevice was called once')
+            assert.notCalled(db.updateDevice)
+            assert.calledOnce(db.createDevice)
 
-            assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
+            assert.calledOnce(log.activityEvent)
             assert.equal(log.activityEvent.args[0][0].is_placeholder, true, 'is_placeholder was correct')
 
-            assert.equal(log.info.callCount, 1, 'log.info was called once')
+            assert.calledOnce(log.info)
             assert.equal(log.info.args[0].length, 1, 'log.info was passed one argument')
             assert.deepEqual(log.info.args[0][0], {
               op: 'device:createPlaceholder',
@@ -152,14 +142,14 @@ describe('devices', () => {
               id: result.id
             }, 'argument was event data')
 
-            assert.equal(log.notifyAttachedServices.callCount, 1, 'log.notifyAttachedServices was called once')
+            assert.calledOnce(log.notifyAttachedServices)
             assert.equal(log.notifyAttachedServices.args[0][2].isPlaceholder, true, 'isPlaceholder was correct')
 
-            assert.equal(push.notifyDeviceConnected.callCount, 1, 'push.notifyDeviceConnected was called once')
+            assert.calledOnce(push.notifyDeviceConnected)
             assert.equal(push.notifyDeviceConnected.args[0][0], sessionToken.uid, 'uid was correct')
             assert.equal(push.notifyDeviceConnected.args[0][2], 'Firefox', 'device name was included')
 
-          })
+          });
       })
 
       it('should update', () => {
@@ -170,39 +160,33 @@ describe('devices', () => {
         }
         return devices.upsert(request, sessionToken, deviceInfo)
           .then(function (result) {
-            assert.equal(result, deviceInfo, 'result was correct')
+          assert.equal(result, deviceInfo, 'result was correct')
 
-            assert.equal(db.createDevice.callCount, 0, 'db.createDevice was not called')
+          assert.notCalled(db.createDevice)
 
-            assert.equal(db.updateDevice.callCount, 1, 'db.updateDevice was called once')
-            var args = db.updateDevice.args[0]
-            assert.equal(args.length, 3, 'db.createDevice was passed three arguments')
-            assert.deepEqual(args[0], sessionToken.uid, 'first argument was uid')
-            assert.deepEqual(args[1], sessionToken.id, 'second argument was sessionTokenId')
-            assert.deepEqual(args[2], {
-              id: deviceId,
-              name: device.name,
-              type: device.type
-            }, 'device info was unmodified')
-
-            assert.equal(log.activityEvent.callCount, 1, 'log.activityEvent was called once')
-            args = log.activityEvent.args[0]
-            assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
-            assert.deepEqual(args[0], {
-              event: 'device.updated',
-              service: undefined,
-              userAgent: 'test user-agent',
-              uid: sessionToken.uid,
-              device_id: deviceId,
-              is_placeholder: false
-            }, 'event data was correct')
-
-            assert.equal(log.info.callCount, 0, 'log.info was not called')
-
-            assert.equal(log.notifyAttachedServices.callCount, 0, 'log.notifyAttachedServices was not called')
-
-            assert.equal(push.notifyDeviceConnected.callCount, 0, 'push.notifyDeviceConnected was not called')
+          assert.calledOnce(db.updateDevice)
+          assert.calledWithExactly(db.updateDevice, sessionToken.uid, sessionToken.id, {
+            id: deviceId,
+            name: device.name,
+            type: device.type
           })
+
+          assert.calledOnce(log.activityEvent)
+          assert.calledWithExactly(log.activityEvent, {
+            event: 'device.updated',
+            service: undefined,
+            userAgent: 'test user-agent',
+            uid: sessionToken.uid,
+            device_id: deviceId,
+            is_placeholder: false
+          })
+
+          assert.notCalled(log.info)
+
+          assert.notCalled(log.notifyAttachedServices)
+
+          assert.notCalled(push.notifyDeviceConnected)
+        });
       })
     })
 

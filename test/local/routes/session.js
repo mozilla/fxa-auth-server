@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const getRoute = require('../../routes_helpers').getRoute
 const mocks = require('../../mocks')
 const P = require('../../../lib/promise')
@@ -174,7 +174,7 @@ describe('/session/duplicate', () => {
       assert.equal(res.authAt, request.auth.credentials.createdAt, 'response includes correctly-copied auth timestamp')
       assert.equal(res.verified, true, 'response includes correctly-copied verification flag')
 
-      assert.equal(db.createSessionToken.callCount, 1, 'db.createSessionToken was called once')
+      assert.calledOnce(db.createSessionToken)
       const sessionTokenOptions = db.createSessionToken.args[0][0]
       assert.equal(Object.keys(sessionTokenOptions).length, 14, 'was called with correct number of options')
       assert.equal(sessionTokenOptions.uid, 'foo', 'db.createSessionToken called with correct uid')
@@ -194,7 +194,7 @@ describe('/session/duplicate', () => {
       assert.equal(sessionTokenOptions.uaOSVersion, '7', 'db.createSessionToken called with correct uaOSVersion')
       assert.equal(sessionTokenOptions.uaDeviceType, 'desktop', 'db.createSessionToken called with correct uaDeviceType')
       assert.equal(sessionTokenOptions.uaFormFactor, 'womble', 'db.createSessionToken called with correct uaFormFactor')
-    })
+    });
   })
 
   it('correctly generates new codes for unverified sessions', () => {
@@ -211,7 +211,7 @@ describe('/session/duplicate', () => {
       assert.equal(res.verificationMethod, 'email', 'response includes correct verification method')
       assert.equal(res.verificationReason, 'login', 'response includes correct verification reason')
 
-      assert.equal(db.createSessionToken.callCount, 1, 'db.createSessionToken was called once')
+      assert.calledOnce(db.createSessionToken)
       const sessionTokenOptions = db.createSessionToken.args[0][0]
       assert.equal(Object.keys(sessionTokenOptions).length, 17, 'was called with correct number of options')
       assert.equal(sessionTokenOptions.uid, 'foo', 'db.createSessionToken called with correct uid')
@@ -233,7 +233,7 @@ describe('/session/duplicate', () => {
       assert.equal(sessionTokenOptions.uaOSVersion, '7', 'db.createSessionToken called with correct uaOSVersion')
       assert.equal(sessionTokenOptions.uaDeviceType, 'desktop', 'db.createSessionToken called with correct uaDeviceType')
       assert.equal(sessionTokenOptions.uaFormFactor, 'womble', 'db.createSessionToken called with correct uaFormFactor')
-    })
+    });
   })
 
   it('correctly reports verification reason for unverified emails', () => {

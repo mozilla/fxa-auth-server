@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const config = require(`${ROOT_DIR}/config`).getProperties()
 const crypto = require('crypto')
 const error = require(`${ROOT_DIR}/lib/error`)
@@ -71,12 +71,12 @@ describe('lib/senders/index', () => {
             return email.sendVerifyCode(EMAILS, acct, {code: code})
           })
           .then(() => {
-            assert.equal(bounces.check.callCount, 1)
-            assert.equal(email._ungatedMailer.verifyEmail.callCount, 1)
+            assert.calledOnce(bounces.check)
+            assert.calledOnce(email._ungatedMailer.verifyEmail)
 
             const args = email._ungatedMailer.verifyEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
-          })
+          });
       })
     })
 
@@ -92,14 +92,14 @@ describe('lib/senders/index', () => {
             return email.sendVerifyLoginEmail(EMAILS, acct, {code: code})
           })
           .then(() => {
-            assert.equal(bounces.check.callCount, 2)
-            assert.equal(email._ungatedMailer.verifyLoginEmail.callCount, 1)
+            assert.calledTwice(bounces.check)
+            assert.calledOnce(email._ungatedMailer.verifyLoginEmail)
 
             const args = email._ungatedMailer.verifyLoginEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
-          })
+          });
       })
     })
 
@@ -120,14 +120,14 @@ describe('lib/senders/index', () => {
             return email.sendRecoveryCode(EMAILS, acct, {code: code, token: token})
           })
           .then(() => {
-            assert.equal(bounces.check.callCount, 2)
-            assert.equal(email._ungatedMailer.recoveryEmail.callCount, 1)
+            assert.calledTwice(bounces.check)
+            assert.calledOnce(email._ungatedMailer.recoveryEmail)
 
             const args = email._ungatedMailer.recoveryEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
-          })
+          });
       })
     })
 
@@ -141,14 +141,14 @@ describe('lib/senders/index', () => {
             return email.sendPasswordChangedNotification(EMAILS, acct, {})
           })
           .then(() => {
-            assert.equal(email._ungatedMailer.passwordChangedEmail.callCount, 1)
+            assert.calledOnce(email._ungatedMailer.passwordChangedEmail)
 
             const args = email._ungatedMailer.passwordChangedEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
-            assert.equal(bounces.check.callCount, 2)
-          })
+            assert.calledTwice(bounces.check)
+          });
       })
     })
 
@@ -162,14 +162,14 @@ describe('lib/senders/index', () => {
             return email.sendPasswordResetNotification(EMAILS, acct, {})
           })
           .then(() => {
-            assert.equal(email._ungatedMailer.passwordResetEmail.callCount, 1)
+            assert.calledOnce(email._ungatedMailer.passwordResetEmail)
 
             const args = email._ungatedMailer.passwordResetEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
-            assert.equal(bounces.check.callCount, 2)
-          })
+            assert.calledTwice(bounces.check)
+          });
       })
     })
 
@@ -183,14 +183,14 @@ describe('lib/senders/index', () => {
             return email.sendNewDeviceLoginNotification(EMAILS, acct, {})
           })
           .then(() => {
-            assert.equal(email._ungatedMailer.newDeviceLoginEmail.callCount, 1)
+            assert.calledOnce(email._ungatedMailer.newDeviceLoginEmail)
 
             const args = email._ungatedMailer.newDeviceLoginEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
-            assert.equal(bounces.check.callCount, 2)
-          })
+            assert.calledTwice(bounces.check)
+          });
       })
     })
 
@@ -204,13 +204,13 @@ describe('lib/senders/index', () => {
             return email.sendPostVerifyEmail(EMAILS, acct, {})
           })
           .then(() => {
-            assert.equal(email._ungatedMailer.postVerifyEmail.callCount, 1)
+            assert.calledOnce(email._ungatedMailer.postVerifyEmail)
 
             const args = email._ungatedMailer.postVerifyEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails, undefined, 'no cc emails set')
-            assert.equal(bounces.check.callCount, 1)
-          })
+            assert.calledOnce(bounces.check)
+          });
       })
     })
 
@@ -226,15 +226,15 @@ describe('lib/senders/index', () => {
             return email.sendUnblockCode(EMAILS, acct, {code: code})
           })
           .then(() => {
-            assert.equal(email._ungatedMailer.unblockCodeEmail.callCount, 1)
+            assert.calledOnce(email._ungatedMailer.unblockCodeEmail)
 
             const args = email._ungatedMailer.unblockCodeEmail.getCall(0).args
             assert.equal(args[0].email, EMAIL, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 1, 'email correctly set')
             assert.equal(args[0].ccEmails[0], EMAILS[1].email, 'cc email correctly set')
 
-            assert.equal(bounces.check.callCount, 2)
-          })
+            assert.calledTwice(bounces.check)
+          });
       })
     })
 
@@ -255,15 +255,15 @@ describe('lib/senders/index', () => {
           .then(() => {
             assert.fail('should have blocked the send')
           }, (e) => {
-            assert.equal(errorBounces.check.callCount, 2)
+            assert.calledTwice(errorBounces.check)
             assert.equal(e.errno, error.ERRNO.BOUNCE_COMPLAINT)
 
-            assert.equal(log.info.callCount, 2)
+            assert.calledTwice(log.info)
             const msg = log.info.args[0][0]
             assert.equal(msg.op, 'mailer.blocked')
             assert.equal(msg.errno, e.errno)
             assert.equal(msg.bouncedAt, DATE)
-          })
+          });
       })
 
       it('on gated primary email + verified secondary, sends to secondary', () => {
@@ -288,8 +288,8 @@ describe('lib/senders/index', () => {
             const args = email._ungatedMailer.unblockCodeEmail.getCall(0).args
             assert.equal(args[0].email, EMAILS[1].email, 'email correctly set')
             assert.equal(args[0].ccEmails.length, 0, 'email does not appear twice')
-            assert.equal(errorBounces.check.callCount, 2)
-          })
+            assert.calledTwice(errorBounces.check)
+          });
       })
 
       it('on gated primary email + unverified secondary, blocks the send', () => {
@@ -314,10 +314,10 @@ describe('lib/senders/index', () => {
           .then(() => {
             assert.fail('should have blocked the send')
           }, (e) => {
-            assert.equal(errorBounces.check.callCount, 1)
+            assert.calledOnce(errorBounces.check)
             assert.equal(e.errno, error.ERRNO.BOUNCE_COMPLAINT)
 
-            assert.equal(log.info.callCount, 1)
+            assert.calledOnce(log.info)
             const msg = log.info.args[0][0]
             assert.equal(msg.op, 'mailer.blocked')
             assert.equal(msg.errno, e.errno)
@@ -325,7 +325,7 @@ describe('lib/senders/index', () => {
           })
           .finally(() => {
             EMAILS[1].isVerified = true
-          })
+          });
       })
     })
   })

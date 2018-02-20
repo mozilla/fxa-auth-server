@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const amplitudeModule = require('../../../lib/metrics/amplitude')
 const mocks = require('../../mocks')
 
@@ -48,7 +48,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('called log.error correctly', () => {
-        assert.equal(log.error.callCount, 1)
+        assert.calledOnce(log.error)
         assert.equal(log.error.args[0].length, 1)
         assert.deepEqual(log.error.args[0][0], {
           op: 'amplitude.badArgument',
@@ -59,7 +59,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -69,7 +69,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('called log.error correctly', () => {
-        assert.equal(log.error.callCount, 1)
+        assert.calledOnce(log.error)
         assert.equal(log.error.args[0].length, 1)
         assert.deepEqual(log.error.args[0][0], {
           op: 'amplitude.badArgument',
@@ -80,7 +80,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -118,11 +118,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args.length, 1)
         assert.equal(args[0].device_id, 'juff')
@@ -179,11 +179,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].device_id, undefined)
         assert.equal(args[0].user_id, 'h')
@@ -223,11 +223,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - success')
         assert.equal(args[0].event_properties.service, 'undefined_oauth')
@@ -249,11 +249,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - blocked')
         assert.equal(args[0].event_properties.service, 'sync')
@@ -270,11 +270,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - unblock_success')
       })
@@ -286,11 +286,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - forgot_complete')
       })
@@ -306,11 +306,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_activity - cert_signed')
         assert.equal(args[0].event_properties.service, undefined)
@@ -325,11 +325,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - email_confirmed')
         assert.equal(args[0].user_properties.newsletter_state, undefined)
@@ -344,11 +344,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - email_confirmed')
         assert.equal(args[0].user_properties.newsletter_state, 'subscribed')
@@ -363,11 +363,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - email_confirmed')
         assert.equal(args[0].user_properties.newsletter_state, 'unsubscribed')
@@ -382,11 +382,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_reg - complete')
       })
@@ -400,11 +400,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_login - complete')
       })
@@ -416,11 +416,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -430,11 +430,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_sms - sent')
       })
@@ -446,11 +446,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -463,11 +463,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -483,11 +483,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -501,11 +501,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'change_password')
@@ -518,11 +518,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'change_password')
@@ -535,11 +535,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -552,11 +552,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -569,11 +569,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -586,11 +586,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -603,11 +603,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -620,11 +620,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -637,11 +637,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'change_email')
@@ -654,11 +654,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'change_email')
@@ -671,11 +671,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -688,11 +688,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -705,11 +705,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -722,11 +722,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -739,11 +739,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -756,11 +756,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'reset_password')
@@ -773,11 +773,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'unblock')
@@ -790,11 +790,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'unblock')
@@ -807,11 +807,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -824,11 +824,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -841,11 +841,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -858,11 +858,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -875,11 +875,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -892,11 +892,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'login')
@@ -909,11 +909,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'verify')
@@ -926,11 +926,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'verify')
@@ -943,11 +943,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -960,11 +960,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'registration')
@@ -977,11 +977,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - bounced')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -994,11 +994,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('called log.amplitudeEvent correctly', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].event_type, 'fxa_email - sent')
         assert.equal(args[0].event_properties.email_type, 'secondary_email')
@@ -1011,11 +1011,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -1025,11 +1025,11 @@ describe('metrics/amplitude', () => {
       })
 
       it('did not call log.error', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(log.error)
       })
 
       it('did not call log.amplitudeEvent', () => {
-        assert.equal(log.amplitudeEvent.callCount, 0)
+        assert.notCalled(log.amplitudeEvent)
       })
     })
 
@@ -1052,7 +1052,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('data properties were set', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].user_id, 'frip')
         assert.equal(args[0].event_properties.service, 'undefined_oauth')
@@ -1079,7 +1079,7 @@ describe('metrics/amplitude', () => {
       })
 
       it('metricsContext properties were set', () => {
-        assert.equal(log.amplitudeEvent.callCount, 1)
+        assert.calledOnce(log.amplitudeEvent)
         const args = log.amplitudeEvent.args[0]
         assert.equal(args[0].device_id, 'plin')
         assert.equal(args[0].user_properties.flow_id, 'gorb')

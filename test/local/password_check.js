@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 var sinon = require('sinon')
 
 var P = require('../../lib/promise')
@@ -57,9 +57,9 @@ describe('password_check', () => {
         .then(
           function (matches) {
             assert.ok(matches, 'password matches, checkPassword returns true')
-            assert.equal(MockCustoms.flag.callCount, 0, 'customs.flag was not called')
+            assert.notCalled(MockCustoms.flag)
           }
-        )
+        );
     }
   )
 
@@ -92,14 +92,14 @@ describe('password_check', () => {
         .then(
           function (match) {
             assert.equal(!! match, false, 'password does not match, checkPassword returns false')
-            assert.equal(MockCustoms.flag.callCount, 1, 'customs.flag was called')
+            assert.calledOnce(MockCustoms.flag)
             assert.equal(MockCustoms.flag.getCall(0).args[0], CLIENT_ADDRESS, 'customs.flag was called with client ip')
             assert.deepEqual(MockCustoms.flag.getCall(0).args[1], {
               email: emailRecord.email,
               errno: error.ERRNO.INCORRECT_PASSWORD
             }, 'customs.flag was called with correct event details')
           }
-        )
+        );
     }
   )
 
@@ -124,14 +124,14 @@ describe('password_check', () => {
           },
           function (err) {
             assert.equal(err.errno, error.ERRNO.ACCOUNT_RESET, 'an ACCOUNT_RESET error was thrown')
-            assert.equal(MockCustoms.flag.callCount, 1, 'customs.flag was called')
+            assert.calledOnce(MockCustoms.flag)
             assert.equal(MockCustoms.flag.getCall(0).args[0], CLIENT_ADDRESS, 'customs.flag was called with client ip')
             assert.deepEqual(MockCustoms.flag.getCall(0).args[1], {
               email: emailRecord.email,
               errno: error.ERRNO.ACCOUNT_RESET
             }, 'customs.flag was called with correct event details')
           }
-        )
+        );
     }
   )
 })

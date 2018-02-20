@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 
 require('../../../lib/senders/translator')(['en', 'pt_br', 'DE', 'ES_AR', 'ES_cl'], 'en')
 .then(translator => {

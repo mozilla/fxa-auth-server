@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const crypto = require('crypto')
 const error = require('../../../lib/error')
 const getRoute = require('../../routes_helpers').getRoute
@@ -101,12 +101,12 @@ describe('/account/device', function () {
 
   it('identical data', function () {
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockDevices.upsert.callCount, 0, 'the device was not updated')
+      assert.notCalled(mockDevices.upsert)
       assert.deepEqual(response, mockRequest.payload)
     })
       .then(function () {
         mockDevices.upsert.reset()
-      })
+      });
   })
 
   it('different data', function () {
@@ -118,7 +118,7 @@ describe('/account/device', function () {
     payload.pushPublicKey = mocks.MOCK_PUSH_KEY
 
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockDevices.upsert.callCount, 1, 'devices.upsert was called once')
+      assert.calledOnce(mockDevices.upsert)
       var args = mockDevices.upsert.args[0]
       assert.equal(args.length, 3, 'devices.upsert was passed three arguments')
       assert.equal(args[0], mockRequest, 'first argument was request object')
@@ -128,20 +128,20 @@ describe('/account/device', function () {
     })
       .then(function () {
         mockDevices.upsert.reset()
-      })
+      });
   })
 
   it('with no id in payload', function () {
     mockRequest.payload.id = undefined
 
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockDevices.upsert.callCount, 1, 'devices.upsert was called once')
+      assert.calledOnce(mockDevices.upsert)
       var args = mockDevices.upsert.args[0]
       assert.equal(args[2].id, mockRequest.auth.credentials.deviceId.toString('hex'), 'payload.id defaulted to credentials.deviceId')
     })
       .then(function () {
         mockDevices.upsert.reset()
-      })
+      });
   })
 
   it('device updates disabled', function () {
@@ -178,9 +178,9 @@ describe('/account/device', function () {
     })
 
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockDevices.upsert.callCount, 1, 'mockDevices.upsert was called')
+      assert.calledOnce(mockDevices.upsert)
       assert.equal(mockDevices.upsert.args[0][2].pushEndpointExpired, false, 'pushEndpointExpired is updated to false')
-    })
+    });
   })
 
   it('should not remove the push endpoint expired flag on any other property update', function () {
@@ -205,9 +205,9 @@ describe('/account/device', function () {
     })
 
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockDevices.upsert.callCount, 1, 'mockDevices.upsert was called')
+      assert.calledOnce(mockDevices.upsert)
       assert.equal(mockDevices.upsert.args[0][2].pushEndpointExpired, undefined, 'pushEndpointExpired is not updated')
-    })
+    });
   })
 })
 
@@ -250,9 +250,9 @@ describe('/account/devices/notify', function () {
       assert(false, 'should have thrown')
     })
       .then(() => assert(false), function (err) {
-        assert.equal(mockPush.notifyUpdate.callCount, 0, 'mockPush.notifyUpdate was not called')
+        assert.notCalled(mockPush.notifyUpdate)
         assert.equal(err.errno, 107, 'Correct errno for invalid push payload')
-      })
+      });
   })
 
   it('all devices', function () {
@@ -271,8 +271,8 @@ describe('/account/devices/notify', function () {
     })
     return runTest(route, mockRequest, function (response) {
       return notifyUpdatePromise.promise.then(function () {
-        assert.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
+        assert.calledOnce(mockCustoms.checkAuthenticated)
+        assert.calledOnce(mockPush.notifyUpdate)
         var args = mockPush.notifyUpdate.args[0]
         assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
@@ -283,8 +283,8 @@ describe('/account/devices/notify', function () {
           excludedDeviceIds: ['bogusid'],
           TTL: 60
         }, 'third argument was the push options')
-      })
-    })
+      });
+    });
   })
 
   it('extra push payload properties are rejected', function () {
@@ -331,8 +331,8 @@ describe('/account/devices/notify', function () {
     })
     return runTest(route, mockRequest, function (response) {
       return notifyUpdatePromise.promise.then(function () {
-        assert.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
+        assert.calledOnce(mockCustoms.checkAuthenticated)
+        assert.calledOnce(mockPush.notifyUpdate)
         var args = mockPush.notifyUpdate.args[0]
         assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
@@ -343,19 +343,17 @@ describe('/account/devices/notify', function () {
           TTL: 60,
           includedDeviceIds: [ 'bogusid1', 'bogusid2' ]
         }, 'fourth argument was the push options')
-        assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
-        args = mockLog.activityEvent.args[0]
-        assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
-        assert.deepEqual(args[0], {
+        assert.calledOnce(mockLog.activityEvent)
+        assert.calledWithExactly(mockLog.activityEvent, {
           event: 'sync.sentTabToDevice',
           service: 'sync',
           userAgent: 'test user-agent',
           uid: uid.toString('hex'),
           device_id: deviceId.toString('hex')
-        }, 'event data was correct')
-        assert.equal(mockLog.error.callCount, 0, 'log.error was not called')
-      })
-    })
+        })
+        assert.notCalled(mockLog.error)
+      });
+    });
   })
 
   it('does not log activity event for non-send-tab-related messages', function () {
@@ -371,10 +369,10 @@ describe('/account/devices/notify', function () {
       }
     }
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
-      assert.equal(mockLog.activityEvent.callCount, 0, 'log.activityEvent was not called')
-      assert.equal(mockLog.error.callCount, 0, 'log.error was not called')
-    })
+      assert.calledOnce(mockPush.notifyUpdate)
+      assert.notCalled(mockLog.activityEvent)
+      assert.notCalled(mockLog.error)
+    });
   })
 
   it('device driven notifications disabled', function () {
@@ -413,9 +411,9 @@ describe('/account/devices/notify', function () {
       assert(false, 'should have thrown')
     })
       .then(() => assert(false), function (err) {
-        assert.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
+        assert.calledOnce(mockCustoms.checkAuthenticated)
         assert.equal(err.message, 'Client has sent too many requests')
-      })
+      });
   })
 
   it('logs error if no devices found', () => {
@@ -466,7 +464,7 @@ describe('/account/devices/notify', function () {
 
     return runTest(route, mockRequest, () => {
       return notifyUpdatePromise.promise.then(() => {
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
+        assert.calledOnce(mockPush.notifyUpdate)
         const args = mockPush.notifyUpdate.args[0]
         assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
@@ -475,8 +473,8 @@ describe('/account/devices/notify', function () {
         assert.deepEqual(args[3], {
           data: {}
         }, 'third argument was the push options')
-      })
-    })
+      });
+    });
   })
 
   it('reject account verification message with non-empty payload', () => {
@@ -525,25 +523,23 @@ describe('/account/device/destroy', function () {
     var route = getRoute(accountRoutes, '/account/device/destroy')
 
     return runTest(route, mockRequest, function () {
-      assert.equal(mockDB.deleteDevice.callCount, 1)
+      assert.calledOnce(mockDB.deleteDevice)
       assert.ok(mockDB.deleteDevice.calledBefore(mockPush.notifyDeviceDisconnected))
-      assert.equal(mockPush.notifyDeviceDisconnected.callCount, 1)
+      assert.calledOnce(mockPush.notifyDeviceDisconnected)
       assert.equal(mockPush.notifyDeviceDisconnected.firstCall.args[0], mockRequest.auth.credentials.uid)
       assert.deepEqual(mockPush.notifyDeviceDisconnected.firstCall.args[1], [deviceId, deviceId2])
       assert.equal(mockPush.notifyDeviceDisconnected.firstCall.args[2], deviceId)
 
-      assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
-      var args = mockLog.activityEvent.args[0]
-      assert.equal(args.length, 1, 'log.activityEvent was passed one argument')
-      assert.deepEqual(args[0], {
+      assert.calledOnce(mockLog.activityEvent)
+      assert.calledWithExactly(mockLog.activityEvent, {
         event: 'device.deleted',
         service: undefined,
         userAgent: 'test user-agent',
         uid: uid.toString('hex'),
         device_id: deviceId
-      }, 'event data was correct')
+      })
 
-      assert.equal(mockLog.notifyAttachedServices.callCount, 1)
+      assert.calledOnce(mockLog.notifyAttachedServices)
       args = mockLog.notifyAttachedServices.args[0]
       assert.equal(args.length, 3)
       assert.equal(args[0], 'device:delete')
@@ -552,7 +548,7 @@ describe('/account/device/destroy', function () {
       assert.equal(details.uid, uid)
       assert.equal(details.id, deviceId)
       assert.ok(Date.now() - details.timestamp < 100)
-    })
+    });
   })
 })
 
@@ -651,16 +647,16 @@ describe('/account/devices', () => {
       assert.equal(response[3].approximateLastAccessTime, undefined)
       assert.equal(response[3].approximateLastAccessTimeFormatted, undefined)
 
-      assert.equal(log.error.callCount, 0, 'log.error was not called')
+      assert.notCalled(log.error)
 
-      assert.equal(mockDB.devices.callCount, 1, 'db.devices was called once')
+      assert.calledOnce(mockDB.devices)
       assert.equal(mockDB.devices.args[0].length, 1, 'db.devices was passed one argument')
       assert.deepEqual(mockDB.devices.args[0][0], mockRequest.auth.credentials.uid, 'db.devices was passed uid')
 
-      assert.equal(mockDevices.synthesizeName.callCount, 1, 'mockDevices.synthesizeName was called once')
+      assert.calledOnce(mockDevices.synthesizeName)
       assert.equal(mockDevices.synthesizeName.args[0].length, 1, 'mockDevices.synthesizeName was passed one argument')
       assert.equal(mockDevices.synthesizeName.args[0][0], unnamedDevice, 'mockDevices.synthesizeName was passed unnamed device')
-    })
+    });
   })
 
   it('should return the devices list (not translated)', () => {
@@ -702,8 +698,8 @@ describe('/account/devices', () => {
         state: 'England',
         stateCode: 'EN'
       })
-      assert.equal(log.error.callCount, 0, 'log.error was not called')
-    })
+      assert.notCalled(log.error)
+    });
   })
 
   it('should allow returning a lastAccessTime of 0', () => {

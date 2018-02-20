@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
@@ -42,12 +42,10 @@ describe('features', () => {
       assert.equal(typeof features.isSampledUser, 'function', 'isSampledUser should be function')
       assert.equal(typeof features.isLastAccessTimeEnabledForUser, 'function', 'isLastAccessTimeEnabledForUser should be function')
 
-      assert.equal(crypto.createHash.callCount, 1, 'crypto.createHash should have been called once on require')
-      let args = crypto.createHash.args[0]
-      assert.equal(args.length, 1, 'crypto.createHash should have been passed one argument')
-      assert.equal(args[0], 'sha1', 'crypto.createHash algorithm should have been sha1')
+      assert.calledOnce(crypto.createHash)
+      assert.calledWithExactly(crypto.createHash, 'sha1')
 
-      assert.equal(hash.update.callCount, 2, 'hash.update should have been called twice on require')
+      assert.calledTwice(hash.update)
       args = hash.update.args[0]
       assert.equal(args.length, 1, 'hash.update should have been passed one argument first time')
       assert.equal(typeof args[0], 'string', 'hash.update data should have been a string first time')
@@ -55,10 +53,8 @@ describe('features', () => {
       assert.equal(args.length, 1, 'hash.update should have been passed one argument second time')
       assert.equal(typeof args[0], 'string', 'hash.update data should have been a string second time')
 
-      assert.equal(hash.digest.callCount, 1, 'hash.digest should have been called once on require')
-      args = hash.digest.args[0]
-      assert.equal(args.length, 1, 'hash.digest should have been passed one argument')
-      assert.equal(args[0], 'hex', 'hash.digest ecnoding should have been hex')
+      assert.calledOnce(hash.digest)
+      assert.calledWithExactly(hash.digest, 'hex')
 
       crypto.createHash.reset()
       hash.update.reset()
@@ -75,18 +71,18 @@ describe('features', () => {
 
       assert.equal(features.isSampledUser(sampleRate, uid, 'foo'), true, 'should always return true if sample rate is 1')
 
-      assert.equal(crypto.createHash.callCount, 0, 'crypto.createHash should not have been called')
-      assert.equal(hash.update.callCount, 0, 'hash.update should not have been called')
-      assert.equal(hash.digest.callCount, 0, 'hash.digest should not have been called')
+      assert.notCalled(crypto.createHash)
+      assert.notCalled(hash.update)
+      assert.notCalled(hash.digest)
 
       sampleRate = 0
       hashResult = Array(40).fill('0').join('')
 
       assert.equal(features.isSampledUser(sampleRate, uid, 'foo'), false, 'should always return false if sample rate is 0')
 
-      assert.equal(crypto.createHash.callCount, 0, 'crypto.createHash should not have been called')
-      assert.equal(hash.update.callCount, 0, 'hash.update should not have been called')
-      assert.equal(hash.digest.callCount, 0, 'hash.digest should not have been called')
+      assert.notCalled(crypto.createHash)
+      assert.notCalled(hash.update)
+      assert.notCalled(hash.digest)
 
       sampleRate = 0.05
       // First 27 characters are ignored, last 13 are 0.04 * 0xfffffffffffff
@@ -94,23 +90,17 @@ describe('features', () => {
 
       assert.equal(features.isSampledUser(sampleRate, uid, 'foo'), true, 'should return true if sample rate is greater than the extracted cohort value')
 
-      assert.equal(crypto.createHash.callCount, 1, 'crypto.createHash should have been called once')
-      let args = crypto.createHash.args[0]
-      assert.equal(args.length, 1, 'crypto.createHash should have been passed one argument')
-      assert.equal(args[0], 'sha1', 'crypto.createHash algorithm should have been sha1')
+      assert.calledOnce(crypto.createHash)
+      assert.calledWithExactly(crypto.createHash, 'sha1')
 
-      assert.equal(hash.update.callCount, 2, 'hash.update should have been called twice')
-      args = hash.update.args[0]
-      assert.equal(args.length, 1, 'hash.update should have been passed one argument first time')
-      assert.equal(args[0], uid.toString('hex'), 'hash.update data should have been stringified uid first time')
+      assert.calledTwice(hash.update)
+      assert.calledWithExactly(hash.update, uid.toString('hex'))
       args = hash.update.args[1]
       assert.equal(args.length, 1, 'hash.update should have been passed one argument second time')
       assert.equal(args[0], 'foo', 'hash.update data should have been key second time')
 
-      assert.equal(hash.digest.callCount, 1, 'hash.digest should have been called once')
-      args = hash.digest.args[0]
-      assert.equal(args.length, 1, 'hash.digest should have been passed one argument')
-      assert.equal(args[0], 'hex', 'hash.digest ecnoding should have been hex')
+      assert.calledOnce(hash.digest)
+      assert.calledWithExactly(hash.digest, 'hex')
 
       crypto.createHash.reset()
       hash.update.reset()
@@ -120,11 +110,11 @@ describe('features', () => {
 
       assert.equal(features.isSampledUser(sampleRate, uid, 'bar'), false, 'should return false if sample rate is equal to the extracted cohort value')
 
-      assert.equal(crypto.createHash.callCount, 1, 'crypto.createHash should have been called once')
-      assert.equal(hash.update.callCount, 2, 'hash.update should have been called twice')
+      assert.calledOnce(crypto.createHash)
+      assert.calledTwice(hash.update)
       assert.equal(hash.update.args[0][0], uid.toString('hex'), 'hash.update data should have been stringified uid first time')
       assert.equal(hash.update.args[1][0], 'bar', 'hash.update data should have been key second time')
-      assert.equal(hash.digest.callCount, 1, 'hash.digest should have been called once')
+      assert.calledOnce(hash.digest)
 
       crypto.createHash.reset()
       hash.update.reset()
@@ -145,7 +135,7 @@ describe('features', () => {
 
       assert.equal(features.isSampledUser(sampleRate, uid, 'wibble'), true, 'should return true if sample rate is greater than the extracted cohort value')
 
-      assert.equal(hash.update.callCount, 2, 'hash.update should have been called twice')
+      assert.calledTwice(hash.update)
       assert.equal(hash.update.args[0][0], uid, 'hash.update data should have been stringified uid first time')
       assert.equal(hash.update.args[1][0], 'wibble', 'hash.update data should have been key second time')
 

@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const bounces = require(`${ROOT_DIR}/lib/email/bounces`)
 const error = require(`${ROOT_DIR}/lib/error`)
 const { EventEmitter } = require('events')
@@ -51,7 +51,7 @@ describe('bounce messages', () => {
   it('should not log an error for headers', () => {
     return mockedBounces(log, {})
       .handleBounce(mockMessage({ junk: 'message' }))
-      .then(() => assert.equal(log.error.callCount, 0))
+      .then(() => assert.notCalled(log.error));
   })
 
   it('should log an error for missing headers', () => {
@@ -61,18 +61,18 @@ describe('bounce messages', () => {
     message.headers = undefined
     return mockedBounces(log, {})
       .handleBounce(message)
-      .then(() => assert.equal(log.error.callCount, 1))
+      .then(() => assert.calledOnce(log.error));
   })
 
   it('should ignore unknown message types', () => {
     return mockedBounces(log, {}).handleBounce(mockMessage({
       junk: 'message'
     })).then(() =>  {
-      assert.equal(log.info.callCount, 0)
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 1)
+      assert.notCalled(log.info)
+      assert.notCalled(log.error)
+      assert.calledOnce(log.warn)
       assert.equal(log.warn.args[0][0].op, 'emailHeaders.keys')
-    })
+    });
   })
 
   it('should handle multiple recipients in turn', () => {
@@ -87,16 +87,16 @@ describe('bounce messages', () => {
       }
     })
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(() =>  {
-      assert.equal(mockDB.createEmailBounce.callCount, 2)
-      assert.equal(mockDB.accountRecord.callCount, 2)
-      assert.equal(mockDB.deleteAccount.callCount, 2)
+      assert.calledTwice(mockDB.createEmailBounce)
+      assert.calledTwice(mockDB.accountRecord)
+      assert.calledTwice(mockDB.deleteAccount)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
       assert.equal(mockDB.accountRecord.args[1][0], 'foobar@example.com')
-      assert.equal(log.info.callCount, 6)
+      assert.callCount(log.info, 6)
       assert.equal(log.info.args[5][0].op, 'accountDeleted')
       assert.equal(log.info.args[5][0].email, 'foobar@example.com')
-      assert.equal(mockMsg.del.callCount, 1)
-    })
+      assert.calledOnce(mockMsg.del)
+    });
   })
 
   it('should treat complaints like bounces', () => {
@@ -111,21 +111,21 @@ describe('bounce messages', () => {
         ]
       }
     })).then(() =>  {
-      assert.equal(mockDB.createEmailBounce.callCount, 2)
+      assert.calledTwice(mockDB.createEmailBounce)
       assert.equal(mockDB.createEmailBounce.args[0][0].bounceType, 'Complaint')
       assert.equal(mockDB.createEmailBounce.args[0][0].bounceSubType, complaintType)
-      assert.equal(mockDB.accountRecord.callCount, 2)
-      assert.equal(mockDB.deleteAccount.callCount, 2)
+      assert.calledTwice(mockDB.accountRecord)
+      assert.calledTwice(mockDB.deleteAccount)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
       assert.equal(mockDB.accountRecord.args[1][0], 'foobar@example.com')
-      assert.equal(log.info.callCount, 6)
+      assert.callCount(log.info, 6)
       assert.equal(log.info.args[0][0].op, 'emailEvent')
       assert.equal(log.info.args[0][0].domain, 'other')
       assert.equal(log.info.args[0][0].type, 'bounced')
       assert.equal(log.info.args[4][0].complaint, true)
       assert.equal(log.info.args[4][0].complaintFeedbackType, complaintType)
       assert.equal(log.info.args[4][0].complaintUserAgent, 'AnyCompany Feedback Loop (V0.01)')
-    })
+    });
   })
 
   it('should not delete verified accounts on bounce', () => {
@@ -147,12 +147,12 @@ describe('bounce messages', () => {
         ]
       }
     })).then(() =>  {
-      assert.equal(mockDB.accountRecord.callCount, 2)
+      assert.calledTwice(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
       assert.equal(mockDB.accountRecord.args[1][0], 'verified@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
-      assert.equal(log.info.callCount, 5)
+      assert.callCount(log.info, 5)
       assert.equal(log.info.args[1][0].op, 'handleBounce')
       assert.equal(log.info.args[1][0].email, 'test@example.com')
       assert.equal(log.info.args[1][0].domain, 'other')
@@ -164,7 +164,7 @@ describe('bounce messages', () => {
       assert.equal(log.info.args[4][0].op, 'handleBounce')
       assert.equal(log.info.args[4][0].email, 'verified@example.com')
       assert.equal(log.info.args[4][0].status, '4.0.0')
-    })
+    });
   })
 
   it('should log errors when looking up the email record', () => {
@@ -178,16 +178,16 @@ describe('bounce messages', () => {
       }
     })
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(() =>  {
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
-      assert.equal(log.info.callCount, 2)
+      assert.calledTwice(log.info)
       assert.equal(log.info.args[1][0].op, 'handleBounce')
       assert.equal(log.info.args[1][0].email, 'test@example.com')
-      assert.equal(log.error.callCount, 2)
+      assert.calledTwice(log.error)
       assert.equal(log.error.args[1][0].op, 'databaseError')
       assert.equal(log.error.args[1][0].email, 'test@example.com')
-      assert.equal(mockMsg.del.callCount, 1)
-    })
+      assert.calledOnce(mockMsg.del)
+    });
   })
 
   it('should log errors when deleting the email record', () => {
@@ -201,19 +201,19 @@ describe('bounce messages', () => {
       }
     })
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(() =>  {
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
-      assert.equal(log.info.callCount, 2)
+      assert.calledTwice(log.info)
       assert.equal(log.info.args[1][0].op, 'handleBounce')
       assert.equal(log.info.args[1][0].email, 'test@example.com')
-      assert.equal(log.error.callCount, 2)
+      assert.calledTwice(log.error)
       assert.equal(log.error.args[1][0].op, 'databaseError')
       assert.equal(log.error.args[1][0].email, 'test@example.com')
       assert.equal(log.error.args[1][0].err.errno, error.ERRNO.ACCOUNT_UNKNOWN)
-      assert.equal(mockMsg.del.callCount, 1)
-    })
+      assert.calledOnce(mockMsg.del)
+    });
   })
 
   it('should normalize quoted email addresses for lookup', () => {
@@ -238,13 +238,13 @@ describe('bounce messages', () => {
         ]
       }
     })).then(() =>  {
-      assert.equal(mockDB.createEmailBounce.callCount, 1)
+      assert.calledOnce(mockDB.createEmailBounce)
       assert.equal(mockDB.createEmailBounce.args[0][0].email, 'test.@example.com')
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test.@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test.@example.com')
-    })
+    });
   })
 
   it('should handle multiple consecutive dots even if not quoted', () => {
@@ -270,13 +270,13 @@ describe('bounce messages', () => {
         ]
       }
     })).then(() =>  {
-      assert.equal(mockDB.createEmailBounce.callCount, 1)
+      assert.calledOnce(mockDB.createEmailBounce)
       assert.equal(mockDB.createEmailBounce.args[0][0].email, 'test..me@example.com')
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test..me@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test..me@example.com')
-    })
+    });
   })
 
   it('should log a warning if it receives an unparseable email address', () => {
@@ -289,12 +289,12 @@ describe('bounce messages', () => {
         ]
       }
     })).then(() =>  {
-      assert.equal(mockDB.createEmailBounce.callCount, 0)
-      assert.equal(mockDB.accountRecord.callCount, 0)
-      assert.equal(mockDB.deleteAccount.callCount, 0)
-      assert.equal(log.warn.callCount, 2)
+      assert.notCalled(mockDB.createEmailBounce)
+      assert.notCalled(mockDB.accountRecord)
+      assert.notCalled(mockDB.deleteAccount)
+      assert.calledTwice(log.warn)
       assert.equal(log.warn.args[1][0].op, 'handleBounce.addressParseFailure')
-    })
+    });
   })
 
   it('should log email template name, language, and bounceType', () => {
@@ -321,18 +321,18 @@ describe('bounce messages', () => {
     })
 
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(() =>  {
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
-      assert.equal(log.info.callCount, 3)
+      assert.calledThrice(log.info)
       assert.equal(log.info.args[1][0].op, 'handleBounce')
       assert.equal(log.info.args[1][0].email, 'test@example.com')
       assert.equal(log.info.args[1][0].template, 'verifyLoginEmail')
       assert.equal(log.info.args[1][0].bounceType, 'Permanent')
       assert.equal(log.info.args[1][0].bounceSubType, 'General')
       assert.equal(log.info.args[1][0].lang, 'db-LB')
-    })
+    });
   })
 
   it('should emit flow metrics', () => {
@@ -367,21 +367,21 @@ describe('bounce messages', () => {
     })
 
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-      assert.equal(mockDB.accountRecord.callCount, 1)
+      assert.calledOnce(mockDB.accountRecord)
       assert.equal(mockDB.accountRecord.args[0][0], 'test@example.com')
-      assert.equal(mockDB.deleteAccount.callCount, 1)
+      assert.calledOnce(mockDB.deleteAccount)
       assert.equal(mockDB.deleteAccount.args[0][0].email, 'test@example.com')
-      assert.equal(log.flowEvent.callCount, 1)
+      assert.calledOnce(log.flowEvent)
       assert.equal(log.flowEvent.args[0][0].event, 'email.verifyLoginEmail.bounced')
       assert.equal(log.flowEvent.args[0][0].flow_id, 'someFlowId')
       assert.equal(log.flowEvent.args[0][0].flow_time > 0, true)
       assert.equal(log.flowEvent.args[0][0].time > 0, true)
-      assert.equal(log.info.callCount, 3)
+      assert.calledThrice(log.info)
       assert.equal(log.info.args[0][0].op, 'emailEvent')
       assert.equal(log.info.args[0][0].type, 'bounced')
       assert.equal(log.info.args[0][0].template, 'verifyLoginEmail')
       assert.equal(log.info.args[0][0].flow_id, 'someFlowId')
-    })
+    });
   })
 
   it('should log email domain if popular one', () => {
@@ -416,12 +416,12 @@ describe('bounce messages', () => {
     })
 
     return mockedBounces(log, mockDB).handleBounce(mockMsg).then(function () {
-      assert.equal(log.flowEvent.callCount, 1)
+      assert.calledOnce(log.flowEvent)
       assert.equal(log.flowEvent.args[0][0].event, 'email.verifyLoginEmail.bounced')
       assert.equal(log.flowEvent.args[0][0].flow_id, 'someFlowId')
       assert.equal(log.flowEvent.args[0][0].flow_time > 0, true)
       assert.equal(log.flowEvent.args[0][0].time > 0, true)
-      assert.equal(log.info.callCount, 3)
+      assert.calledThrice(log.info)
       assert.equal(log.info.args[0][0].op, 'emailEvent')
       assert.equal(log.info.args[0][0].domain, 'aol.com')
       assert.equal(log.info.args[0][0].type, 'bounced')
@@ -430,6 +430,6 @@ describe('bounce messages', () => {
       assert.equal(log.info.args[0][0].flow_id, 'someFlowId')
       assert.equal(log.info.args[1][0].email, 'test@aol.com')
       assert.equal(log.info.args[1][0].domain, 'aol.com')
-    })
+    });
   })
 })

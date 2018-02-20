@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const P = require(`${ROOT_DIR}/lib/promise`)
 const { mockLog } = require('../../mocks')
 const proxyquire = require('proxyquire')
@@ -62,7 +62,7 @@ describe('email utils helpers', () => {
         }
       }
       emailHelpers.logEmailEventSent(log, message)
-      assert.equal(log.info.callCount, 1)
+      assert.calledOnce(log.info)
       assert.equal(log.info.args[0][0].locale, 'ru')
     })
 
@@ -74,7 +74,7 @@ describe('email utils helpers', () => {
         template: 'verifyEmail'
       }
       emailHelpers.logEmailEventSent(log, message)
-      assert.equal(log.info.callCount, 3)
+      assert.calledThrice(log.info)
       assert.equal(log.info.args[0][0].domain, 'other')
       assert.equal(log.info.args[1][0].domain, 'gmail.com')
       assert.equal(log.info.args[2][0].domain, 'yahoo.com')
@@ -96,7 +96,7 @@ describe('email utils helpers', () => {
       templateVersion: 'eee',
       uid: 'fff'
     })
-    assert.equal(amplitude.callCount, 1)
+    assert.calledOnce(amplitude)
     const args = amplitude.args[0]
     assert.equal(args.length, 4)
     assert.equal(args[0], 'email.verifyEmail.sent')
@@ -140,7 +140,7 @@ describe('email utils helpers', () => {
         { name: 'X-Uid', value: 'e' }
       ]
     }, 'bounced', 'gmail')
-    assert.equal(amplitude.callCount, 1)
+    assert.calledOnce(amplitude)
     const args = amplitude.args[0]
     assert.equal(args.length, 4)
     assert.equal(args[0], 'email.verifyLoginEmail.bounced')
@@ -177,23 +177,23 @@ describe('email utils helpers', () => {
 
     it('logs an error if message.mail is missing', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, {}, 'wibble')
-      assert.equal(log.error.callCount, 1)
+      assert.calledOnce(log.error)
       assert.equal(log.error.args[0].length, 1)
       assert.deepEqual({
         op: 'emailHeaders.missing',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.warn)
     })
 
     it('logs an error if message.mail.headers is missing', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {} }, 'blee')
-      assert.equal(log.error.callCount, 1)
+      assert.calledOnce(log.error)
       assert.deepEqual({
         op: 'emailHeaders.missing',
         origin: 'blee'
       }, log.error.args[0][0])
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.warn)
     })
 
     it('does not log an error/warning if message.mail.headers is object and deviceId is set', () => {
@@ -204,8 +204,8 @@ describe('email utils helpers', () => {
           }
         }
       })
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.error)
+      assert.notCalled(log.warn)
     })
 
     it('does not log an error/warning if message.mail.headers is object and deviceId is set (lowercase)', () => {
@@ -216,8 +216,8 @@ describe('email utils helpers', () => {
           }
         }
       })
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.error)
+      assert.notCalled(log.warn)
     })
 
     it('does not log an error/warning if message.mail.headers is object and uid is set', () => {
@@ -228,8 +228,8 @@ describe('email utils helpers', () => {
           }
         }
       })
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.error)
+      assert.notCalled(log.warn)
     })
 
     it('does not log an error/warning if message.mail.headers is object and uid is set (lowercase)', () => {
@@ -240,8 +240,8 @@ describe('email utils helpers', () => {
           }
         }
       })
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.error)
+      assert.notCalled(log.warn)
     })
 
     it('logs a warning if message.mail.headers is object and deviceId and uid are missing', () => {
@@ -255,8 +255,8 @@ describe('email utils helpers', () => {
           }
         }
       }, 'wibble')
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 1)
+      assert.notCalled(log.error)
+      assert.calledOnce(log.warn)
       assert.equal(log.warn.args[0].length, 1)
       assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
@@ -272,8 +272,8 @@ describe('email utils helpers', () => {
           'x-template-name': 'wibble'
         }
       }, 'blee')
-      assert.equal(log.error.callCount, 0)
-      assert.equal(log.warn.callCount, 1)
+      assert.notCalled(log.error)
+      assert.calledOnce(log.warn)
       assert.deepEqual(log.warn.args[0][0], {
         op: 'emailHeaders.keys',
         keys: 'x-template-name',
@@ -284,24 +284,24 @@ describe('email utils helpers', () => {
 
     it('logs an error if message.mail.headers is non-object', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: { headers: 'foo' } }, 'wibble')
-      assert.equal(log.error.callCount, 1)
+      assert.calledOnce(log.error)
       assert.deepEqual({
         op: 'emailHeaders.weird',
         type: 'string',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.warn)
     })
 
     it('logs an error if message.headers is non-object', () => {
       emailHelpers.logErrorIfHeadersAreWeirdOrMissing(log, { mail: {}, headers: 42 }, 'wibble')
-      assert.equal(log.error.callCount, 1)
+      assert.calledOnce(log.error)
       assert.deepEqual({
         op: 'emailHeaders.weird',
         type: 'number',
         origin: 'wibble'
       }, log.error.args[0][0])
-      assert.equal(log.warn.callCount, 0)
+      assert.notCalled(log.warn)
     })
   })
 })

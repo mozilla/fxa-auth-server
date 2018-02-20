@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 // noPreserveCache is needed to prevent the mock mailer from
 // being used for all future tests that include mock-nexmo.
 const proxyquire = require('proxyquire').noPreserveCache()
@@ -51,7 +51,7 @@ describe('mock-sns', () => {
     })
 
     it('calls mailer.sendMail correctly', () => {
-      assert.equal(mailer.sendMail.callCount, 1)
+      assert.calledOnce(mailer.sendMail)
       const sendConfig = mailer.sendMail.args[0][0]
       assert.equal(sendConfig.from, config.smtp.sender)
       assert.equal(sendConfig.to, 'sms.+019999999999@restmail.net')

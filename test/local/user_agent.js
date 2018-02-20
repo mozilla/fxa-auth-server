@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 var proxyquire = require('proxyquire')
 var sinon = require('sinon')
 
@@ -51,7 +51,7 @@ describe('userAgent', () => {
       }
       const result = userAgent('qux')
 
-      assert.equal(uaParser.parse.callCount, 1)
+      assert.calledOnce(uaParser.parse)
       assert.ok(uaParser.parse.calledWithExactly('qux'))
 
       assert.equal(Object.keys(result).length, 6)
@@ -84,7 +84,7 @@ describe('userAgent', () => {
       }
       const result = userAgent('wibble')
 
-      assert.equal(uaParser.parse.callCount, 1)
+      assert.calledOnce(uaParser.parse)
       assert.ok(uaParser.parse.calledWithExactly('wibble'))
 
       assert.equal(Object.keys(result).length, 6)

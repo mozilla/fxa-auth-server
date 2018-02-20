@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../..'
 
-const assert = require('insist')
+const assert = require("../assert")
 const config = require(`${ROOT_DIR}/config`).getProperties()
 const createBounces = require(`${ROOT_DIR}/lib/bounces`)
 const error = require(`${ROOT_DIR}/lib/error`)
@@ -27,8 +27,8 @@ describe('bounces', () => {
     }
     return createBounces(config, db).check(EMAIL)
       .then(() => {
-        assert.equal(db.emailBounces.callCount, 1)
-      })
+        assert.calledOnce(db.emailBounces)
+      });
   })
 
   it('error if complaints over limit', () => {
@@ -53,10 +53,10 @@ describe('bounces', () => {
       .then(
         () => assert(false),
         e => {
-          assert.equal(db.emailBounces.callCount, 1)
+          assert.calledOnce(db.emailBounces)
           assert.equal(e.errno, error.ERRNO.BOUNCE_COMPLAINT)
         }
-      )
+      );
   })
 
   it('error if hard bounces over limit', () => {
@@ -87,11 +87,11 @@ describe('bounces', () => {
       .then(
         () => assert(false),
         e => {
-          assert.equal(db.emailBounces.callCount, 1)
+          assert.calledOnce(db.emailBounces)
           assert.equal(e.errno, error.ERRNO.BOUNCE_HARD)
           assert.equal(e.output.payload.bouncedAt, DATE)
         }
-      )
+      );
   })
 
   it('does not error if not enough bounces in duration', () => {
@@ -115,8 +115,8 @@ describe('bounces', () => {
     }
     return createBounces(conf, db).check(EMAIL)
       .then(() => {
-        assert.equal(db.emailBounces.callCount, 1)
-      })
+        assert.calledOnce(db.emailBounces)
+      });
   })
 
   it('does not error if not enough complaints in duration', () => {
@@ -140,8 +140,8 @@ describe('bounces', () => {
     }
     return createBounces(conf, db).check(EMAIL)
       .then(() => {
-        assert.equal(db.emailBounces.callCount, 1)
-      })
+        assert.calledOnce(db.emailBounces)
+      });
   })
 
 
@@ -161,11 +161,11 @@ describe('bounces', () => {
           }
         ]))
       }
-      assert.equal(db.emailBounces.callCount, 0)
+      assert.notCalled(db.emailBounces)
       return createBounces(conf, db).check(EMAIL)
         .then(() => {
-          assert.equal(db.emailBounces.callCount, 0)
-        })
+          assert.notCalled(db.emailBounces)
+        });
     })
   })
 })

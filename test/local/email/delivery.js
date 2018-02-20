@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 
 const EventEmitter = require('events').EventEmitter
 const { mockLog } = require('../../mocks')
@@ -30,7 +30,7 @@ describe('delivery messages', () => {
     const log = mockLog()
     return mockedDelivery(log)
       .handleDelivery(mockMessage({ junk: 'message' }))
-      .then(() => assert.equal(log.error.callCount, 0))
+      .then(() => assert.notCalled(log.error));
   })
 
   it('should log an error for missing headers', () => {
@@ -41,7 +41,7 @@ describe('delivery messages', () => {
     message.headers = undefined
     return mockedDelivery(log)
       .handleDelivery(message)
-      .then(() => assert.equal(log.error.callCount, 1))
+      .then(() => assert.calledOnce(log.error));
   })
 
   it(
@@ -51,9 +51,9 @@ describe('delivery messages', () => {
       return mockedDelivery(log).handleDelivery(mockMessage({
         junk: 'message'
       })).then(function () {
-        assert.equal(log.warn.callCount, 1)
+        assert.calledOnce(log.warn)
         assert.equal(log.warn.args[0][0].op, 'emailHeaders.keys')
-      })
+      });
     }
   )
 
@@ -82,7 +82,7 @@ describe('delivery messages', () => {
       })
 
       return mockedDelivery(log).handleDelivery(mockMsg).then(function () {
-        assert.equal(log.info.callCount, 2)
+        assert.calledTwice(log.info)
         assert.equal(log.info.args[0][0].op, 'emailEvent')
         assert.equal(log.info.args[0][0].domain, 'other')
         assert.equal(log.info.args[0][0].type, 'delivered')
@@ -91,7 +91,7 @@ describe('delivery messages', () => {
         assert.equal(log.info.args[1][0].op, 'handleDelivery')
         assert.equal(log.info.args[1][0].template, 'verifyLoginEmail')
         assert.equal(log.info.args[1][0].processingTimeMillis, 546)
-      })
+      });
     }
   )
 
@@ -132,12 +132,12 @@ describe('delivery messages', () => {
       })
 
       return mockedDelivery(log).handleDelivery(mockMsg).then(function () {
-        assert.equal(log.flowEvent.callCount, 1)
+        assert.calledOnce(log.flowEvent)
         assert.equal(log.flowEvent.args[0][0].event, 'email.verifyLoginEmail.delivered')
         assert.equal(log.flowEvent.args[0][0].flow_id, 'someFlowId')
         assert.equal(log.flowEvent.args[0][0].flow_time > 0, true)
         assert.equal(log.flowEvent.args[0][0].time > 0, true)
-        assert.equal(log.info.callCount, 2)
+        assert.calledTwice(log.info)
         assert.equal(log.info.args[0][0].op, 'emailEvent')
         assert.equal(log.info.args[0][0].domain, 'other')
         assert.equal(log.info.args[0][0].type, 'delivered')
@@ -145,7 +145,7 @@ describe('delivery messages', () => {
         assert.equal(log.info.args[0][0].flow_id, 'someFlowId')
         assert.equal(log.info.args[1][0].email, 'jane@example.com')
         assert.equal(log.info.args[1][0].domain, 'other')
-      })
+      });
     }
   )
 
@@ -186,12 +186,12 @@ describe('delivery messages', () => {
       })
 
       return mockedDelivery(log).handleDelivery(mockMsg).then(function () {
-        assert.equal(log.flowEvent.callCount, 1)
+        assert.calledOnce(log.flowEvent)
         assert.equal(log.flowEvent.args[0][0].event, 'email.verifyLoginEmail.delivered')
         assert.equal(log.flowEvent.args[0][0].flow_id, 'someFlowId')
         assert.equal(log.flowEvent.args[0][0].flow_time > 0, true)
         assert.equal(log.flowEvent.args[0][0].time > 0, true)
-        assert.equal(log.info.callCount, 2)
+        assert.calledTwice(log.info)
         assert.equal(log.info.args[0][0].op, 'emailEvent')
         assert.equal(log.info.args[0][0].domain, 'aol.com')
         assert.equal(log.info.args[0][0].type, 'delivered')
@@ -200,7 +200,7 @@ describe('delivery messages', () => {
         assert.equal(log.info.args[0][0].flow_id, 'someFlowId')
         assert.equal(log.info.args[1][0].email, 'jane@aol.com')
         assert.equal(log.info.args[1][0].domain, 'aol.com')
-      })
+      });
     }
   )
 })

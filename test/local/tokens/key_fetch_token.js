@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const crypto = require('crypto')
 const log = { trace () {}, error () {} }
 

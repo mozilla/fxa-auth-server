@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../..'
 
-const assert = require('insist')
+const assert = require("../assert")
 const config = require(`${ROOT_DIR}/config/index`).getProperties()
 const bounces = {
   check() {

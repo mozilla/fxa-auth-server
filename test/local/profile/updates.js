@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 
 const EventEmitter = require('events').EventEmitter
 const sinon = require('sinon')
@@ -44,10 +44,10 @@ describe('profile updates', () => {
       return mockProfileUpdates(log).handleProfileUpdated(mockMessage({
         uid: 'bogusuid'
       })).then(() => {
-        assert.equal(mockPush.notifyProfileUpdated.callCount, 1)
-        assert.equal(log.error.callCount, 1)
+        assert.calledOnce(mockPush.notifyProfileUpdated)
+        assert.calledOnce(log.error)
         pushShouldThrow = false
-      })
+      });
     }
   )
 
@@ -60,11 +60,11 @@ describe('profile updates', () => {
       return mockProfileUpdates(log).handleProfileUpdated(mockMessage({
         uid: uid
       })).then(function () {
-        assert.equal(log.error.callCount, 0)
-        assert.equal(mockPush.notifyProfileUpdated.callCount, 2)
+        assert.notCalled(log.error)
+        assert.calledTwice(mockPush.notifyProfileUpdated)
         var args = mockPush.notifyProfileUpdated.getCall(1).args
         assert.equal(args[0], uid)
-      })
+      });
     }
   )
 })

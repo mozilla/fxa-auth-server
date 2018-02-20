@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../assert")
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
@@ -27,7 +27,7 @@ describe('Pool', () => {
       var pool = new Pool('http://example.com/ignore/me')
       pool.request()
 
-      assert.equal(poolee.request.callCount, 1, 'poolee.request was called once')
+      assert.calledOnce(poolee.request)
 
       var args = poolee.request.getCall(0).args
       assert.equal(args.length, 2, 'poolee.request was passed two arguments')
@@ -53,7 +53,7 @@ describe('Pool', () => {
       var pool = new Pool('http://example.com/')
       pool.request('POST', '/foo', { bar: 'baz' })
 
-      assert.equal(poolee.request.callCount, 1, 'poolee.request was called once')
+      assert.calledOnce(poolee.request)
 
       var args = poolee.request.getCall(0).args
       assert.equal(args.length, 2, 'poolee.request was passed two arguments')
@@ -194,7 +194,7 @@ describe('Pool', () => {
       sinon.stub(pool, 'request', function () {})
       pool.get('foo')
 
-      assert.equal(pool.request.callCount, 1, 'pool.request was called once')
+      assert.calledOnce(pool.request)
 
       var args = pool.request.getCall(0).args
       assert.equal(args.length, 2, 'pool.request was passed three arguments')
@@ -210,7 +210,7 @@ describe('Pool', () => {
       sinon.stub(pool, 'request', function () {})
       pool.put('baz', 'qux')
 
-      assert.equal(pool.request.callCount, 1, 'pool.request was called once')
+      assert.calledOnce(pool.request)
 
       var args = pool.request.getCall(0).args
       assert.equal(args.length, 3, 'pool.request was passed three arguments')
@@ -227,7 +227,7 @@ describe('Pool', () => {
       sinon.stub(pool, 'request', function () {})
       pool.post('foo', 'bar')
 
-      assert.equal(pool.request.callCount, 1, 'pool.request was called once')
+      assert.calledOnce(pool.request)
 
       var args = pool.request.getCall(0).args
       assert.equal(args.length, 3, 'pool.request was passed three arguments')
@@ -244,7 +244,7 @@ describe('Pool', () => {
       sinon.stub(pool, 'request', function () {})
       pool.del('foo', 'bar')
 
-      assert.equal(pool.request.callCount, 1, 'pool.request was called once')
+      assert.calledOnce(pool.request)
 
       var args = pool.request.getCall(0).args
       assert.equal(args.length, 3, 'pool.request was passed three arguments')

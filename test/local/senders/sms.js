@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const P = require('bluebird')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
@@ -72,7 +72,7 @@ describe('lib/senders/sms:', () => {
   it('sends a valid sms without a signinCode', () => {
     return sms.send('+442078553000', 'installFirefox', 'en')
       .then(() => {
-        assert.equal(publish.callCount, 1, 'AWS.SNS.publish was called once')
+        assert.calledOnce(publish)
         assert.equal(publish.args[0].length, 1, 'AWS.SNS.publish was passed one argument')
         assert.deepEqual(publish.args[0][0], {
           Message: 'Thanks for choosing Firefox! You can install Firefox for mobile here: https://baz/qux',
@@ -93,7 +93,7 @@ describe('lib/senders/sms:', () => {
           PhoneNumber: '+442078553000'
         }, 'AWS.SNS.publish was passed the correct argument')
 
-        assert.equal(log.trace.callCount, 1, 'log.trace was called once')
+        assert.calledOnce(log.trace)
         assert.equal(log.trace.args[0].length, 1, 'log.trace was passed one argument')
         assert.deepEqual(log.trace.args[0][0], {
           op: 'sms.send',
@@ -101,7 +101,7 @@ describe('lib/senders/sms:', () => {
           acceptLanguage: 'en'
         }, 'log.trace was passed the correct data')
 
-        assert.equal(log.info.callCount, 1, 'log.info was called once')
+        assert.calledOnce(log.info)
         assert.equal(log.info.args[0].length, 1, 'log.info was passed one argument')
         assert.deepEqual(log.info.args[0][0], {
           op: 'sms.send.success',
@@ -110,21 +110,21 @@ describe('lib/senders/sms:', () => {
           messageId: 'foo'
         }, 'log.info was passed the correct data')
 
-        assert.equal(log.error.callCount, 0, 'log.error was not called')
-      })
+        assert.notCalled(log.error)
+      });
   })
 
   it('sends a valid sms with a signinCode', () => {
     return sms.send('+442078553000', 'installFirefox', 'en', Buffer.from('++//ff0=', 'base64'))
       .then(() => {
-        assert.equal(publish.callCount, 1, 'AWS.SNS.publish was called once')
+        assert.calledOnce(publish)
         assert.equal(publish.args[0][0].Message, 'Thanks for choosing Firefox! You can install Firefox for mobile here: https://wibble/--__ff0', 'AWS.SNS.publish was passed the correct message')
 
-        assert.equal(log.trace.callCount, 1, 'log.trace was called once')
-        assert.equal(log.info.callCount, 1, 'log.info was called once')
+        assert.calledOnce(log.trace)
+        assert.calledOnce(log.info)
 
-        assert.equal(log.error.callCount, 0, 'log.error was not called')
-      })
+        assert.notCalled(log.error)
+      });
   })
 
   it('fails to send an sms with an invalid template name', () => {
@@ -134,17 +134,17 @@ describe('lib/senders/sms:', () => {
         assert.equal(error.errno, 131, 'error.errno was set correctly')
         assert.equal(error.message, 'Invalid message id', 'error.message was set correctly')
 
-        assert.equal(log.trace.callCount, 1, 'log.trace was called once')
-        assert.equal(log.info.callCount, 0, 'log.info was not called')
+        assert.calledOnce(log.trace)
+        assert.notCalled(log.info)
 
-        assert.equal(log.error.callCount, 1, 'log.error was called once')
+        assert.calledOnce(log.error)
         assert.deepEqual(log.error.args[0][0], {
           op: 'sms.getMessage.error',
           templateName: 'wibble'
         }, 'log.error was passed the correct data')
 
-        assert.equal(publish.callCount, 0, 'AWS.SNS.publish was not called')
-      })
+        assert.notCalled(publish)
+      });
   })
 
   it('fails to send an sms that is rejected by the network provider', () => {
@@ -161,11 +161,11 @@ describe('lib/senders/sms:', () => {
         assert.equal(error.output.payload.reason, 'this is an error', 'error.reason was set correctly')
         assert.equal(error.output.payload.reasonCode, 42, 'error.reasonCode was set correctly')
 
-        assert.equal(log.trace.callCount, 1, 'log.trace was called once')
-        assert.equal(log.info.callCount, 0, 'log.info was not called')
+        assert.calledOnce(log.trace)
+        assert.notCalled(log.info)
 
-        assert.equal(publish.callCount, 1, 'AWS.SNS.publish was called once')
-      })
+        assert.calledOnce(publish)
+      });
   })
 
 

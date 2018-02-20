@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../..'
 
-const assert = require('insist')
+const assert = require("../assert")
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
 const ajv = require('ajv')()
@@ -477,15 +477,15 @@ describe('push', () => {
       const push = proxyquire(pushModulePath, mocks)(thisMockLog, mockDb, mockConfig)
 
       return push.sendPush(mockUid, devices, 'accountVerify').then(function () {
-        assert.equal(thisMockLog.error.callCount, 0, 'log.error was not called')
+        assert.notCalled(thisMockLog.error)
         devices.push(mockDevices[0])
         return push.sendPush(mockUid, devices, 'accountVerify')
       }).then(function () {
-        assert.equal(thisMockLog.error.callCount, 1, 'log.error was called')
+        assert.calledOnce(thisMockLog.error)
         var arg = thisMockLog.error.getCall(0).args[0]
         assert.equal(arg.op, 'push.sendPush')
         assert.equal(arg.err.message, 'Too many devices connected to account')
-      })
+      });
     }
   )
 
@@ -497,7 +497,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.reset_settings') {
             // web-push failed
-            assert.equal(mockDb.updateDevice.callCount, 1, 'db.updateDevice was called once')
+            assert.calledOnce(mockDb.updateDevice)
             var args = mockDb.updateDevice.args[0]
             assert.equal(args.length, 3, 'db.updateDevice was passed three arguments')
             assert.equal(args[1], null, 'sessionTokenId argument was null')
@@ -534,7 +534,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.reset_settings') {
             // web-push failed
-            assert.equal(mockDb.updateDevice.callCount, 1, 'db.updateDevice was called once')
+            assert.calledOnce(mockDb.updateDevice)
             var args = mockDb.updateDevice.args[0]
             assert.equal(args.length, 3, 'db.updateDevice was passed three arguments')
             assert.equal(args[1], null, 'sessionTokenId argument was null')
@@ -571,7 +571,7 @@ describe('push', () => {
         info: function (log) {
           if (log.name === 'push.account_verify.failed') {
             // web-push failed
-            assert.equal(mockDb.updateDevice.callCount, 0, 'db.updateDevice was not called')
+            assert.notCalled(mockDb.updateDevice)
             count++
           }
         }

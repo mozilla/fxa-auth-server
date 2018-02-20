@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../..'
 
-const assert = require('insist')
+const assert = require("../assert")
 const crypto = require('crypto')
 const Memcached = require('memcached')
 const mocks = require('../mocks')
@@ -65,14 +65,12 @@ describe('cache:', () => {
       })
 
       it('calls memcached.delAsync correctly', () => {
-        assert.equal(Memcached.prototype.delAsync.callCount, 1)
-        const args = Memcached.prototype.delAsync.args[0]
-        assert.equal(args.length, 1)
-        assert.equal(args[0], digest)
+        assert.calledOnce(Memcached.prototype.delAsync)
+        assert.calledWithExactly(Memcached.prototype.delAsync, digest)
 
-        assert.equal(Memcached.prototype.getAsync.callCount, 0)
-        assert.equal(Memcached.prototype.setAsync.callCount, 0)
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(Memcached.prototype.getAsync)
+        assert.notCalled(Memcached.prototype.setAsync)
+        assert.notCalled(log.error)
       })
     })
 
@@ -89,14 +87,12 @@ describe('cache:', () => {
       })
 
       it('calls memcached.getAsync correctly', () => {
-        assert.equal(Memcached.prototype.getAsync.callCount, 1)
-        const args = Memcached.prototype.getAsync.args[0]
-        assert.equal(args.length, 1)
-        assert.equal(args[0], digest)
+        assert.calledOnce(Memcached.prototype.getAsync)
+        assert.calledWithExactly(Memcached.prototype.getAsync, digest)
 
-        assert.equal(Memcached.prototype.delAsync.callCount, 0)
-        assert.equal(Memcached.prototype.setAsync.callCount, 0)
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(Memcached.prototype.delAsync)
+        assert.notCalled(Memcached.prototype.setAsync)
+        assert.notCalled(log.error)
       })
     })
 
@@ -106,16 +102,12 @@ describe('cache:', () => {
       })
 
       it('calls memcached.setAsync correctly', () => {
-        assert.equal(Memcached.prototype.setAsync.callCount, 1)
-        const args = Memcached.prototype.setAsync.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0], digest)
-        assert.equal(args[1], 'wibble')
-        assert.equal(args[2], 30)
+        assert.calledOnce(Memcached.prototype.setAsync)
+        assert.calledWithExactly(Memcached.prototype.setAsync, digest, 'wibble', 30)
 
-        assert.equal(Memcached.prototype.delAsync.callCount, 0)
-        assert.equal(Memcached.prototype.getAsync.callCount, 0)
-        assert.equal(log.error.callCount, 0)
+        assert.notCalled(Memcached.prototype.delAsync)
+        assert.notCalled(Memcached.prototype.getAsync)
+        assert.notCalled(log.error)
       })
     })
   })
@@ -198,7 +190,7 @@ describe('null cache:', () => {
     })
 
     it('did not call memcached.delAsync', () => {
-      assert.equal(Memcached.prototype.delAsync.callCount, 0)
+      assert.notCalled(Memcached.prototype.delAsync)
     })
   })
 
@@ -208,7 +200,7 @@ describe('null cache:', () => {
     })
 
     it('did not call memcached.getAsync', () => {
-      assert.equal(Memcached.prototype.getAsync.callCount, 0)
+      assert.notCalled(Memcached.prototype.getAsync)
     })
   })
 
@@ -218,7 +210,7 @@ describe('null cache:', () => {
     })
 
     it('did not call memcached.setAsync', () => {
-      assert.equal(Memcached.prototype.setAsync.callCount, 0)
+      assert.notCalled(Memcached.prototype.setAsync)
     })
   })
 })

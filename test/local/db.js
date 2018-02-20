@@ -6,7 +6,7 @@
 
 const LIB_DIR = '../../lib'
 
-const assert = require('insist')
+const assert = require("../assert")
 const mocks = require('../mocks')
 const P = require(`${LIB_DIR}/promise`)
 const proxyquire = require('proxyquire')
@@ -136,50 +136,50 @@ describe('db with redis disabled:', () => {
     results.pool = []
     return db.sessions('fakeUid')
       .then(result => {
-        assert.equal(pool.get.callCount, 1)
+        assert.calledOnce(pool.get)
         assert.equal(pool.get.args[0].length, 1)
         assert.equal(pool.get.args[0][0], '/account/fakeUid/sessions')
         assert.deepEqual(result, [])
-      })
+      });
   })
 
   it('db.devices succeeds without a redis instance', () => {
     results.pool = []
     return db.devices('fakeUid')
       .then(result => {
-        assert.equal(pool.get.callCount, 1)
+        assert.calledOnce(pool.get)
         assert.equal(pool.get.args[0].length, 1)
         assert.equal(pool.get.args[0][0], '/account/fakeUid/devices')
         assert.deepEqual(result, [])
-      })
+      });
   })
 
   it('db.deleteAccount succeeds without a redis instance', () => {
     return db.deleteAccount({ uid: 'fakeUid' })
       .then(() => {
-        assert.equal(pool.del.callCount, 1)
+        assert.calledOnce(pool.del)
         assert.equal(pool.del.args[0].length, 1)
         assert.equal(pool.del.args[0][0], '/account/fakeUid')
-      })
+      });
   })
 
   it('db.deleteSessionToken succeeds without a redis instance', () => {
     return db.deleteSessionToken({ id: 'foo', uid: 'bar'})
       .then(() => {
-        assert.equal(pool.del.callCount, 1)
+        assert.calledOnce(pool.del)
         assert.equal(pool.del.args[0].length, 1)
         assert.equal(pool.del.args[0][0], '/sessionToken/foo')
-      })
+      });
   })
 
   it('db.deleteDevice succeeds without a redis instance', () => {
     pool.del = sinon.spy(() => P.resolve({}))
     return db.deleteDevice('foo', 'bar')
       .then(() => {
-        assert.equal(pool.del.callCount, 1)
+        assert.calledOnce(pool.del)
         assert.equal(pool.del.args[0].length, 1)
         assert.equal(pool.del.args[0][0], '/account/foo/device/bar')
-      })
+      });
   })
 
   it('db.resetAccount succeeds without a redis instance', () => {
@@ -187,29 +187,29 @@ describe('db with redis disabled:', () => {
     return db.resetAccount({ uid: 'fakeUid' }, {})
       .then(() => {
         const end = Date.now()
-        assert.equal(pool.post.callCount, 1)
+        assert.calledOnce(pool.post)
         assert.equal(pool.post.args[0].length, 2)
         assert.equal(pool.post.args[0][0], '/account/fakeUid/reset')
         assert.equal(Object.keys(pool.post.args[0][1]).length, 1)
         assert.ok(pool.post.args[0][1].verifierSetAt >= start)
         assert.ok(pool.post.args[0][1].verifierSetAt <= end)
-      })
+      });
   })
 
   it('db.updateSessionToken succeeds without a redis instance', () => {
     return db.updateSessionToken({ id: 'foo', uid: 'bar' })
       .then(() => {
-        assert.equal(pool.get.callCount, 0)
-        assert.equal(pool.post.callCount, 0)
-      })
+        assert.notCalled(pool.get)
+        assert.notCalled(pool.post)
+      });
   })
 
   it('db.pruneSessionTokens succeeds without a redis instance', () => {
     return db.pruneSessionTokens('foo', [ { id: 'bar', createdAt: 1 } ])
       .then(() => {
-        assert.equal(pool.get.callCount, 0)
-        assert.equal(pool.post.callCount, 0)
-      })
+        assert.notCalled(pool.get)
+        assert.notCalled(pool.post)
+      });
   })
 })
 
@@ -265,61 +265,61 @@ describe('redis enabled, token-pruning enabled:', () => {
       .then(
         result => assert.equal(result, 'db.devices should reject with error.unknownAccount'),
         err => {
-          assert.equal(pool.get.callCount, 0)
-          assert.equal(redis.get.callCount, 0)
+          assert.notCalled(pool.get)
+          assert.notCalled(redis.get)
           assert.equal(err.errno, 102)
           assert.equal(err.message, 'Unknown account')
         }
-      )
+      );
   })
 
   it('should call redis and the db in db.devices if uid is not falsey', () => {
     return db.devices('wibble')
       .then(() => {
-        assert.equal(pool.get.callCount, 1)
-        assert.equal(redis.get.callCount, 1)
+        assert.calledOnce(pool.get)
+        assert.calledOnce(redis.get)
         assert.equal(redis.get.args[0].length, 1)
         assert.equal(redis.get.args[0][0], 'wibble')
-      })
+      });
   })
 
   it('should call redis.get in db.sessions', () => {
     return db.sessions('wibble')
       .then(() => {
-        assert.equal(redis.get.callCount, 1)
+        assert.calledOnce(redis.get)
         assert.equal(redis.get.args[0].length, 1)
         assert.equal(redis.get.args[0][0], 'wibble')
 
-        assert.equal(log.error.callCount, 0)
-      })
+        assert.notCalled(log.error)
+      });
   })
 
   it('should call redis.del in db.deleteAccount', () => {
     return db.deleteAccount({ uid: 'wibble' })
       .then(() => {
-        assert.equal(redis.del.callCount, 1)
+        assert.calledOnce(redis.del)
         assert.equal(redis.del.args[0].length, 1)
         assert.equal(redis.del.args[0][0], 'wibble')
-      })
+      });
   })
 
   it('should call redis.del in db.resetAccount', () => {
     return db.resetAccount({ uid: 'wibble' }, {})
       .then(() => {
-        assert.equal(redis.del.callCount, 1)
+        assert.calledOnce(redis.del)
         assert.equal(redis.del.args[0].length, 1)
         assert.equal(redis.del.args[0][0], 'wibble')
-      })
+      });
   })
 
   it('should call redis.update in db.updateSessionToken', () => {
     return db.updateSessionToken({ id: 'wibble', uid: 'blee' })
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'blee')
         assert.equal(typeof redis.update.args[0][1], 'function')
-      })
+      });
   })
 
   it('should call redis.update in db.pruneSessionTokens', () => {
@@ -329,11 +329,11 @@ describe('redis enabled, token-pruning enabled:', () => {
       { id: 'baz', createdAt }
     ])
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'foo')
         assert.equal(typeof redis.update.args[0][1], 'function')
-      })
+      });
   })
 
   it('should not call redis.update for unexpired tokens in db.pruneSessionTokens', () => {
@@ -342,28 +342,28 @@ describe('redis enabled, token-pruning enabled:', () => {
       { id: 'bar', createdAt },
       { id: 'baz', createdAt }
     ])
-      .then(() => assert.equal(redis.update.callCount, 0))
+      .then(() => assert.notCalled(redis.update));
   })
 
   it('should call redis.update in db.deleteSessionToken', () => {
     return db.deleteSessionToken({ id: 'wibble', uid: 'blee' })
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'blee')
         assert.equal(typeof redis.update.args[0][1], 'function')
-      })
+      });
   })
 
   it('should call redis.update in db.deleteDevice', () => {
     pool.del = sinon.spy(() => P.resolve({}))
     return db.deleteDevice('wibble', 'blee')
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         assert.equal(redis.update.args[0].length, 2)
         assert.equal(redis.update.args[0][0], 'wibble')
         assert.equal(typeof redis.update.args[0][1], 'function')
-      })
+      });
   })
 
   it('db.devices handles old-format and new-format token objects from redis', () => {
@@ -533,7 +533,7 @@ describe('redis enabled, token-pruning enabled:', () => {
       }
     })
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         const getUpdatedValue = redis.update.args[0][1]
         assert.equal(typeof getUpdatedValue, 'function')
 
@@ -570,7 +570,7 @@ describe('redis enabled, token-pruning enabled:', () => {
             'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile'
           ]
         })
-      })
+      });
   })
 
   it('db.pruneSessionTokens handles old-format and new-format token objects from redis', () => {
@@ -580,7 +580,7 @@ describe('redis enabled, token-pruning enabled:', () => {
       { id: 'expired', createdAt: expiryPoint }
     ])
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         const getUpdatedValue = redis.update.args[0][1]
         assert.equal(typeof getUpdatedValue, 'function')
 
@@ -613,13 +613,13 @@ describe('redis enabled, token-pruning enabled:', () => {
           ],
           newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
         })
-      })
+      });
   })
 
   it('db.deleteSessionToken handles old-format and new-format token objects from redis', () => {
     return db.deleteSessionToken({ id: 'wibble', uid: 'blee' })
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         const getUpdatedValue = redis.update.args[0][1]
         assert.equal(typeof getUpdatedValue, 'function')
 
@@ -650,14 +650,14 @@ describe('redis enabled, token-pruning enabled:', () => {
           ],
           newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
         })
-      })
+      });
   })
 
   it('db.deleteDevice handles old-format and new-format token objects from redis', () => {
     pool.del = sinon.spy(() => P.resolve({ sessionTokenId: 'mngh' }))
     return db.deleteDevice('wibble', 'blee')
       .then(() => {
-        assert.equal(redis.update.callCount, 1)
+        assert.calledOnce(redis.update)
         const getUpdatedValue = redis.update.args[0][1]
         assert.equal(typeof getUpdatedValue, 'function')
 
@@ -690,7 +690,7 @@ describe('redis enabled, token-pruning enabled:', () => {
           ],
           newFormat: [ 3, [], 'Firefox Focus', '4.0.1', 'Android', '8.1', 'mobile' ]
         })
-      })
+      });
   })
 
   describe('redis.get rejects:', () => {
@@ -701,31 +701,31 @@ describe('redis enabled, token-pruning enabled:', () => {
     it('should log the error in db.sessions', () => {
       return db.sessions('wibble')
         .then(() => {
-          assert.equal(redis.get.callCount, 1)
+          assert.calledOnce(redis.get)
 
-          assert.equal(log.error.callCount, 1)
+          assert.calledOnce(log.error)
           assert.equal(log.error.args[0].length, 1)
           assert.deepEqual(log.error.args[0][0], {
             op: 'redis.get.error',
             key: 'wibble',
             err: 'mock redis.get error'
           })
-        })
+        });
     })
 
     it('should log the error in db.devices', () => {
       return db.devices('wibble')
         .then(() => {
-          assert.equal(redis.get.callCount, 1)
+          assert.calledOnce(redis.get)
 
-          assert.equal(log.error.callCount, 1)
+          assert.calledOnce(log.error)
           assert.equal(log.error.args[0].length, 1)
           assert.deepEqual(log.error.args[0][0], {
             op: 'redis.get.error',
             key: 'wibble',
             err: 'mock redis.get error'
           })
-        })
+        });
     })
   })
 
@@ -892,7 +892,7 @@ describe('redis enabled, token-pruning enabled:', () => {
             assert.equal(result.length, 1)
             assert.equal(result[0].id, 'unexpired')
 
-            assert.equal(db.pruneSessionTokens.callCount, 1)
+            assert.calledOnce(db.pruneSessionTokens)
             const args = db.pruneSessionTokens.args[0]
             assert.equal(args.length, 2)
             assert.equal(args[0], 'foo')
@@ -900,7 +900,7 @@ describe('redis enabled, token-pruning enabled:', () => {
             assert.equal(args[1].length, 2)
             assert.equal(args[1][0].id, 'expired1')
             assert.equal(args[1][1].id, 'expired2')
-          })
+          });
       })
     })
 
@@ -918,8 +918,8 @@ describe('redis enabled, token-pruning enabled:', () => {
         return db.sessions('foo')
           .then(result => {
             assert.equal(result.length, 3)
-            assert.equal(db.pruneSessionTokens.callCount, 0)
-          })
+            assert.notCalled(db.pruneSessionTokens)
+          });
       })
     })
   })
@@ -974,7 +974,7 @@ describe('redis enabled, token-pruning disabled:', () => {
     return db.pruneSessionTokens('wibble', [
       { id: 'blee', createdAt: 1 }
     ])
-      .then(() => assert.equal(redis.update.callCount, 0))
+      .then(() => assert.notCalled(redis.update));
   })
 })
 

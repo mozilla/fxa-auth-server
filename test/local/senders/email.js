@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const extend = require('util')._extend
 const sinon = require('sinon')
 const P = require('bluebird')
@@ -671,7 +671,7 @@ describe(
 
         return mailer.send(message)
           .then(function () {
-            assert.equal(mockLog.info.callCount, 3, 'calls log emailEvent')
+            assert.calledThrice(mockLog.info)
             const emailEventLog = mockLog.info.getCalls()[2]
             assert.equal(emailEventLog.args[0].op, 'emailEvent', 'logs emailEvent')
             assert.equal(emailEventLog.args[0].domain, 'other', 'logs domain')
@@ -681,7 +681,7 @@ describe(
             const mailerSend1 = mockLog.info.getCalls()[1]
             assert.equal(mailerSend1.args[0].op, 'mailer.send.1', 'logs mailer.send.1')
             assert.equal(mailerSend1.args[0].to, message.email, 'logs sender to email address')
-          })
+          });
       }
     )
 

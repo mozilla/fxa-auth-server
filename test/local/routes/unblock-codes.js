@@ -4,7 +4,7 @@
 
 'use strict'
 
-const assert = require('insist')
+const assert = require("../../assert")
 const getRoute = require('../../routes_helpers').getRoute
 const mocks = require('../../mocks')
 const P = require('../../../lib/promise')
@@ -80,22 +80,22 @@ describe('/account/login/send_unblock_code', function () {
       assert.ok(! (response instanceof Error), response.stack)
       assert.deepEqual(response, {}, 'response has no keys')
 
-      assert.equal(mockDb.accountRecord.callCount, 1, 'db.accountRecord called')
+      assert.calledOnce(mockDb.accountRecord)
       assert.equal(mockDb.accountRecord.args[0][0], email)
 
-      assert.equal(mockDb.createUnblockCode.callCount, 1, 'db.createUnblockCode called')
+      assert.calledOnce(mockDb.createUnblockCode)
       var dbArgs = mockDb.createUnblockCode.args[0]
       assert.equal(dbArgs.length, 1)
       assert.equal(dbArgs[0], uid)
 
-      assert.equal(mockMailer.sendUnblockCode.callCount, 1, 'called mailer.sendUnblockCode')
+      assert.calledOnce(mockMailer.sendUnblockCode)
       var args = mockMailer.sendUnblockCode.args[0]
       assert.equal(args.length, 3, 'mailer.sendUnblockCode called with 3 args')
 
-      assert.equal(mockLog.flowEvent.callCount, 1, 'log.flowEvent was called once')
+      assert.calledOnce(mockLog.flowEvent)
       assert.equal(mockLog.flowEvent.args[0][0].event, 'account.login.sentUnblockCode', 'event was account.login.sentUnblockCode')
       mockLog.flowEvent.reset()
-    })
+    });
   })
 
   it('uses normalized email address for feature flag', function () {
@@ -105,11 +105,11 @@ describe('/account/login/send_unblock_code', function () {
       assert.ok(! (response instanceof Error), response.stack)
       assert.deepEqual(response, {}, 'response has no keys')
 
-      assert.equal(mockDb.accountRecord.callCount, 1, 'db.accountRecord called')
+      assert.calledOnce(mockDb.accountRecord)
       assert.equal(mockDb.accountRecord.args[0][0], mockRequest.payload.email)
-      assert.equal(mockDb.createUnblockCode.callCount, 1, 'db.createUnblockCode called')
-      assert.equal(mockMailer.sendUnblockCode.callCount, 1, 'called mailer.sendUnblockCode')
-    })
+      assert.calledOnce(mockDb.createUnblockCode)
+      assert.calledOnce(mockMailer.sendUnblockCode)
+    });
   })
 })
 
@@ -133,11 +133,11 @@ describe('/account/login/reject_unblock_code', function () {
       assert.ok(! (response instanceof Error), response.stack)
       assert.deepEqual(response, {}, 'response has no keys')
 
-      assert.equal(mockDb.consumeUnblockCode.callCount, 1, 'consumeUnblockCode is called')
+      assert.calledOnce(mockDb.consumeUnblockCode)
       var args = mockDb.consumeUnblockCode.args[0]
       assert.equal(args.length, 2)
       assert.equal(args[0].toString('hex'), uid)
       assert.equal(args[1], unblockCode)
-    })
+    });
   })
 })
