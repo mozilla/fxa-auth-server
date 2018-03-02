@@ -1066,7 +1066,7 @@ and display the tab in a timely manner.
   containing the relevant device ids.
   <!--end-request-body-post-accountdevicesnotify-to-->
 
-* `_endpointAction`: *string, valid('accountVerify'), optional*
+* `_endpointAction`: *string, valid('accountVerify', 'sendtab'), optional*
 
   <!--begin-request-body-post-accountdevicesnotify-_endpointAction-->
   
@@ -1080,12 +1080,24 @@ and display the tab in a timely manner.
   Ignored unless `to:"all"` is specified.
   <!--end-request-body-post-accountdevicesnotify-excluded-->
 
-* `payload`: *object, when('_endpointAction', { is: 'accountVerify', then: required, otherwise: required })*
+* `payload`: *object, when('_endpointAction', { is: 'accountVerify', then: required })*
 
   <!--begin-request-body-post-accountdevicesnotify-payload-->
   Push payload,
   validated against [`pushpayloads.schema.json`](pushpayloads.schema.json).
   <!--end-request-body-post-accountdevicesnotify-payload-->
+
+* `encryptedPayload`: *regex(HEX_STRING), when('_endpointAction', { is: 'sendtab', then: required, otherwise: forbidden })*
+
+  <!--begin-request-body-post-accountdevicesnotify-encryptedPayload-->
+  Encrypted push payload, relayed throught the Pushbox service.
+  <!--end-request-body-post-accountdevicesnotify-encryptedPayload-->
+
+* `pushboxToken`: *regex(HEX_STRING), when('encryptedPayload', { is: exist, then: required, otherwise: forbidden })*
+
+  <!--begin-request-body-post-accountdevicesnotify-pushbox-token-->
+  Pushbox OAuth Bearer Token.
+  <!--end-request-body-post-accountdevicesnotify-pushbox-token-->
 
 * `TTL`: *number, integer, min(0), optional*
 
