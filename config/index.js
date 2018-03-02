@@ -708,6 +708,12 @@ var conf = convict({
       default: /^https:\/\/[a-zA-Z0-9._-]+(\.services\.mozilla\.com|autopush\.dev\.mozaws\.net|autopush\.stage\.mozaws\.net)(\/.*)?$/
     }
   },
+  pushboxUrl: {
+    doc: 'Pushbox server URL',
+    format: 'url',
+    default: 'https://foobar.com:1234', // TODO
+    env: 'PUSHBOX_URL'
+  },
   sms: {
     enabled: {
       doc: 'Indicates whether POST /sms is enabled',
