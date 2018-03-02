@@ -545,6 +545,42 @@ describe('push', () => {
   )
 
   it(
+    'notifyMessageReceived calls sendPush',
+    () => {
+      const mocks = {
+        'web-push': {
+          sendNotification: function (sub, payload, options) {
+            return P.resolve()
+          }
+        }
+      }
+      const push = proxyquire(pushModulePath, mocks)(mockLog(), mockDb, mockConfig)
+      sinon.spy(push, 'sendPush')
+      var expectedData = {
+        topic: 'sendtab',
+        url: 'https://foo.bar'
+      }
+      return push.notifyMessageReceived(mockUid, mockDevices[0], 'https://foo.bar', 'sendtab', 'sendTab', 'abcdf')
+        .catch(err => {
+          assert.fail('must not throw')
+          throw err
+        })
+        .then(() => {
+          assert.ok(push.sendPush.calledOnce, 'sendPush was called')
+          assert.equal(push.sendPush.getCall(0).args[0], mockUid)
+          assert.deepEqual(push.sendPush.getCall(0).args[1], [mockDevices[0]])
+          assert.equal(push.sendPush.getCall(0).args[2], 'sendTab')
+          const options = push.sendPush.getCall(0).args[3]
+          assert.deepEqual(options.data, expectedData)
+          const schemaPath = path.resolve(__dirname, PUSH_PAYLOADS_SCHEMA_PATH)
+          const schema = JSON.parse(fs.readFileSync(schemaPath))
+          assert.ok(ajv.validate(schema, options.data))
+          push.sendPush.restore()
+        })
+    }
+  )
+
+  it(
     'notifyDeviceConnected calls sendPush',
     () => {
       const mocks = {
