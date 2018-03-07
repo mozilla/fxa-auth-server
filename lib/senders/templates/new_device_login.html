@@ -42,15 +42,19 @@
       <tr style="page-break-before: always">
         <td align="center" valign="middle" id="button-content" style="font-family: sans-serif; font-weight: normal; text-align: center; margin: 0; color: #ffffff; font-size: 20px; line-height: 100%;">
           <!--[if mso]>
-          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{{link}}}" style="width:280px;height:40px;v-text-anchor:middle;" arcsize="10%" stroke="f" fillcolor="#0a84ff">
-            <w:anchorlock/>
-            <center>
-          <![endif]-->
-          <a href="{{{link}}}" id="button-link" style="font-family:sans-serif; color: #fff; display: block; padding: 15px; text-decoration: none; width: 280px; font-size: 18px; line-height: 26px;">{{t "Manage devices"}}</a>
-          <!--[if mso]>
-          </center>
-          </v:roundrect>
-          <![endif]-->
+        if (type === 'postChangePrimaryEmail' || type === 'newDeviceLoginEmail' ) {
+          it(
+            'has manage account link in ' + type,
+            function () {
+              mailer.mailer.sendMail = function (emailConfig) {
+                assert.ok(includes(emailConfig.html, 'Manage devices'))
+                assert.ok(includes(emailConfig.text, 'Manage devices'))
+              }
+              mailer[type](message)
+            }
+          )
+        }
+          <!--[endif]-->
         </td>
       </tr>
     </table>
