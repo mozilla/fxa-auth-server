@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <title>{{t "Firefox Accounts"}}</title>
+  <title>{{t "Manage account:"}} {{{ link }}}</title>
 </head>
 
 <body style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; margin: 0; padding: 0;">
@@ -34,6 +34,33 @@
     {{#if ip }}{{t "IP address: %(ip)s" }}<br/>{{/if}}
     {{#if timestamp }}{{ timestamp }}<br/>{{/if}}
 </p>
+
+<!--Button Area-->
+<tr height="50">
+  <td align="center" valign="top">
+    <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="email-button" style="-webkit-text-size-adjust: 100%; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #0a84ff; border-radius: 4px; height: 50px; width: 310px !important;">
+      <tr style="page-break-before: always">
+        <td align="center" valign="middle" id="button-content" style="font-family: sans-serif; font-weight: normal; text-align: center; margin: 0; color: #ffffff; font-size: 20px; line-height: 100%;">
+          <!--[if mso]>
+        if (type === 'postChangePrimaryEmail' || type === 'newDeviceLoginEmail' ) {
+          it(
+            'has manage account link in ' + type,
+            function () {
+              mailer.mailer.sendMail = function (emailConfig) {
+                assert.ok(includes(emailConfig.html, 'Manage devices'))
+                assert.ok(includes(emailConfig.text, 'Manage devices'))
+              }
+              mailer[type](message)
+            }
+          )
+        }
+          <![endif]-->
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<!--Button Area-->
 
 </p>
   </td>
