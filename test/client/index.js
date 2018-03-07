@@ -54,9 +54,8 @@ module.exports = config => {
     })
   }
 
-  Client.create = function (origin, email, password, options) {
+  Client.create = function (origin, email, password, options={}) {
     var c = new Client(origin)
-    c.options = options || {}
 
     return c.setupCredentials(email, password)
       .then(
