@@ -28,7 +28,9 @@ const messageTypes = [
   'passwordChangedEmail',
   'passwordResetEmail',
   'passwordResetRequiredEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'postVerifyEmail',
   'postVerifySecondaryEmail',
   'recoveryEmail',
@@ -44,8 +46,10 @@ const typesContainSupportLinks = [
   'newDeviceLoginEmail',
   'passwordChangedEmail',
   'passwordResetEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
   'postRemoveSecondaryEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'postVerifyEmail',
   'recoveryEmail',
   'verifyEmail',
@@ -65,8 +69,10 @@ const typesContainPasswordChangeLinks = [
   'verifyLoginEmail',
   'verifyLoginCodeEmail',
   'verifyPrimaryEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
-  'postVerifySecondaryEmail'
+  'postRemoveTwoStepAuthenticationEmail',
+  'postVerifySecondaryEmail',
 ]
 
 const typesContainUnblockCode = [
@@ -93,6 +99,8 @@ const typesContainLocationData = [
   'newDeviceLoginEmail',
   'passwordChangedEmail',
   'unblockCodeEmail',
+  'postAddTwoStepAuthenticationEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'recoveryEmail',
   'verifyEmail',
   'verifyLoginEmail',
