@@ -1,3 +1,15 @@
+<a name="1.106.1"></a>
+## [1.106.1](https://github.com/mozilla/fxa-auth-server/compare/v1.106.0...v1.106.1) (2018-03-08)
+
+
+### Bug Fixes
+
+* **tests:** Make email-polling-expiry tests pass in March. (#2324) r=@vladikoff ([51f57a4](https://github.com/mozilla/fxa-auth-server/commit/51f57a4)), closes [#2324](https://github.com/mozilla/fxa-auth-server/issues/2324)
+* **token:** add regex validation to token code ([ed2f443](https://github.com/mozilla/fxa-auth-server/commit/ed2f443))
+* **token:** pr fixes for validation ([fd32bfd](https://github.com/mozilla/fxa-auth-server/commit/fd32bfd))
+
+
+
 <a name="1.106.0"></a>
 # [1.106.0](https://github.com/mozilla/fxa-auth-server/compare/v1.105.0...v1.106.0) (2018-02-21)
 
