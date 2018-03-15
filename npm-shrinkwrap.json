@@ -335,7 +335,7 @@
     "eslint-plugin-fxa": {
       "version": "1.0.0",
       "from": "git+https://github.com/mozilla/eslint-plugin-fxa.git#master",
-      "resolved": "git+https://github.com/mozilla/eslint-plugin-fxa.git#41504c9dd30e8b52900c15b524946aa0428aef95"
+      "resolved": "git+https://github.com/mozilla/eslint-plugin-fxa.git#dea81bc103983514366b6eb74a094a1f1acfd5d4"
     },
     "fxa-auth-db-mysql": {
       "version": "1.107.0",
