@@ -7,7 +7,6 @@
 const ROOT_DIR = '../../..'
 
 const assert = require('insist')
-const extend = require('util')._extend
 const sinon = require('sinon')
 const P = require('bluebird')
 
@@ -447,7 +446,7 @@ describe(
           it(
             'location is correct with city, country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.stateCode
               var message = getLocationMessage(location)
 
@@ -463,7 +462,7 @@ describe(
           it(
             'location is correct with stateCode, country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.city
               var message = getLocationMessage(location)
 
@@ -478,7 +477,7 @@ describe(
           it(
             'location is correct with country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.city
               delete location.stateCode
               var message = getLocationMessage(location)
