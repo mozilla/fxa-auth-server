@@ -7,7 +7,6 @@
 const ROOT_DIR = '../../..'
 
 const assert = require('insist')
-const extend = require('util')._extend
 const sinon = require('sinon')
 const P = require('bluebird')
 
@@ -28,7 +27,9 @@ const messageTypes = [
   'passwordChangedEmail',
   'passwordResetEmail',
   'passwordResetRequiredEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'postVerifyEmail',
   'postVerifySecondaryEmail',
   'recoveryEmail',
@@ -44,8 +45,10 @@ const typesContainSupportLinks = [
   'newDeviceLoginEmail',
   'passwordChangedEmail',
   'passwordResetEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
   'postRemoveSecondaryEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'postVerifyEmail',
   'recoveryEmail',
   'verifyEmail',
@@ -65,8 +68,10 @@ const typesContainPasswordChangeLinks = [
   'verifyLoginEmail',
   'verifyLoginCodeEmail',
   'verifyPrimaryEmail',
+  'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
-  'postVerifySecondaryEmail'
+  'postRemoveTwoStepAuthenticationEmail',
+  'postVerifySecondaryEmail',
 ]
 
 const typesContainUnblockCode = [
@@ -93,6 +98,8 @@ const typesContainLocationData = [
   'newDeviceLoginEmail',
   'passwordChangedEmail',
   'unblockCodeEmail',
+  'postAddTwoStepAuthenticationEmail',
+  'postRemoveTwoStepAuthenticationEmail',
   'recoveryEmail',
   'verifyEmail',
   'verifyLoginEmail',
@@ -439,7 +446,7 @@ describe(
           it(
             'location is correct with city, country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.stateCode
               var message = getLocationMessage(location)
 
@@ -455,7 +462,7 @@ describe(
           it(
             'location is correct with stateCode, country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.city
               var message = getLocationMessage(location)
 
@@ -470,7 +477,7 @@ describe(
           it(
             'location is correct with country for ' + type,
             function () {
-              var location = extend({}, defaultLocation)
+              var location = Object.assign({}, defaultLocation)
               delete location.city
               delete location.stateCode
               var message = getLocationMessage(location)
@@ -490,31 +497,54 @@ describe(
               var message = getLocationMessage(defaultLocation)
               message.uaBrowser = 'Firefox'
               message.uaOS = 'BeOS'
+              message.uaOSVersion = '1.0'
 
               mailer.mailer.sendMail = function (emailConfig) {
-                assert.ok(includes(emailConfig.html, 'Firefox on BeOS'))
-                assert.ok(includes(emailConfig.text, 'Firefox on BeOS'))
+                assert.ok(includes(emailConfig.html, 'Firefox on BeOS 1.0'))
+                assert.ok(includes(emailConfig.text, 'Firefox on BeOS 1.0'))
               }
               mailer[type](message)
             }
           )
 
-          it(
-            'device name gets HTML-escaped for ' + type,
-            function () {
-              var message = getLocationMessage(defaultLocation)
-              message.uaBrowser = 'Firefox <a>Link</a>'
+          it(`drops dodgy-looking uaBrowser property for ${type}`, () => {
+            const message = getLocationMessage(defaultLocation)
+            message.uaBrowser = '<a>Firefox</a>'
+            message.uaOS = 'Android'
 
-              mailer.mailer.sendMail = function (emailConfig) {
-                assert.ok(! includes(emailConfig.html, '<a>Link</a>'))
-                assert.ok(! includes(emailConfig.text, '<a>Link</a>'))
-                assert.ok(includes(emailConfig.html, 'Firefox &lt;a&gt;Link&lt;/a&gt;'))
-                assert.ok(includes(emailConfig.text, 'Firefox &lt;a&gt;Link&lt;/a&gt;'))
-              }
-              mailer[type](message)
+            mailer.mailer.sendMail = emailConfig => {
+              assert.ok(! includes(emailConfig.html, '<a>Firefox</a> on Android'))
+              assert.ok(includes(emailConfig.html, 'Android'))
+              assert.ok(! includes(emailConfig.text, '<a>Firefox</a> on Android'))
+              assert.ok(includes(emailConfig.text, 'Android'))
             }
-          )
+            mailer[type](message)
+          })
 
+          it(`drops dodgy-looking uaOS property for ${type}`, () => {
+            const message = getLocationMessage(defaultLocation)
+            message.uaBrowser = 'Firefox'
+            message.uaOS = 'http://example.com'
+
+            mailer.mailer.sendMail = emailConfig => {
+              assert.ok(! includes(emailConfig.html, 'http://example.com'))
+              assert.ok(! includes(emailConfig.text, 'http://example.com'))
+            }
+            mailer[type](message)
+          })
+
+          it(`drops dodgy-looking uaOSVersion property for ${type}`, () => {
+            const message = getLocationMessage(defaultLocation)
+            message.uaBrowser = 'Firefox'
+            message.uaOS = 'Android'
+            message.uaOSVersion = 'dodgy-looking'
+
+            mailer.mailer.sendMail = emailConfig => {
+              assert.ok(! includes(emailConfig.html, 'dodgy-looking'))
+              assert.ok(! includes(emailConfig.text, 'dodgy-looking'))
+            }
+            mailer[type](message)
+          })
         }
 
         if (type === 'verifyLoginEmail') {
