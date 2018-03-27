@@ -347,6 +347,7 @@ those common validations are defined here.
 * `verificationMethod`: `string, valid()`
 * `E164_NUMBER`: `/^\+[1-9]\d{1,14}$/`
 * `DIGITS`: `/^[0-9]+$/`
+* `IP_ADDRESS`: `string, ip`
 
 #### lib/metrics/context
 
@@ -2173,11 +2174,17 @@ Verify a session using a recovery code.
 
 ##### Request body
 
-* `code`: *string, min(RECOVERY_CODE_LENGTH), max(RECOVERY_CODE_LENGTH), regex(HEX_STRING), required*
+* `code`: *string, length(RECOVERY_CODE_LENGTH), regex(HEX_STRING), required*
 
   <!--begin-request-body-post-sessionverifyrecoverycode-code-->
   
   <!--end-request-body-post-sessionverifyrecoverycode-code-->
+
+* `metricsContext`: *metricsContext.schema*
+
+  <!--begin-request-body-post-sessionverifyrecoverycode-metricsContext-->
+  
+  <!--end-request-body-post-sessionverifyrecoverycode-metricsContext-->
 
 ##### Response body
 
