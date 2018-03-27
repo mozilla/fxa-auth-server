@@ -83,7 +83,16 @@ describe('Pool', () => {
     pool.request(null, '/foo')
       .then(
         () => assert(false, 'request should have failed'),
-        err => assert.equal(err.message, 'Invalid url argument')
+        err => assert(err instanceof Error)
+      )
+  })
+
+  it('pool.request with missing param', () => {
+    const pool = new Pool('http://example.com/')
+    pool.request(null, new SafeUrl('/:foo'), {})
+      .then(
+        () => assert(false, 'request should have failed'),
+        err => assert(err instanceof Error)
       )
   })
 
