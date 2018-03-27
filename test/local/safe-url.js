@@ -7,6 +7,11 @@
 const assert = require('insist')
 const mocks = require('../mocks')
 
+const SOME_DISALLOWED_GRAPHEMES = [
+  '\t', '\n', '\r', ' ', '"', '&', '\'', '/', ':', ';',
+  '=', '?', '@', '\\', '~', 'ß', 'π', '💩'
+]
+
 describe('require:', () => {
   let log, SafeUrl
 
@@ -62,14 +67,38 @@ describe('require:', () => {
       })
     })
 
-    it('logs an error and throws when param seems unsafe', () => {
-      assert.throws(() => safeUrl.render({ bar: 'wibble\n' }))
+    it('logs an error and throws when param is empty string', () => {
+      assert.throws(() => safeUrl.render({ bar: '' }))
       assert.equal(log.error.callCount, 1)
       assert.deepEqual(log.error.args[0][0], {
-        op: 'safeUrl.unsafe',
+        op: 'safeUrl.bad',
         key: 'bar',
-        value: 'wibble\n',
+        value: '',
         caller: 'baz'
+      })
+    })
+
+    it('logs an error and throws when param is object', () => {
+      assert.throws(() => safeUrl.render({ bar: {} }))
+      assert.equal(log.error.callCount, 1)
+      assert.deepEqual(log.error.args[0][0], {
+        op: 'safeUrl.bad',
+        key: 'bar',
+        value: {},
+        caller: 'baz'
+      })
+    })
+
+    SOME_DISALLOWED_GRAPHEMES.forEach(grapheme => {
+      it(`logs an error and throws when param contains ${grapheme}`, () => {
+        assert.throws(() => safeUrl.render({ bar: `wibble${grapheme}` }))
+        assert.equal(log.error.callCount, 1)
+        assert.deepEqual(log.error.args[0][0], {
+          op: 'safeUrl.unsafe',
+          key: 'bar',
+          value: `wibble${grapheme}`,
+          caller: 'baz'
+        })
       })
     })
   })
