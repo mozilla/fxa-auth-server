@@ -849,7 +849,7 @@ if (conf.has('snsTopicEndpoint') && conf.get('env') !== 'dev') {
   throw new Error('snsTopicEndpoint is only allowed in dev env')
 }
 
-if (conf.get('env')  === 'dev'){
+if (conf.get('env') === 'dev'){
   if (! process.env.AWS_ACCESS_KEY_ID) {
     process.env.AWS_ACCESS_KEY_ID = 'DEV_KEY_ID'
   }
