@@ -9,7 +9,7 @@ const config = require('../../config').getProperties()
 const TestServer = require('../test_server')
 const Client = require('../client')()
 const otplib = require('otplib')
-const HEX_STRING = require('../../lib/routes/validators').HEX_STRING
+const RECOVERY_CODE_STRING = require('../../lib/routes/validators').RECOVERY_CODE_STRING
 
 describe('remote recovery codes', function () {
   let server, client, email, recoveryCodes
@@ -66,8 +66,8 @@ describe('remote recovery codes', function () {
     assert.ok(recoveryCodes)
     assert.equal(recoveryCodes.length, 8, 'recovery codes returned')
     recoveryCodes.forEach((code) => {
-      assert.equal(code.length, 8, 'correct length')
-      assert.equal(HEX_STRING.test(code), true, 'code is hex')
+      assert.equal(code.length, 10, 'correct length')
+      assert.equal(RECOVERY_CODE_STRING.test(code), true, 'code is hex')
     })
   })
 
@@ -96,7 +96,7 @@ describe('remote recovery codes', function () {
     })
 
     it('should fail to consume unknown recovery code', () => {
-      return client.consumeRecoveryCode('1234abcd', {metricsContext})
+      return client.consumeRecoveryCode('1234abcd12', {metricsContext})
         .then(assert.fail, (err) => {
           assert.equal(err.code, 400, 'correct error code')
           assert.equal(err.errno, 156, 'correct error errno')
