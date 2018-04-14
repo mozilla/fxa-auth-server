@@ -40,7 +40,7 @@ describe('remote device', function () {
             var deviceInfo = {
               name: 'test device 🍓🔥在𝌆',
               type: 'mobile',
-              capabilities: ['pushbox'],
+              capabilities: ['messages'],
               pushCallback: '',
               pushPublicKey: '',
               pushAuthKey: ''
@@ -238,7 +238,42 @@ describe('remote device', function () {
         id: crypto.randomBytes(16).toString('hex'),
         name: 'test device',
         type: 'desktop',
-        capabilities: ['pushbox'],
+        capabilities: ['messages'],
+        pushCallback: badPushCallback,
+        pushPublicKey: mocks.MOCK_PUSH_KEY,
+        pushAuthKey: base64url(crypto.randomBytes(16))
+      }
+      return Client.create(config.publicUrl, email, password)
+        .then(
+          function (client) {
+            return client.updateDevice(deviceInfo)
+              .then(
+                function (r) {
+                  assert(false, 'request should have failed')
+                }
+              )
+              .catch(
+                function (err) {
+                  assert.equal(err.code, 400, 'err.code was 400')
+                  assert.equal(err.errno, 107, 'err.errno was 107, invalid parameter')
+                  assert.equal(err.validation.keys[0], 'pushCallback', 'bad pushCallback caught in validation')
+                }
+              )
+          })
+    }
+  )
+
+  it(
+    'update device fails with non-normalized callbackUrl',
+    () => {
+      var badPushCallback = 'https://updates.push.services.mozilla.com/invalid/\u010D/char'
+      var email = server.uniqueEmail()
+      var password = 'test password'
+      var deviceInfo = {
+        id: crypto.randomBytes(16).toString('hex'),
+        name: 'test device',
+        type: 'desktop',
+        capabilities: ['messages'],
         pushCallback: badPushCallback,
         pushPublicKey: mocks.MOCK_PUSH_KEY,
         pushAuthKey: base64url(crypto.randomBytes(16))
@@ -275,7 +310,7 @@ describe('remote device', function () {
             var deviceInfo = {
               name: 'test device',
               type: 'mobile',
-              capabilities: ['pushbox'],
+              capabilities: ['messages'],
               pushCallback: goodPushCallback,
               pushPublicKey: '',
               pushAuthKey: ''

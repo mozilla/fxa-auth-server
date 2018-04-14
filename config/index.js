@@ -445,6 +445,12 @@ var conf = convict({
     env: 'SNS_TOPIC_ARN',
     default: ''
   },
+  snsTopicEndpoint: {
+    doc: 'Amazon SNS topic endpoint',
+    format: String,
+    env: 'SNS_TOPIC_ENDPOINT',
+    default: undefined
+  },
   emailNotifications: {
     region: {
       doc: 'The region where the queues live, most likely the same region we are sending email e.g. us-east-1, us-west-2',
@@ -797,6 +803,12 @@ var conf = convict({
       format: 'nat',
       env: 'TOTP_STEP_SIZE'
     },
+    window: {
+      doc: 'Tokens in the previous x-windows that should be considered valid',
+      default: 1,
+      format: 'nat',
+      env: 'TOTP_WINDOW'
+    },
     recoveryCodes: {
       length: {
         doc: 'The length of a recovery code',
@@ -837,5 +849,19 @@ conf.set('smtp.verifyPrimaryEmailUrl', conf.get('contentServer.url') + '/verify_
 conf.set('smtp.verifySecondaryEmailUrl', conf.get('contentServer.url') + '/verify_secondary_email')
 
 conf.set('isProduction', conf.get('env') === 'prod')
+
+//sns endpoint is not to be set in production
+if (conf.has('snsTopicEndpoint') && conf.get('env') !== 'dev') {
+  throw new Error('snsTopicEndpoint is only allowed in dev env')
+}
+
+if (conf.get('env') === 'dev'){
+  if (! process.env.AWS_ACCESS_KEY_ID) {
+    process.env.AWS_ACCESS_KEY_ID = 'DEV_KEY_ID'
+  }
+  if (! process.env.AWS_SECRET_ACCESS_KEY) {
+    process.env.AWS_SECRET_ACCESS_KEY = 'DEV_ACCESS_KEY'
+  }
+}
 
 module.exports = conf
