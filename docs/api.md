@@ -340,6 +340,7 @@ those common validations are defined here.
 
 * `HEX_STRING`: `/^(?:[a-fA-F0-9]{2})+$/`
 * `BASE_36`: `/^[a-zA-Z0-9]*$/`
+* `RECOVERY_CODE_STRING`: `/^[a-z0-9]*$/`
 * `URL_SAFE_BASE_64`: `/^[A-Za-z0-9_-]+$/`
 * `DISPLAY_SAFE_UNICODE`: `/^(?:[^\u0000-\u001F\u007F\u0080-\u009F\u2028-\u2029\uD800-\uDFFF\uE000-\uF8FF\uFFF9-\uFFFF])*$/`
 * `DISPLAY_SAFE_UNICODE_WITH_NON_BMP`: `/^(?:[^\u0000-\u001F\u007F\u0080-\u009F\u2028-\u2029\uE000-\uF8FF\uFFF9-\uFFFF])*$/`
@@ -2158,7 +2159,7 @@ Return new recovery codes while removing old ones.
 
 ##### Response body
 
-* `recoveryCodes`: *array, items(string, regex(validators.HEX_STRING))*
+* `recoveryCodes`: *array, items(string, regex(BASE_36)), length(RECOVERY_CODE_COUNT), optional*
 
   <!--begin-response-body-get-recoverycodes-recoveryCodes-->
   
@@ -2174,7 +2175,7 @@ Verify a session using a recovery code.
 
 ##### Request body
 
-* `code`: *string, length(RECOVERY_CODE_LENGTH), regex(HEX_STRING), required*
+* `code`: *string, length(RECOVERY_CODE_LENGTH), regex(BASE_36), required*
 
   <!--begin-request-body-post-sessionverifyrecoverycode-code-->
   
@@ -2710,7 +2711,7 @@ Verifies the current session if the passed TOTP code is valid.
   
   <!--end-response-body-post-sessionverifytotp-success-->
 
-* `recoveryCodes`: *array, items(string, regex(HEX_STRING)), optional*
+* `recoveryCodes`: *array, items(string), optional*
 
   <!--begin-response-body-post-sessionverifytotp-recoveryCodes-->
   
