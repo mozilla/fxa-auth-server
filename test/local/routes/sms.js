@@ -448,10 +448,12 @@ describe('/sms/status', () => {
     log = mocks.mockLog()
     config = {
       sms: {
+        apiRegion: 'us-east-1',
         enabled: true,
         countryCodes: [ 'US' ],
         isStatusGeoEnabled: true
-      }
+      },
+      smtp: {}
     }
     routes = makeRoutes({ log, config })
     route = getRoute(routes, '/sms/status')
