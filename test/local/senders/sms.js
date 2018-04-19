@@ -147,6 +147,30 @@ describe('lib/senders/sms:', () => {
       })
     })
 
+    describe('invalid data:', () => {
+      beforeEach(() => {
+        results.getMetricsStatistics.Datapoints[1].Sum = 'wibble'
+      })
+
+      describe('wait a tick:', () => {
+        beforeEach(done => setImmediate(done))
+
+        it('isBudgetOk returns true', () => {
+          assert.strictEqual(sms.isBudgetOk(), true)
+        })
+
+        it('called log.error correctly', () => {
+          assert.equal(log.error.callCount, 1)
+          const args = log.error.args[0]
+          assert.equal(args.length, 1)
+          assert.deepEqual(args[0], {
+            op: 'sms.budget.error',
+            err: 'Invalid Datapoints'
+          })
+        })
+      })
+    })
+
     describe('send a valid sms without a signinCode:', () => {
       beforeEach(() => {
         return sms.send('+442078553000', 'installFirefox', 'en')
