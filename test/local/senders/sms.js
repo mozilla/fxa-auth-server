@@ -289,10 +289,10 @@ describe('lib/senders/sms:', () => {
       })
 
       it('failed correctly', () => {
-        assert.equal(error.errno, 132, 'error.errno was set correctly')
-        assert.equal(error.message, 'Message rejected', 'error.message was set correctly')
-        assert.equal(error.output.payload.reason, 'this is an error', 'error.reason was set correctly')
-        assert.equal(error.output.payload.reasonCode, 42, 'error.reasonCode was set correctly')
+        assert.equal(error.errno, 132)
+        assert.equal(error.message, 'Message rejected')
+        assert.equal(error.output.payload.reason, 'this is an error')
+        assert.equal(error.output.payload.reasonCode, 42)
       })
     })
   })
