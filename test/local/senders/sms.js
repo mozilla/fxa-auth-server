@@ -28,13 +28,13 @@ describe('lib/senders/sms:', () => {
     }
     log = mocks.mockLog()
     results = {
-      getMetricsStatistics: { Datapoints: [ { Sum: 0 }, { Sum: 0 } ] },
+      getMetricStatistics: { Datapoints: [ { Sum: 0 }, { Sum: 0 } ] },
       getSMSAttributes: { MonthlySpendLimit: config.sms.minimumCreditThreshold },
       publish: P.resolve({ MessageId: 'foo' })
     }
     cloudwatch = {
-      getMetricsStatistics: sinon.spy(() => ({
-        promise: () => P.resolve(results.getMetricsStatistics)
+      getMetricStatistics: sinon.spy(() => ({
+        promise: () => P.resolve(results.getMetricStatistics)
       }))
     }
     sns = {
@@ -85,7 +85,7 @@ describe('lib/senders/sms:', () => {
     it('did not call the AWS SDK', () => {
       assert.equal(sns.getSMSAttributes.callCount, 0)
       assert.equal(sns.publish.callCount, 0)
-      assert.equal(cloudwatch.getMetricsStatistics.callCount, 0)
+      assert.equal(cloudwatch.getMetricStatistics.callCount, 0)
     })
 
     it('isBudgetOk returns true', () => {
@@ -102,9 +102,9 @@ describe('lib/senders/sms:', () => {
         assert.deepEqual(args[0], { attributes: [ 'MonthlySpendLimit' ] })
       })
 
-      it('called cloudwatch.getMetricsStatistics correctly', () => {
-        assert.equal(cloudwatch.getMetricsStatistics.callCount, 1)
-        const args = cloudwatch.getMetricsStatistics.args[0]
+      it('called cloudwatch.getMetricStatistics correctly', () => {
+        assert.equal(cloudwatch.getMetricStatistics.callCount, 1)
+        const args = cloudwatch.getMetricStatistics.args[0]
         assert.equal(args.length, 1)
         const now = new Date()
         assert.equal(args[0].Namespace, 'AWS/SNS')
@@ -127,7 +127,7 @@ describe('lib/senders/sms:', () => {
 
     describe('spend > threshold:', () => {
       beforeEach(() => {
-        results.getMetricsStatistics.Datapoints[1].Sum = 1
+        results.getMetricStatistics.Datapoints[1].Sum = 1
       })
 
       it('isBudgetOk returns true', () => {
@@ -149,7 +149,7 @@ describe('lib/senders/sms:', () => {
 
     describe('invalid data:', () => {
       beforeEach(() => {
-        results.getMetricsStatistics.Datapoints[1].Sum = 'wibble'
+        results.getMetricStatistics.Datapoints[1].Sum = 'wibble'
       })
 
       describe('wait a tick:', () => {
@@ -318,7 +318,7 @@ describe('lib/senders/sms:', () => {
 
       it('did not call the AWS SDK', () => {
         assert.equal(sns.getSMSAttributes.callCount, 0)
-        assert.equal(cloudwatch.getMetricsStatistics.callCount, 0)
+        assert.equal(cloudwatch.getMetricStatistics.callCount, 0)
       })
 
       it('did not call log.error', () => {
