@@ -463,6 +463,12 @@ module.exports = config => {
       .then(this._clear.bind(this))
   }
 
+  Client.prototype.destroyAccountWithSessionToken = function () {
+    return this.api.accountDestroyWithSessionToken(this.email, this.authPW, this.sessionToken)
+      .then(this._clear.bind(this))
+  }
+
+
   Client.prototype.forgotPassword = function (lang) {
 
     return this.api.passwordForgotSendCode(this.email, this.options, lang)
