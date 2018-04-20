@@ -11,6 +11,7 @@ const proxyquire = require('proxyquire')
 const sinon = require('sinon')
 
 const ROOT_DIR = '../../..'
+const ISO_8601_FORMAT = /^20[1-9][0-9]-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9]\.[0-9]{3}Z$/
 
 describe('lib/senders/sms:', () => {
   let config, log, results, cloudwatch, sns, mockSns, smsModule, translator, templates
@@ -28,7 +29,7 @@ describe('lib/senders/sms:', () => {
     }
     log = mocks.mockLog()
     results = {
-      getMetricStatistics: { Datapoints: [ { Sum: 0 }, { Sum: 0 } ] },
+      getMetricStatistics: { Datapoints: [ { Average: 0 } ] },
       getSMSAttributes: { MonthlySpendLimit: config.sms.minimumCreditThreshold },
       publish: P.resolve({ MessageId: 'foo' })
     }
@@ -106,10 +107,14 @@ describe('lib/senders/sms:', () => {
         assert.equal(cloudwatch.getMetricStatistics.callCount, 1)
         const args = cloudwatch.getMetricStatistics.args[0]
         assert.equal(args.length, 1)
-        const now = new Date()
         assert.equal(args[0].Namespace, 'AWS/SNS')
         assert.equal(args[0].MetricName, 'SMSMonthToDateSpentUSD')
-        assert.equal(args[0].StartTime, new Date(`${now.getFullYear()}-${now.getMonth() + 1}-01Z`).toISOString())
+        assert(ISO_8601_FORMAT.test(args[0].StartTime))
+        assert(ISO_8601_FORMAT.test(args[0].EndTime))
+        assert(new Date(args[0].StartTime).getTime() === new Date(args[0].EndTime) - 300000)
+        assert(new Date(args[0].EndTime).getTime() > Date.now() - 2000)
+        assert.equal(args[0].Period, 300)
+        assert.deepEqual(args[0].Statistics, [ 'Average' ])
       })
 
       it('isBudgetOk returns true', () => {
@@ -127,7 +132,7 @@ describe('lib/senders/sms:', () => {
 
     describe('spend > threshold:', () => {
       beforeEach(() => {
-        results.getMetricStatistics.Datapoints[1].Sum = 1
+        results.getMetricStatistics.Datapoints[0].Average = 1
       })
 
       it('isBudgetOk returns true', () => {
@@ -149,7 +154,7 @@ describe('lib/senders/sms:', () => {
 
     describe('invalid data:', () => {
       beforeEach(() => {
-        results.getMetricStatistics.Datapoints[1].Sum = 'wibble'
+        results.getMetricStatistics.Datapoints[0].Average = 'wibble'
       })
 
       describe('wait a tick:', () => {
@@ -165,7 +170,7 @@ describe('lib/senders/sms:', () => {
           assert.equal(args.length, 1)
           assert.deepEqual(args[0], {
             op: 'sms.budget.error',
-            err: 'Invalid Datapoints'
+            err: 'Invalid getMetricStatistics result "wibble"'
           })
         })
       })
@@ -356,7 +361,7 @@ describe('lib/senders/sms:', () => {
       })
 
       it('did not call sns.publish', () => {
-        assert.equal(log.error.callCount, 0)
+        assert.equal(sns.publish.callCount, 0)
       })
 
       it('did not call log.error', () => {
