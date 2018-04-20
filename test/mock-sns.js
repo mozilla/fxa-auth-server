@@ -26,7 +26,7 @@ function MockSNS (options, config) {
   return {
     getSMSAttributes () {
       return {
-        promise: () => P.resolve({ MonthlySpendLimit: config.sms.minimumCreditThreshold })
+        promise: () => P.resolve({ MonthlySpendLimit: config.sms.minimumCreditThresholdUSD })
       }
     },
 

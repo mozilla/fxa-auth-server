@@ -23,14 +23,14 @@ describe('lib/senders/sms:', () => {
         apiRegion: 'us-east-1',
         installFirefoxLink: 'https://baz/qux',
         installFirefoxWithSigninCodeBaseUri: 'https://wibble',
-        minimumCreditThreshold: 2,
+        minimumCreditThresholdUSD: 2,
         useMock: false
       }
     }
     log = mocks.mockLog()
     results = {
       getMetricStatistics: { Datapoints: [ { Average: 0 } ] },
-      getSMSAttributes: { MonthlySpendLimit: config.sms.minimumCreditThreshold },
+      getSMSAttributes: { MonthlySpendLimit: config.sms.minimumCreditThresholdUSD },
       publish: P.resolve({ MessageId: 'foo' })
     }
     cloudwatch = {

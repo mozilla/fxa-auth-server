@@ -751,7 +751,7 @@ var conf = convict({
       format: 'url',
       env: 'SMS_SIGNIN_CODES_BASE_URI'
     },
-    minimumCreditThreshold: {
+    minimumCreditThresholdUSD: {
       doc: 'The minimum amount of available credit that is necessary to enable SMS, in US dollars',
       default: 200,
       format: 'nat',
