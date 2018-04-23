@@ -420,4 +420,58 @@ describe('/password', () => {
       }
     )
   })
+
+  describe('/change', () => {
+    let passwordRoutes, mockRequest, devices, mockDB, mockPush, mockMailer, mockLog, lastAuthAt
+    beforeEach(() => {
+      const uid = uuid.v4('binary').toString('hex')
+      devices = [
+        {uid, id: crypto.randomBytes(16)},
+        {uid, id: crypto.randomBytes(16)}
+      ]
+      mockDB = mocks.mockDB({
+        email: TEST_EMAIL,
+        uid,
+        devices
+      })
+      mockPush = mocks.mockPush()
+      mockMailer = mocks.mockMailer()
+      mockLog = mocks.mockLog()
+      mockRequest = mocks.mockRequest({
+        credentials: {
+          uid: uid,
+          sessionToken: crypto.randomBytes(32).toString('hex'),
+          lastAuthAt: () => lastAuthAt || Date.now() / 1000,
+        },
+        devices,
+        payload: {
+          authPW: crypto.randomBytes(32).toString('hex'),
+          wrapKb: crypto.randomBytes(32).toString('hex')
+        },
+        query: {
+          keys: 'true'
+        },
+        log: mockLog,
+        uaBrowser: 'Firefox',
+        uaBrowserVersion: '57',
+        uaOS: 'Mac OS X',
+        uaOSVersion: '10.11'
+      })
+      passwordRoutes = makeRoutes({
+        db: mockDB,
+        push: mockPush,
+        mailer: mockMailer,
+        log: mockLog
+      })
+    })
+
+    it('should fail if lastAuthAt has been too long', () => {
+      lastAuthAt = (Date.now() / 1000) - 1000 // 1000 seconds ago
+      return runRoute(passwordRoutes, '/password/change', mockRequest)
+        .then(assert.fail, (err) => {
+          assert.equal(err.errno, 157, 'stale authentication')
+        })
+    })
+  })
+
 })

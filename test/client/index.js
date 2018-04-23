@@ -136,6 +136,10 @@ module.exports = config => {
             return client.verifyTotpCode(client.totpAuthenticator.generate())
           })
           .then(() => {
+            // Clear the `Two Step Authentication enabled email`
+            return mailbox.waitForEmail(email)
+          })
+          .then(() => {
             return client
           })
       })
@@ -328,6 +332,20 @@ module.exports = config => {
         return x.cert
       }
     )
+  }
+
+  Client.prototype.changePasswordWithSessionToken = function (authPW, wrapKb, headers) {
+    return this.api.passwordChangeWithSessionToken(this.sessionToken, authPW, wrapKb, headers)
+      .then((res) => {
+        this._clear()
+
+        // Update to new tokens if needed
+        this.sessionToken = res.sessionToken ? res.sessionToken : this.sessionToken
+        this.authAt = res.authAt ? res.authAt : this.authAt
+        this.keyFetchToken = res.keyFetchToken ? res.keyFetchToken : this.keyFetchToken
+
+        return res
+      })
   }
 
   Client.prototype.changePassword = function (newPassword, headers, sessionToken) {
