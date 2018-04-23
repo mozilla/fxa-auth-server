@@ -47,6 +47,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /recovery_email/destroy (:lock: sessionToken)](#post-recovery_emaildestroy)
     * [POST /recovery_email/set_primary (:lock: sessionToken)](#post-recovery_emailset_primary)
   * [Password](#password)
+    * [POST /password/change (:lock: sessionToken)](#post-passwordchange)
     * [POST /password/change/start](#post-passwordchangestart)
     * [POST /password/change/finish (:lock: passwordChangeToken)](#post-passwordchangefinish)
     * [POST /password/forgot/send_code](#post-passwordforgotsend_code)
@@ -1792,6 +1793,28 @@ by the following errors
 
 
 ### Password
+
+#### POST /password/change
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-passwordchange-->
+
+<!--end-route-post-passwordchange-->
+
+##### Request body
+
+* `authPW`: *string, min(64), max(64), regex(HEX_STRING), required*
+
+  <!--begin-request-body-post-passwordchange-authPW-->
+  
+  <!--end-request-body-post-passwordchange-authPW-->
+
+* `wrapKb`: *string, min(64), max(64), regex(HEX_STRING), required*
+
+  <!--begin-request-body-post-passwordchange-wrapKb-->
+  
+  <!--end-request-body-post-passwordchange-wrapKb-->
+
 
 #### POST /password/change/start
 <!--begin-route-post-passwordchangestart-->
