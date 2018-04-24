@@ -177,6 +177,7 @@ describe('/certificate/sign', () => {
           } else {
             resolve(res)
           }
+          return { state: () => {} }
         })
     })
     .then(assertions)

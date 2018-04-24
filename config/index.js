@@ -815,6 +815,20 @@ var conf = convict({
         env: 'RECOVERY_CODE_COUNT'
       }
     }
+  },
+  verifiedUidCookie: {
+    ttl: {
+      doc: 'Lifetime of cookie used to remember last verified uid',
+      default: '1 month',
+      format: 'duration',
+      env: 'VERIFIED_UID_COOKIE_TTL'
+    },
+    secret: {
+      doc: 'Secret key for signing+encrypting verifiedUid cookie; empty string disables the cookie',
+      default: '',
+      format: 'String',
+      env: 'VERIFIED_UID_COOKIE_SECRET'
+    },
   }
 })
 
