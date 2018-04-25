@@ -541,12 +541,6 @@ var conf = convict({
       env: 'OAUTH_KEEPALIVE',
       default: false
     },
-    extra: {
-      email: {
-        doc: 'Temporary extra parameter to prevent request recursion',
-        default: false
-      }
-    },
     clientIds: {
       doc: 'Mappings from client id to service name: { "id1": "name-1", "id2": "name-2" }',
       format: Object,
@@ -812,7 +806,7 @@ var conf = convict({
     recoveryCodes: {
       length: {
         doc: 'The length of a recovery code',
-        default: 8,
+        default: 10,
         env: 'RECOVERY_CODE_LENGTH'
       },
       count: {
