@@ -30,7 +30,7 @@ describe('lib/senders/sms:', () => {
     log = mocks.mockLog()
     results = {
       getMetricStatistics: { Datapoints: [ { Average: 0 } ] },
-      getSMSAttributes: { MonthlySpendLimit: config.sms.minimumCreditThresholdUSD },
+      getSMSAttributes: { attributes: { MonthlySpendLimit: config.sms.minimumCreditThresholdUSD } },
       publish: P.resolve({ MessageId: 'foo' })
     }
     cloudwatch = {
