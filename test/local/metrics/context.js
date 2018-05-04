@@ -944,6 +944,9 @@ describe('metricsContext', () => {
     'metricsContext.validate with flow signature including user agent',
     () => {
       var expectedTime = 1451566800000
+      // This is the correct signature for the *old* recipe, where we used
+      // to include the user agent string in the hash. The test is expected
+      // to fail because we don't support that recipe any more.
       var expectedSalt = '4d6f7a696c6c6146697265666f782121'
       var expectedHmac = 'c89d56556d22039fbbf54d34e0baf206'
       var mockLog = mocks.mockLog()
