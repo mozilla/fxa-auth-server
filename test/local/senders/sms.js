@@ -117,6 +117,19 @@ describe('lib/senders/sms:', () => {
         assert.deepEqual(args[0].Statistics, [ 'Average' ])
       })
 
+      it('called log.info correctly', () => {
+        assert.equal(log.info.callCount, 1)
+        const args = log.info.args[0]
+        assert.equal(args.length, 1)
+        assert.deepEqual(args[0], {
+          op: 'sms.budget.ok',
+          isBudgetOk: true,
+          current: 0,
+          limit: config.sms.minimumCreditThresholdUSD,
+          threshold: config.sms.minimumCreditThresholdUSD
+        })
+      })
+
       it('isBudgetOk returns true', () => {
         assert.strictEqual(sms.isBudgetOk(), true)
       })
@@ -217,8 +230,8 @@ describe('lib/senders/sms:', () => {
       })
 
       it('called log.info correctly', () => {
-        assert.equal(log.info.callCount, 1)
-        const args = log.info.args[0]
+        assert.equal(log.info.callCount, 2)
+        const args = log.info.args[1]
         assert.equal(args.length, 1)
         assert.deepEqual(args[0], {
           op: 'sms.send.success',
