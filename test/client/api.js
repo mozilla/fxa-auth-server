@@ -382,6 +382,22 @@ module.exports = config => {
     )
   }
 
+  ClientApi.prototype.passwordChangeWithSessionToken = function (sessionTokenHex, authPW, wrapKb, headers) {
+    return tokens.SessionToken.fromHex(sessionTokenHex)
+      .then((token) => {
+        return this.doRequest(
+          'POST',
+          this.baseURL + '/password/change',
+          token,
+          {
+            authPW: authPW.toString('hex'),
+            wrapKb: wrapKb.toString('hex')
+          },
+          headers
+        )
+      })
+  }
+
   ClientApi.prototype.passwordChangeStart = function (email, oldAuthPW, headers) {
     return this.doRequest(
       'POST',

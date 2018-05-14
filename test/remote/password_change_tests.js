@@ -9,6 +9,9 @@ const Client = require('../client')()
 var config = require('../../config').getProperties()
 var TestServer = require('../test_server')
 var url = require('url')
+const pbkdf2 = require('../../lib/crypto/pbkdf2')
+const hkdf = require('../../lib/crypto/hkdf')
+const butil = require('../../lib/crypto/butil')
 
 var tokens = require('../../lib/tokens')({ trace: function() {}})
 function getSessionTokenId(sessionTokenHex) {
@@ -20,13 +23,12 @@ function getSessionTokenId(sessionTokenHex) {
     )
 }
 
-describe('remote password change', function() {
+describe('remote password change - legacy', function() {
   this.timeout(15000)
   let server
   before(() => {
     config.securityHistory.ipProfiling.allowedRecency = 0
     config.signinConfirmation.skipForNewAccounts.enabled = false
-
     return TestServer.start(config)
       .then(s => {
         server = s
@@ -398,3 +400,179 @@ describe('remote password change', function() {
     return TestServer.stop(server)
   })
 })
+
+describe('remote password change', function() {
+  const password = 'oldpassword'
+  const newPassword = 'newpassword'
+  let kB, kA, client, email
+
+  this.timeout(15000)
+  let server
+  before(() => {
+    config.securityHistory.ipProfiling.allowedRecency = 0
+    config.signinConfirmation.skipForNewAccounts.enabled = false
+    return TestServer.start(config)
+      .then(s => {
+        server = s
+      })
+  })
+
+  function getAuthCredentials(password, email, kB) {
+    return pbkdf2.derive(Buffer.from(password), hkdf.KWE('quickStretch', email), 1000, 32)
+      .then((stretch) => {
+        return Promise.all([hkdf(stretch, 'authPW', null, 32), hkdf(stretch, 'unwrapBKey', null, 32)])
+      })
+      .spread((authPW, unwrapKb) => {
+        const wrapKb = butil.xorBuffers(kB, unwrapKb).toString('hex')
+        return {
+          authPW,
+          wrapKb
+        }
+      })
+  }
+
+  beforeEach(() => {
+    email = server.uniqueEmail()
+    return Client.createAndVerify(config.publicUrl, email, password, server.mailbox, {keys: true})
+      .then((x) => {
+        client = x
+        // First step retrieve client keys
+        return client.keys()
+      })
+      .then((keys) => {
+        kB = keys.kB
+        kA = keys.kA
+      })
+      .then(() => {
+        return client.emailStatus()
+      })
+      .then((status) => assert.equal(status.verified, true, 'account is verified'))
+  })
+
+  it('password change, with verified session', () => {
+    return getAuthCredentials(newPassword, email, kB)
+      .then((creds) => {
+        return client.changePasswordWithSessionToken(creds.authPW, creds.wrapKb)
+      })
+      .then(() => {
+        return server.mailbox.waitForEmail(email)
+      })
+      .then((emailData) => {
+        const subject = emailData.headers['subject']
+        assert.equal(subject, 'Your Firefox Account password has been changed', 'password email subject set correctly')
+        const link = emailData.headers['x-link']
+        const query = url.parse(link, true).query
+        assert.ok(query.email, 'email is in the link')
+      })
+      .then(() => {
+        return Client.loginAndVerify(config.publicUrl, email, newPassword, server.mailbox, {keys:true})
+      })
+      .then((result) => {
+        client = result
+        return client.keys()
+      })
+      .then((keys) => {
+        assert.deepEqual(keys.kB, kB, 'kB is preserved')
+        assert.deepEqual(keys.kA, kA, 'kA is preserved')
+      })
+  })
+
+  it('password change, with unverified session', () => {
+    // Create a new unverified session
+    return Client.login(config.publicUrl, email, password, server.mailbox)
+      .then((x) => {
+        client = x
+        return client.emailStatus()
+      })
+      .then((status) => {
+        assert.equal(status.verified, true, 'account is verified')
+        assert.equal(status.sessionVerified, false, 'session is unverified')
+        return getAuthCredentials(newPassword, email, kB)
+      })
+      .then((creds) => {
+        return client.changePasswordWithSessionToken(creds.authPW, creds.wrapKb)
+      })
+      .then(() => {
+        return server.mailbox.waitForEmail(email)
+      })
+      .then((emailData) => {
+        const subject = emailData.headers['subject']
+        assert.equal(subject, 'Your Firefox Account password has been changed', 'password email subject set correctly')
+        const link = emailData.headers['x-link']
+        const query = url.parse(link, true).query
+        assert.ok(query.email, 'email is in the link')
+
+        // Login into a new verified session (can request keys), to ensure that kB key is the same
+        return Client.loginAndVerify(config.publicUrl, email, newPassword, server.mailbox, {keys:true})
+      })
+      .then((result) => {
+        client = result
+        return client.keys()
+      })
+      .then((keys) => {
+        assert.deepEqual(keys.kB, kB, 'kB is preserved')
+        assert.deepEqual(keys.kA, kA, 'kA is preserved')
+      })
+  })
+
+  describe('with totp', () => {
+    let authenticator
+    beforeEach(() => {
+      email = server.uniqueEmail()
+      return Client.createAndVerifyAndTOTP(config.publicUrl, email, password, server.mailbox, {keys: true})
+        .then((x) => {
+          client = x
+          authenticator = client.totpAuthenticator
+          return client.keys()
+        })
+        .then((keys) => {
+          kB = keys.kB
+          kA = keys.kA
+        })
+    })
+
+    it('password change, verified session', () => {
+      return client.verifyTotpCode(authenticator.generate())
+        .then(() => {
+          return getAuthCredentials(newPassword, email, kB)
+        })
+        .then((creds) => client.changePasswordWithSessionToken(creds.authPW, creds.wrapKb))
+        .then(() => server.mailbox.waitForEmail(email))
+        .then((emailData) => {
+          assert.equal(emailData.headers['x-template-name'], 'passwordChangedEmail')
+          return Client.login(config.publicUrl, email, newPassword, {keys: true})
+        })
+        .then((x) => {
+          // verify new client with totp code
+          client = x
+          return client.verifyTotpCode(authenticator.generate())
+        })
+        .then((res) => {
+          assert.equal(res.success, true, 'verified totp session')
+          // new client can retrieve keys with kb preserved
+          return client.keys()
+        })
+        .then((keys) => {
+          assert.deepEqual(keys.kB, kB, 'kB is preserved')
+          assert.deepEqual(keys.kA, kA, 'kA is preserved')
+        })
+    })
+
+    it('password change, unverified session', () => {
+      // new unverified client
+      return Client.login(config.publicUrl, email, password, {keys: true})
+        .then((x) => {
+          client = x
+          return getAuthCredentials(newPassword, email, kB)
+        })
+        // Fails to change password when session has not been verified
+        .then((creds) => client.changePasswordWithSessionToken(creds.authPW, creds.wrapKb))
+        .then(assert.fail, (err) => assert.equal(err.errno, 138, 'unverified session'))
+    })
+  })
+
+  after(() => {
+    return TestServer.stop(server)
+  })
+})
+

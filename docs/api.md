@@ -47,6 +47,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /recovery_email/destroy (:lock: sessionToken)](#post-recovery_emaildestroy)
     * [POST /recovery_email/set_primary (:lock: sessionToken)](#post-recovery_emailset_primary)
   * [Password](#password)
+    * [POST /password/change (:lock: sessionToken)](#post-passwordchange)
     * [POST /password/change/start](#post-passwordchangestart)
     * [POST /password/change/finish (:lock: passwordChangeToken)](#post-passwordchangefinish)
     * [POST /password/forgot/send_code](#post-passwordforgotsend_code)
@@ -278,6 +279,8 @@ for `code` and `errno` are:
   A TOTP token not found.
 * `code: 400, errno: 156`:
   Recovery code not found.
+* `code: 400, errno: 157`:
+  Can not perform action, authentication is stale.
 * `code: 503, errno: 201`:
   Service unavailable
 * `code: 503, errno: 202`:
@@ -372,7 +375,7 @@ those common validations are defined here.
 #### lib/devices
 
 * `schema`: {
-    * `id`: isA.string.length(32).regex(HEX_STRING)
+    * `id: isA.string.length(32).regex(HEX_STRING)
     * `location`: isA.object({ city: isA.string.optional.allow(null)
     * `country`: isA.string.optional.allow(null)
     * `state`: isA.string.optional.allow(null)
@@ -1792,6 +1795,40 @@ by the following errors
 
 
 ### Password
+
+#### POST /password/change
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-passwordchange-->
+
+<!--end-route-post-passwordchange-->
+
+##### Request body
+
+* `authPW`: *string, min(64), max(64), regex(HEX_STRING), required*
+
+  <!--begin-request-body-post-passwordchange-authPW-->
+  
+  <!--end-request-body-post-passwordchange-authPW-->
+
+* `wrapKb`: *string, min(64), max(64), regex(HEX_STRING), required*
+
+  <!--begin-request-body-post-passwordchange-wrapKb-->
+  
+  <!--end-request-body-post-passwordchange-wrapKb-->
+
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+* `code: 400, errno: 138`:
+  Unverified session
+
+* `code: 400, errno: 157`:
+  Can not perform action, authentication is stale.
+
 
 #### POST /password/change/start
 <!--begin-route-post-passwordchangestart-->

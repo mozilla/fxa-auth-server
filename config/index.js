@@ -826,6 +826,14 @@ var conf = convict({
         env: 'RECOVERY_CODE_NOTIFY_LOW_COUNT'
       }
     }
+  },
+  changePassword: {
+    minLastAuth: {
+      doc: 'Minimum amount of time that the session has been last verified (milliseconds) 5 minute default',
+      default: 300000,
+      format: Number,
+      env: 'CHANGE_PASSWORD_MIN_LAS_AUTH'
+    },
   }
 })
 
