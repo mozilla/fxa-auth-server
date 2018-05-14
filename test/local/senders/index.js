@@ -45,7 +45,11 @@ describe('lib/senders/index', () => {
     }
 
     function createSender(config, bounces, log) {
-      return senders(log || nullLog, config, error, bounces, {})
+      return senders(log || nullLog, Object.assign({}, config, {
+        sms: {
+          enableBudgetChecks: false
+        }
+      }), error, bounces, {})
         .then(sndrs => {
           const email = sndrs.email
           email._ungatedMailer.mailer.sendMail = sinon.spy((opts, cb) => {
@@ -301,8 +305,8 @@ describe('lib/senders/index', () => {
             assert.equal(errorBounces.check.callCount, 2)
             assert.equal(e.errno, error.ERRNO.BOUNCE_COMPLAINT)
 
-            assert.equal(log.info.callCount, 3)
-            const msg = log.info.args[1][0]
+            assert.equal(log.info.callCount, 2)
+            const msg = log.info.args[0][0]
             assert.equal(msg.op, 'mailer.blocked')
             assert.equal(msg.errno, e.errno)
             assert.equal(msg.bouncedAt, DATE)
@@ -360,8 +364,8 @@ describe('lib/senders/index', () => {
             assert.equal(errorBounces.check.callCount, 1)
             assert.equal(e.errno, error.ERRNO.BOUNCE_COMPLAINT)
 
-            assert.equal(log.info.callCount, 2)
-            const msg = log.info.args[1][0]
+            assert.equal(log.info.callCount, 1)
+            const msg = log.info.args[0][0]
             assert.equal(msg.op, 'mailer.blocked')
             assert.equal(msg.errno, e.errno)
             assert.equal(msg.bouncedAt, DATE)

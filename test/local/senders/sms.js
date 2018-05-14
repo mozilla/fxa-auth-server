@@ -21,6 +21,7 @@ describe('lib/senders/sms:', () => {
       smtp: {},
       sms: {
         apiRegion: 'us-east-1',
+        enableBudgetChecks: true,
         installFirefoxLink: 'https://baz/qux',
         installFirefoxWithSigninCodeBaseUri: 'https://wibble',
         minimumCreditThresholdUSD: 2,
