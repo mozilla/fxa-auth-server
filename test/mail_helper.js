@@ -104,11 +104,10 @@ module.exports = (printLogs) => {
     // HTTP half
 
     var hapi = require('hapi')
-    var api = new hapi.Server()
-    api.connection({
-      host: config.smtp.api.host,
-      port: config.smtp.api.port
-    })
+    var api = new hapi.Server({
+        host: config.smtp.api.host,
+        port: config.smtp.api.port
+      })
 
     function loop(email, cb) {
       var mail = users[email]

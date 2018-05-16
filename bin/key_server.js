@@ -104,23 +104,24 @@ function run(config) {
               config,
               customs
             )
-            server = Server.create(log, error, config, routes, db, translator)
+
             statsInterval = setInterval(logStatInfo, 15000)
 
-            return new P((resolve, reject) => {
-              server.start(
-                function (err) {
-                  if (err) {
-                    log.error({ op: 'server.start.1', msg: 'failed startup with error',
-                      err: { message: err.message } })
-                    reject(err)
-                  } else {
-                    log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
-                    resolve()
+            async function init(){
+              server = await Server.create(log, error, config, routes, db, translator)
+              try{
+                await server.start()
+                log.info({ op: 'server.start.1', msg: 'running on ' + server.info.uri })
+              }catch(err){
+                log.error(
+                  { op: 'server.start.1', msg: 'failed startup with error',
+                    err: { message: err.message }
                   }
-                }
-              )
-            })
+                )
+              }
+            }
+            init()
+
           })
       },
       function (err) {

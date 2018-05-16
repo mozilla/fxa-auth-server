@@ -86,6 +86,7 @@ describe('lib/server', () => {
           devices: [ { id: 'fake device id' } ]
         })
         instance = server.create(log, error, config, routes, db, translator, Token)
+        return instance
       })
 
       it('returned a hapi Server instance', () => {

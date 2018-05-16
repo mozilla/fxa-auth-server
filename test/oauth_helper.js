@@ -11,8 +11,7 @@ const P = require('../lib/promise')
 
 module.exports = () => {
   return new P((resolve, reject) => {
-    const api = new hapi.Server()
-    api.connection({
+    const api = new hapi.Server({
       host: url.parse(config.oauth.url).hostname,
       port: parseInt(url.parse(config.oauth.url).port)
     })
