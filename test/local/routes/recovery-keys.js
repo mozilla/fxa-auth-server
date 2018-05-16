@@ -143,13 +143,7 @@ function makeRoutes(options = {}) {
 }
 
 function runTest(route, request) {
-  return new P((resolve, reject) => {
-    route.handler(request, response => {
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    })
-  })
+  return route.handler(request)
+    .then((res) => { return res })
+    .catch((err) => { throw err })
 }
