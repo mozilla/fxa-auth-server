@@ -18,15 +18,9 @@ function makeRoutes (options = {}, dependencies) {
 }
 
 function runTest (route, request) {
-  return new P((resolve, reject) => {
-    route.handler(request, response => {
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    })
-  })
+  return route.handler(request)
+  .then((res) => { return res })
+  .catch((err) => { throw err })
 }
 
 describe('/sms with the signinCodes feature included in the payload', () => {
@@ -777,4 +771,3 @@ describe('/sms/status with query param and disabled geo-ip lookup', () => {
     assert.equal(log.error.callCount, 0)
   })
 })
-
