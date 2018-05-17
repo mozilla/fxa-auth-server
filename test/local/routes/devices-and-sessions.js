@@ -44,8 +44,9 @@ function makeRoutes (options = {}, requireMocks) {
     check: function () { return P.resolve(true) }
   }
   const push = options.push || require('../../../lib/push')(log, db, {})
+  const pushbox = options.pushbox || mocks.mockPushbox()
   return proxyquire('../../../lib/routes/devices-and-sessions', requireMocks || {})(
-    log, db, config, customs, push,
+    log, db, config, customs, push, pushbox,
     options.devices || require('../../../lib/devices')(log, db, push)
   )
 }
@@ -217,6 +218,16 @@ describe('/account/devices/notify', function () {
   var mockLog = mocks.mockLog()
   var mockRequest = mocks.mockRequest({
     log: mockLog,
+    devices: [
+      {
+        id: 'bogusid1',
+        type: 'mobile'
+      },
+      {
+        id: 'bogusid2',
+        type: 'desktop',
+      }
+    ],
     credentials: {
       uid: uid,
       deviceId: deviceId
@@ -249,7 +260,7 @@ describe('/account/devices/notify', function () {
       assert(false, 'should have thrown')
     })
       .then(() => assert(false), function (err) {
-        assert.equal(mockPush.notifyUpdate.callCount, 0, 'mockPush.notifyUpdate was not called')
+        assert.equal(mockPush.sendPush.callCount, 0, 'mockPush.sendPush was not called')
         assert.equal(err.errno, 107, 'Correct errno for invalid push payload')
       })
   })
@@ -261,25 +272,24 @@ describe('/account/devices/notify', function () {
       TTL: 60,
       payload: pushPayload
     }
-    // We don't wait on notifyUpdate in the request handler, that's why
+    // We don't wait on sendPush in the request handler, that's why
     // we have to wait on it manually by spying.
-    var notifyUpdatePromise = P.defer()
-    mockPush.notifyUpdate = sinon.spy(function () {
-      notifyUpdatePromise.resolve()
+    var sendPushPromise = P.defer()
+    mockPush.sendPush = sinon.spy(function () {
+      sendPushPromise.resolve()
       return P.resolve()
     })
     return runTest(route, mockRequest, function (response) {
-      return notifyUpdatePromise.promise.then(function () {
+      return sendPushPromise.promise.then(function () {
         assert.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
-        var args = mockPush.notifyUpdate.args[0]
-        assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
+        assert.equal(mockPush.sendPush.callCount, 1, 'mockPush.sendPush was called once')
+        var args = mockPush.sendPush.args[0]
+        assert.equal(args.length, 4, 'mockPush.sendPush was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
         assert.ok(Array.isArray(args[1]), 'second argument was devices array')
         assert.equal(args[2], 'devicesNotify', 'second argument was the devicesNotify reason')
         assert.deepEqual(args[3], {
           data: pushPayload,
-          excludedDeviceIds: ['bogusid'],
           TTL: 60
         }, 'third argument was the push options')
       })
@@ -296,11 +306,11 @@ describe('/account/devices/notify', function () {
       TTL: 60,
       payload: extraPropsPayload
     }
-    // We don't wait on notifyUpdate in the request handler, that's why
+    // We don't wait on sendPush in the request handler, that's why
     // we have to wait on it manually by spying.
-    var notifyUpdatePromise = P.defer()
-    mockPush.notifyUpdate = sinon.spy(function () {
-      notifyUpdatePromise.resolve()
+    var sendPushPromise = P.defer()
+    mockPush.sendPush = sinon.spy(function () {
+      sendPushPromise.resolve()
       return Promise.resolve()
     })
     return runTest(route, mockRequest, function () {
@@ -321,26 +331,25 @@ describe('/account/devices/notify', function () {
       TTL: 60,
       payload: pushPayload
     }
-    // We don't wait on notifyUpdate in the request handler, that's why
+    // We don't wait on sendPush in the request handler, that's why
     // we have to wait on it manually by spying.
-    var notifyUpdatePromise = P.defer()
-    mockPush.notifyUpdate = sinon.spy(function () {
-      notifyUpdatePromise.resolve()
+    var sendPushPromise = P.defer()
+    mockPush.sendPush = sinon.spy(function () {
+      sendPushPromise.resolve()
       return P.resolve()
     })
     return runTest(route, mockRequest, function (response) {
-      return notifyUpdatePromise.promise.then(function () {
+      return sendPushPromise.promise.then(function () {
         assert.equal(mockCustoms.checkAuthenticated.callCount, 1, 'mockCustoms.checkAuthenticated was called once')
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
-        var args = mockPush.notifyUpdate.args[0]
-        assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
+        assert.equal(mockPush.sendPush.callCount, 1, 'mockPush.sendPush was called once')
+        var args = mockPush.sendPush.args[0]
+        assert.equal(args.length, 4, 'mockPush.sendPush was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
         assert.ok(Array.isArray(args[1]), 'second argument was devices array')
         assert.equal(args[2], 'devicesNotify', 'third argument was the devicesNotify reason')
         assert.deepEqual(args[3], {
           data: pushPayload,
-          TTL: 60,
-          includedDeviceIds: [ 'bogusid1', 'bogusid2' ]
+          TTL: 60
         }, 'fourth argument was the push options')
         assert.equal(mockLog.activityEvent.callCount, 1, 'log.activityEvent was called once')
         args = mockLog.activityEvent.args[0]
@@ -358,7 +367,7 @@ describe('/account/devices/notify', function () {
   })
 
   it('does not log activity event for non-send-tab-related messages', function () {
-    mockPush.notifyUpdate.reset()
+    mockPush.sendPush.reset()
     mockLog.activityEvent.reset()
     mockLog.error.reset()
     mockRequest.payload = {
@@ -370,7 +379,7 @@ describe('/account/devices/notify', function () {
       }
     }
     return runTest(route, mockRequest, function (response) {
-      assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
+      assert.equal(mockPush.sendPush.callCount, 1, 'mockPush.sendPush was called once')
       assert.equal(mockLog.activityEvent.callCount, 0, 'log.activityEvent was not called')
       assert.equal(mockLog.error.callCount, 0, 'log.error was not called')
     })
@@ -403,7 +412,7 @@ describe('/account/devices/notify', function () {
     }
     config.deviceNotificationsEnabled = true
 
-    mockCustoms = mocks.mockCustoms({
+    const mockCustoms = mocks.mockCustoms({
       checkAuthenticated: error.tooManyRequests(1)
     })
     route = getRoute(makeRoutes({customs: mockCustoms}), '/account/devices/notify')
@@ -426,7 +435,7 @@ describe('/account/devices/notify', function () {
 
     var mockLog = mocks.mockLog()
     var mockPush = mocks.mockPush({
-      notifyUpdate: () => P.reject('devices empty')
+      sendPush: () => P.reject('devices empty')
     })
     var mockCustoms = {
       checkAuthenticated: () => P.resolve()
@@ -449,9 +458,9 @@ describe('/account/devices/notify', function () {
       _endpointAction: 'accountVerify',
       payload: {}
     }
-    const notifyUpdatePromise = P.defer()
-    mockPush.notifyUpdate = sinon.spy(() => {
-      notifyUpdatePromise.resolve()
+    const sendPushPromise = P.defer()
+    mockPush.sendPush = sinon.spy(() => {
+      sendPushPromise.resolve()
       return P.resolve()
     })
     const mockCustoms = {
@@ -464,10 +473,10 @@ describe('/account/devices/notify', function () {
     }), '/account/devices/notify')
 
     return runTest(route, mockRequest, () => {
-      return notifyUpdatePromise.promise.then(() => {
-        assert.equal(mockPush.notifyUpdate.callCount, 1, 'mockPush.notifyUpdate was called once')
-        const args = mockPush.notifyUpdate.args[0]
-        assert.equal(args.length, 4, 'mockPush.notifyUpdate was passed four arguments')
+      return sendPushPromise.promise.then(() => {
+        assert.equal(mockPush.sendPush.callCount, 1, 'mockPush.sendPush was called once')
+        const args = mockPush.sendPush.args[0]
+        assert.equal(args.length, 4, 'mockPush.sendPush was passed four arguments')
         assert.equal(args[0], uid, 'first argument was the device uid')
         assert.ok(Array.isArray(args[1]), 'second argument was devices array')
         assert.equal(args[2], 'accountVerify', 'second argument was the accountVerify reason')
@@ -494,6 +503,232 @@ describe('/account/devices/notify', function () {
       assert.fail('should not have succeed')
     }, (err) => {
       assert.equal(err.errno, 107, 'invalid parameter in request body')
+    })
+  })
+})
+
+describe('/account/device/messages', function () {
+  const uid = uuid.v4('binary').toString('hex')
+  const deviceId = crypto.randomBytes(16).toString('hex')
+  const mockLog = mocks.mockLog()
+  const mockRequest = mocks.mockRequest({
+    log: mockLog,
+    credentials: {
+      uid: uid,
+      deviceId: deviceId
+    }
+  })
+  const mockCustoms = mocks.mockCustoms()
+
+  it('retrieves messages using the pushbox service', () => {
+    const mockPushbox = mocks.mockPushbox()
+    mockRequest.query = {
+      index: 2
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      pushbox: mockPushbox
+    }), '/account/device/messages')
+
+    return runTest(route, mockRequest).then(() => {
+      assert.equal(mockPushbox.retrieve.callCount, 1, 'pushbox was called')
+      const args = mockPushbox.retrieve.args[0]
+      assert.equal(args.length, 4)
+      assert.equal(args[0], uid)
+      assert.equal(args[1], deviceId)
+      assert.equal(args[2], 100) // default limit
+      assert.equal(args[3], 2)
+    })
+  })
+
+  it('relays errors from the pushbox service', () => {
+    const mockPushbox = mocks.mockPushbox({
+      retrieve() {
+        const error = new Error()
+        error.message = 'Boom!'
+        error.statusCode = 500
+        return Promise.reject(error)
+      }
+    })
+    mockRequest.query = {
+      index: 2
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      pushbox: mockPushbox
+    }), '/account/device/messages')
+
+    return runTest(route, mockRequest).then(() => {
+      assert.ok(false, 'should not go here')
+    }, (err) => {
+      assert.equal(err.message, 'Boom!')
+      assert.equal(err.statusCode, 500)
+    })
+  })
+})
+
+describe('/account/devices/messages', function () {
+  const uid = uuid.v4('binary').toString('hex')
+  const mockLog = mocks.mockLog()
+  const mockRequest = mocks.mockRequest({
+    log: mockLog,
+    devices: [
+      {
+        id: 'bogusid1',
+        type: 'mobile'
+      },
+      {
+        id: 'bogusid2',
+        type: 'desktop',
+      }
+    ],
+    credentials: {
+      uid: uid
+    }
+  })
+  const mockPush = mocks.mockPush()
+  const mockCustoms = mocks.mockCustoms()
+
+  it('store messages using the pushbox service', () => {
+    const mockPushbox = mocks.mockPushbox({
+      store: sinon.spy(() => {
+        return Promise.resolve('https://foo.bar')
+      })
+    })
+    const to = 'bogusid1'
+    const topic = 'sendtab'
+    const data = 'eyJmb28iOiAiYmFyIn0'
+    mockRequest.payload = {
+      to,
+      topic,
+      data
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush,
+      pushbox: mockPushbox
+    }), '/account/devices/messages')
+
+    return runTest(route, mockRequest).then(() => {
+      assert.equal(mockPushbox.store.callCount, 1, 'pushbox was called')
+      let args = mockPushbox.store.args[0]
+      assert.equal(args.length, 4)
+      assert.equal(args[0], uid)
+      assert.equal(args[1], to)
+      assert.equal(args[2], topic)
+      assert.equal(args[3], data)
+
+      assert.equal(mockPush.notifyMessageReceived.callCount, 1,
+        'notifyMessageReceived was called')
+      args = mockPush.notifyMessageReceived.args[0]
+      assert.equal(args.length, 5)
+      assert.equal(args[0], uid)
+      assert.deepEqual(args[1], {id: 'bogusid1', type: 'mobile'})
+      assert.equal(args[2], 'https://foo.bar')
+      assert.equal(args[3], topic)
+      assert.equal(args[4], 'sendTab')
+    })
+  })
+
+  it('rejects if sending to an unknown device', () => {
+    mockPush.notifyMessageReceived.reset()
+    const mockPushbox = mocks.mockPushbox({
+      store: sinon.spy(() => {
+        return Promise.resolve('https://foo.bar')
+      })
+    })
+    const to = 'unknowndevice'
+    const topic = 'sendtab'
+    const data = 'eyJmb28iOiAiYmFyIn0'
+    mockRequest.payload = {
+      to,
+      topic,
+      data
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush,
+      pushbox: mockPushbox
+    }), '/account/devices/messages')
+
+    return runTest(route, mockRequest, () => {
+      assert(false, 'should have thrown')
+    }).then(() => assert.ok(false), (err) => {
+      assert.equal(err.errno, 123, 'Unknown device')
+      assert.equal(mockPushbox.store.callCount, 0, 'pushbox was not called')
+      assert.equal(mockPush.notifyMessageReceived.callCount, 0,
+        'notifyMessageReceived was not called')
+    })
+  })
+
+  it('rejects if sending with an invalid topic', () => {
+    mockPush.notifyMessageReceived.reset()
+    const mockPushbox = mocks.mockPushbox({
+      store: sinon.spy(() => {
+        return Promise.resolve('https://foo.bar')
+      })
+    })
+    const to = 'bogusid1'
+    const topic = 'unknowntopic'
+    const data = 'eyJmb28iOiAiYmFyIn0'
+    mockRequest.payload = {
+      to,
+      topic,
+      data
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush,
+      pushbox: mockPushbox
+    }), '/account/devices/messages')
+
+    return runTest(route, mockRequest, () => {
+      assert(false, 'should have thrown')
+    }).then(() => assert.ok(false), (err) => {
+      assert.equal(err.errno, 107, 'invalid parameter in request body')
+      assert.equal(mockPushbox.store.callCount, 0, 'pushbox was not called')
+      assert.equal(mockPush.notifyMessageReceived.callCount, 0,
+        'notifyMessageReceived was not called')
+    })
+  })
+
+  it('relays errors from the pushbox service', () => {
+    mockPush.notifyMessageReceived.reset()
+    const mockPushbox = mocks.mockPushbox({
+      store: sinon.spy(() => {
+        const error = new Error()
+        error.message = 'Boom!'
+        error.statusCode = 500
+        return Promise.reject(error)
+      })
+    })
+    const to = 'bogusid1'
+    const topic = 'sendtab'
+    const data = 'eyJmb28iOiAiYmFyIn0'
+    mockRequest.payload = {
+      to,
+      topic,
+      data
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush,
+      pushbox: mockPushbox
+    }), '/account/devices/messages')
+
+    return runTest(route, mockRequest, () => {
+      assert(false, 'should have thrown')
+    }).then(() => assert.ok(false), (err) => {
+      assert.equal(err.message, 'Boom!')
+      assert.equal(err.statusCode, 500)
+      assert.equal(mockPush.notifyMessageReceived.callCount, 0,
+        'notifyMessageReceived was not called')
     })
   })
 })

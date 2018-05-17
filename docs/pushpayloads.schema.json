@@ -10,7 +10,8 @@
     { "$ref":"#/definitions/collectionsChanged" },
     { "$ref":"#/definitions/passwordChanged" },
     { "$ref":"#/definitions/passwordReset" },
-    { "$ref":"#/definitions/accountDestroyed" }
+    { "$ref":"#/definitions/accountDestroyed" },
+    { "$ref":"#/definitions/messageReceived" }
   ],
   "definitions":{
     "deviceConnected":{
@@ -204,6 +205,25 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "messageReceived":{
+      "required":[
+        "topic",
+        "url"
+      ],
+      "properties":{
+        "topic": {
+          "type":"string",
+          "enum":[
+            "sendtab"
+          ]
+        },
+        "url": {
+          "type":"string",
+          "description":"The URL to retrieve this message"
         }
       },
       "additionalProperties": false

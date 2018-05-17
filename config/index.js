@@ -708,6 +708,26 @@ var conf = convict({
       default: /^https:\/\/[a-zA-Z0-9._-]+(\.services\.mozilla\.com|autopush\.dev\.mozaws\.net|autopush\.stage\.mozaws\.net)(\/.*)?$/
     }
   },
+  pushbox: {
+    enabled: {
+      doc: 'Indicates whether talking to the Pushbox server is enabled',
+      format: Boolean,
+      default: true,
+      env: 'PUSHBOX_ENABLED'
+    },
+    url: {
+      doc: 'Server URL',
+      format: 'url',
+      default: 'https://todo.com',
+      env: 'PUSHBOX_URL'
+    },
+    key: {
+      doc: 'FxA Server Key',
+      format: String,
+      default: undefined,
+      env: 'PUSHBOX_KEY'
+    }
+  },
   sms: {
     enabled: {
       doc: 'Indicates whether POST /sms is enabled',

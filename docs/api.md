@@ -34,6 +34,8 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/destroy (:lock::unlock: sessionToken)](#post-accountdestroy)
   * [Devices and sessions](#devices-and-sessions)
     * [POST /account/device (:lock: sessionToken)](#post-accountdevice)
+    * [GET /account/device/messages (:lock: sessionToken)](#get-accountdevicemessages)
+    * [POST /account/devices/messages (:lock: sessionToken)](#post-accountdevicesmessages)
     * [POST /account/devices/notify (:lock: sessionToken)](#post-accountdevicesnotify)
     * [GET /account/devices (:lock: sessionToken)](#get-accountdevices)
     * [GET /account/sessions (:lock: sessionToken)](#get-accountsessions)
@@ -1094,6 +1096,68 @@ by the following errors
 
 * `code: 503, errno: 202`:
   Feature not enabled
+
+
+#### GET /account/device/messages
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-get-accountdevicemessages-->
+Retrieve stored messages for the current device.
+<!--end-route-get-accountdevicemessages-->
+
+##### Query parameters
+
+* `index`: *string, alphanum, optional*
+
+  <!--begin-query-param-get-accountdevicemessages-index-->
+  
+  <!--end-query-param-get-accountdevicemessages-index-->
+
+* `limit`: *number, optional, min(0), max(100)*
+
+  <!--begin-query-param-get-accountdevicemessages-limit-->
+  
+  <!--end-query-param-get-accountdevicemessages-limit-->
+
+
+#### POST /account/devices/messages
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-accountdevicesmessages-->
+
+<!--end-route-post-accountdevicesmessages-->
+
+##### Request body
+
+* `to`: *string, length(32), regex(HEX_STRING), required*
+
+  <!--begin-request-body-post-accountdevicesmessages-to-->
+  
+  <!--end-request-body-post-accountdevicesmessages-to-->
+
+* `topic`: *string, valid('sendtab'), required*
+
+  <!--begin-request-body-post-accountdevicesmessages-topic-->
+  
+  <!--end-request-body-post-accountdevicesmessages-topic-->
+
+* `data`: *string, regex(validators.URL_SAFE_BASE_64), required*
+
+  <!--begin-request-body-post-accountdevicesmessages-data-->
+  
+  <!--end-request-body-post-accountdevicesmessages-data-->
+
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+* `code: 400, errno: 107`:
+  Invalid parameter in request body
+
+* `code: 400, errno: 123`:
+  Unknown device
 
 
 #### POST /account/devices/notify
