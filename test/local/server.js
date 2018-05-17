@@ -81,16 +81,15 @@ describe('lib/server', () => {
     describe('create:', () => {
       let db, instance
 
-      beforeEach(() => {
+      beforeEach(async () => {
         db = mocks.mockDB({
           devices: [ { id: 'fake device id' } ]
         })
-        instance = server.create(log, error, config, routes, db, translator, Token)
-        return instance
+          instance = await server.create(log, error, config, routes, db, translator, Token)
       })
 
       it('returned a hapi Server instance', () => {
-        assert.ok(instance instanceof hapi.Server)
+         assert.ok(instance instanceof hapi.Server)
       })
 
       describe('server.start:', () => {
@@ -108,9 +107,9 @@ describe('lib/server', () => {
         describe('successful request, authenticated, acceptable locale, signinCodes feature enabled:', () => {
           let request
 
-          beforeEach(() => {
+          beforeEach(async () => {
             response = 'ok'
-            return instance.inject({
+            response = await instance.inject({
               credentials: {
                 uid: 'fake uid'
               },
@@ -125,7 +124,8 @@ describe('lib/server', () => {
                 features: [ 'signinCodes' ]
               },
               remoteAddress: '63.245.221.32'
-            }).then(response => request = response.request)
+            })
+            request = response.request
           })
 
           it('called log.begin correctly', () => {
@@ -437,31 +437,30 @@ describe('lib/server', () => {
     describe('authenticated request, session token expired:', () => {
       let db, instance
 
-      beforeEach(() => {
+      beforeEach(async () => {
         response = 'ok'
         db = mocks.mockDB({
           sessionTokenId: 'wibble',
           uid: 'blee',
           expired: true
         })
-        instance = server.create(log, error, config, routes, db, translator, Token)
-        return instance.start()
-          .then(() => {
-            const auth = hawk.client.header(`${config.publicUrl}account/status`, 'GET', {
-              credentials: {
-                id: 'deadbeef',
-                key: 'baadf00d',
-                algorithm: 'sha256'
-              }
-            })
-            return instance.inject({
-              headers: {
-                authorization: auth.field
-              },
-              method: 'GET',
-              url: '/account/status'
-            })
-          })
+        instance = await server.create(log, error, config, routes, db, translator, Token)
+        await instance.start
+        const auth = hawk.client.header(`${config.publicUrl}account/status`, 'GET', {
+          credentials: {
+            id: 'deadbeef',
+            key: 'baadf00d',
+            algorithm: 'sha256'
+          }
+        })
+        return instance.inject({
+          headers: {
+            authorization: auth.field
+          },
+          method: 'GET',
+          url: '/account/status'
+        })
+
       })
 
       afterEach(() => instance.stop())
