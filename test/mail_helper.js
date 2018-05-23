@@ -107,7 +107,7 @@ module.exports = (printLogs) => {
     var api = new hapi.Server({
         host: config.smtp.api.host,
         port: config.smtp.api.port
-      })
+    })
 
     function loop(email, cb) {
       var mail = users[email]
@@ -122,11 +122,11 @@ module.exports = (printLogs) => {
         {
           method: 'GET',
           path: '/mail/{email}',
-          handler: function (request, reply) {
+          handler: function (request, h) {
             loop(
               decodeURIComponent(request.params.email),
               function (emailData) {
-                reply(emailData)
+                return emailData;
               }
             )
           }
@@ -134,15 +134,15 @@ module.exports = (printLogs) => {
         {
           method: 'DELETE',
           path: '/mail/{email}',
-          handler: function (request, reply) {
+          handler: function (request, h) {
             delete users[decodeURIComponent(request.params.email)]
-            reply()
+            return;
           }
         }
       ]
     )
 
-    api.start(function () {
+    api.start().then(() => {
       console.log('mail_helper started...')
 
       resolve({
@@ -156,7 +156,7 @@ module.exports = (printLogs) => {
                 resolve()
               }
             })
-            api.stop(() => {
+            api.stop().then(() => {
               apiClosed = true
               if (smtpClosed) {
                 resolve()

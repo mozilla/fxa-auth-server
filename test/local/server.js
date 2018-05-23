@@ -89,7 +89,7 @@ describe('lib/server', () => {
       })
 
       it('returned a hapi Server instance', () => {
-         assert.ok(instance instanceof hapi.Server)
+        assert.ok(instance.version)
       })
 
       describe('server.start:', () => {
