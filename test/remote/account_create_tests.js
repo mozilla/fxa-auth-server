@@ -44,6 +44,7 @@ describe('remote account create', function() {
             assert(false, 'got keys before verifying email')
           },
           function (err) {
+             console.log(err)
             assert.equal(err.errno, 104, 'Unverified account error code')
             assert.equal(err.message, 'Unverified account', 'Unverified account error message')
           }
