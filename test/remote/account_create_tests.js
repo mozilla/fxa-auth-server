@@ -14,11 +14,9 @@ const mocks = require('../mocks')
 describe('remote account create', function() {
   this.timeout(15000)
   let server
-  before(() => {
-    return TestServer.start(config)
-      .then(s => {
-        server = s
-      })
+  before(async () => {
+    server = await TestServer.start(config)
+    return server
   })
 
   it(
@@ -637,7 +635,7 @@ describe('remote account create', function() {
     }
   )
 
-  after(() => {
-    return TestServer.stop(server)
+  after(async () => {
+    await TestServer.stop(server)
   })
 })
