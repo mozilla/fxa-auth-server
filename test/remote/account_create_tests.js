@@ -26,23 +26,18 @@ describe('remote account create', function() {
       var password = 'allyourbasearebelongtous'
       var client = null
       return Client.create(config.publicUrl, email, password)
-        .then(
-          function (x) {
-            client = x
-            assert.ok(client.authAt, 'authAt was set')
-          }
-        )
-        .then(
-          function () {
+        .then( x => {
+          client = x
+          assert.ok(client.authAt, 'authAt was set')
+        }
+       )
+        .then(() => {
             return client.keys()
-          }
-        )
-        .then(
-          function (keys) {
+        })
+        .then((keys)  => {
             assert(false, 'got keys before verifying email')
           },
-          function (err) {
-             console.log(err)
+           (err) => {
             assert.equal(err.errno, 104, 'Unverified account error code')
             assert.equal(err.message, 'Unverified account', 'Unverified account error message')
           }
