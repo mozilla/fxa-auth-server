@@ -108,7 +108,9 @@ describe('remote account create', function() {
           function (status) {
             assert.equal(status.verified, true)
           }
-        )
+        ).catch((err) => {
+            console.log(err)
+        })
     }
   )
 
