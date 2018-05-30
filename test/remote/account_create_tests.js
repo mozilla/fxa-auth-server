@@ -38,10 +38,13 @@ describe('remote account create', function() {
             assert(false, 'got keys before verifying email')
           },
            (err) => {
+               console.log(err)
             assert.equal(err.errno, 104, 'Unverified account error code')
             assert.equal(err.message, 'Unverified account', 'Unverified account error message')
           }
-        )
+        ).catch((err) => {
+          console.log(err)
+        })
     }
   )
 
@@ -108,9 +111,7 @@ describe('remote account create', function() {
           function (status) {
             assert.equal(status.verified, true)
           }
-        ).catch((err) => {
-            console.log(err)
-        })
+        )
     }
   )
 
