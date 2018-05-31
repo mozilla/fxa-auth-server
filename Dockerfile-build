@@ -4,6 +4,8 @@ RUN apk add --no-cache git make gcc g++ linux-headers openssl python
 
 RUN addgroup -g 10001 app && \
     adduser -D -G app -h /app -u 10001 app
+RUN npm install -g npm@6
+
 WORKDIR /app
 
 USER app
