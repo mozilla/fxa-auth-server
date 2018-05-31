@@ -1,2 +1,3 @@
 FROM fxa-auth-server:build
-RUN npm install
+# hack for train-113. Force the right version of auth-db-mysql to be installed.
+RUN npm install && npm install git+https://github.com/mozilla/fxa-auth-db-mysql.git#699ee97b3df65678229a96d48aa7e508e74e8a29
