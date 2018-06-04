@@ -558,6 +558,8 @@ describe('remote account create', function() {
         )
         .then(
           function () {
+            console.log("CCC")
+
             return server.mailbox.waitForCode(email)
           }
         )
