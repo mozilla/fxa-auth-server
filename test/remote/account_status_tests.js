@@ -158,7 +158,6 @@ describe('remote account status', function() {
             assert(false, 'should not have successful request')
           },
           function (err) {
-              console.log(err)
             assert.equal(err.code, 400)
             assert.equal(err.errno, 107)
             assert.equal(err.message, 'Invalid parameter in request body')

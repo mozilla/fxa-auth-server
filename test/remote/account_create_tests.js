@@ -331,20 +331,15 @@ describe('remote account create', function() {
         redirectTo: 'http://accounts.firefox.com.evil.us'
       }
       return api.accountCreate(email, authPW, options)
-      .then(
-        assert.fail,
-        function (err) {
+      .then(() => { assert.fail }, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
-      .then(
-        function () {
+      .then(() => {
           return api.passwordForgotSendCode(email, options)
         }
       )
-      .then(
-        assert.fail,
-        function (err) {
+      .then(() => { assert.fail }, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
@@ -362,22 +357,17 @@ describe('remote account create', function() {
       }
 
       return api.accountCreate(email, authPW, options)
-      .then(
-        assert.fail,
-        function (err) {
+      .then(() => { assert.fail }, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
-      .then(
-        function () {
+      .then(() => {
           return api.passwordForgotSendCode(email, {
             redirectTo: 'https://fakefirefox.com'
           })
         }
       )
-      .then(
-        assert.fail,
-        function (err) {
+      .then(() => {assert.fail}, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
@@ -558,8 +548,6 @@ describe('remote account create', function() {
         )
         .then(
           function () {
-            console.log("CCC")
-
             return server.mailbox.waitForCode(email)
           }
         )
@@ -632,7 +620,7 @@ describe('remote account create', function() {
     }
   )
 
-  after(async () => {
-    await TestServer.stop(server)
+  after(() => {
+    TestServer.stop(server)
   })
 })

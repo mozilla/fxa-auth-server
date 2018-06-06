@@ -376,7 +376,6 @@ module.exports = config => {
         return tokens.KeyFetchToken.fromHex(this.keyFetchToken)
           .then(
             function (token) {
-              console.log(data)
               return token.unbundleKeys(data.bundle)
             }
           )
