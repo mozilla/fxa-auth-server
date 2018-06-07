@@ -109,15 +109,17 @@ module.exports = (printLogs) => {
         port: config.smtp.api.port
     })
 
-    async function loop(email) {
-      var mail = users[email]
-      while ((! mail)) {
-        await new Promise((res, req) => {
-          setTimeout(res, 50)
-        })
-        mail = users[email]
-      }
-      return mail
+    function loop(email) {
+      return new Promise((res) => {
+        var mail = users[email]
+        while ((! mail)) {
+          new Promise((res) => {
+            setTimeout(res, 50)
+          })
+          mail = users[email]
+        }
+        res(mail)
+      }, reject)
     }
 
     api.route(
@@ -125,11 +127,16 @@ module.exports = (printLogs) => {
         {
           method: 'GET',
           path: '/mail/{email}',
-          handler:async function (request, h) {
-            const emailData = loop(
-              decodeURIComponent(request.params.email)
-            )
-            return emailData
+          handler: async function (request, h) {
+             return loop(
+               decodeURIComponent(request.params.email)
+              )
+             .then(() => {
+               return emailData
+             })
+             .catch((err) => {
+               return err
+              })
           }
         },
         {
