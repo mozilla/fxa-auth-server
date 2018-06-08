@@ -280,6 +280,6 @@ describe('remote account profile', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

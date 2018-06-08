@@ -9,7 +9,6 @@ const ROOT_DIR = '../..'
 const assert = require('insist')
 const EndpointError = require('poolee/lib/error')(require('util').inherits)
 const error = require(`${ROOT_DIR}/lib/error`)
-const hapi = require('hapi')
 const hawk = require('hawk')
 const mocks = require('../mocks')
 const server = require(`${ROOT_DIR}/lib/server`)

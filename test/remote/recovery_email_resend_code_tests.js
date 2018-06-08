@@ -197,6 +197,6 @@ describe('remote recovery email resend code', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+     TestServer.stop(server)
   })
 })

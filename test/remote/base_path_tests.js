@@ -72,6 +72,6 @@ describe('remote base path', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

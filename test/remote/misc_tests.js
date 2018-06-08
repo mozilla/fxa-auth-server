@@ -330,6 +330,6 @@ describe('remote misc', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

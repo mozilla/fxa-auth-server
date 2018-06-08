@@ -81,6 +81,6 @@ describe('remote account unlock', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

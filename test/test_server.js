@@ -85,10 +85,10 @@ TestServer.prototype.stop = function () {
   if (this.server) {
     const doomed = [
       this.server.close(),
-      this.mail.close
+      this.mail.close()
     ]
     if (this.oauth) {
-      doomed.push(this.oauth.close)
+      doomed.push(this.oauth.close())
     }
     return P.all(doomed)
   } else {

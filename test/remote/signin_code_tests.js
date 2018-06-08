@@ -71,7 +71,7 @@ describe('remote signinCodes', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+     TestServer.stop(server)
   })
 })
 

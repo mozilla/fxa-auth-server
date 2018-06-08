@@ -180,8 +180,7 @@ function main() {
         }
     })
         .catch((err) => {
-            console.log(err)
-            process.exit.bind(null, 8)
+             process.exit.bind(null, 8)
         })
 }
 

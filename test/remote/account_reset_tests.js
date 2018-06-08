@@ -273,7 +273,7 @@ describe('remote account reset', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 
   function resetPassword(client, code, newPassword, options) {

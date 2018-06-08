@@ -450,6 +450,6 @@ describe('remote password change', function() {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

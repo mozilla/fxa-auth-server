@@ -104,6 +104,6 @@ describe('remote recovery email verify', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

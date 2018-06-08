@@ -899,7 +899,7 @@ describe('remote emails', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 
   function resetPassword(client, code, newPassword, headers, options) {

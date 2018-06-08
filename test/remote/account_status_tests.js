@@ -185,6 +185,6 @@ describe('remote account status', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

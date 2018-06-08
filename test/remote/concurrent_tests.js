@@ -56,6 +56,6 @@ describe('remote concurrect', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

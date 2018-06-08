@@ -261,6 +261,6 @@ describe('remote account login', () => {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })
