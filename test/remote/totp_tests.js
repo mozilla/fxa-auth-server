@@ -181,6 +181,22 @@ describe('remote totp', function () {
       })
   })
 
+  it('should not bypass `totp-2fa` by when using session reauth', () => {
+    return Client.login(config.publicUrl, email, password)
+      .then((response) => {
+        client = response
+        assert.equal(response.verificationMethod, 'totp-2fa', 'verification method set')
+        assert.equal(response.verificationReason, 'login', 'verification reason set')
+
+        // Lets attempt to sign-in reusing session reauth
+        return client.reauth()
+          .then((response) => {
+            assert.equal(response.verificationMethod, 'totp-2fa', 'verification method set')
+            assert.equal(response.verificationReason, 'login', 'verification reason set')
+          })
+      })
+  })
+
   describe('totp code verification', () => {
     beforeEach(() => {
       // Create a new unverified session to test totp codes
