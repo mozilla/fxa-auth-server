@@ -1,3 +1,13 @@
+<a name="1.113.5"></a>
+## [1.113.5](https://github.com/mozilla/fxa-auth-server/compare/v1.113.4-private...v1.113.5) (2018-06-08)
+
+
+### Bug Fixes
+
+* **2FA:** enforce 2FA on /reauth (#75) r=@rfk,@vbudhram ([181a7ec](https://github.com/mozilla/fxa-auth-server/commit/181a7ec)), closes [#75](https://github.com/mozilla/fxa-auth-server/issues/75) [#76](https://github.com/mozilla/fxa-auth-server/issues/76)
+
+
+
 <a name="1.113.4"></a>
 ## [1.113.4](https://github.com/mozilla/fxa-auth-server/compare/v1.107.4...v1.113.4) (2018-06-07)
 
