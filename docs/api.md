@@ -382,7 +382,6 @@ those common validations are defined here.
     * `name`: isA.string.max(255).regex(DISPLAY_SAFE_UNICODE_WITH_NON_BMP)
     * `nameResponse`: isA.string.max(255)
     * `type`: isA.string.max(16)
-    * `capabilities`: isA.array.items(isA.string)
     * `pushCallback`: validators.url({ scheme: 'https' }).regex(PUSH_SERVER_REGEX).max(255).allow('')
     * `pushPublicKey`: isA.string.max(88).regex(URL_SAFE_BASE_64).allow('')
     * `pushAuthKey`: isA.string.max(24).regex(URL_SAFE_BASE_64).allow('')
@@ -1003,12 +1002,6 @@ can be made available to other connected devices.
   
   <!--end-request-body-post-accountdevice-type-->
 
-* `capabilities`: *DEVICES_SCHEMA.capabilities.optional*
-
-  <!--begin-request-body-post-accountdevice-capabilities-->
-  
-  <!--end-request-body-post-accountdevice-capabilities-->
-
 * `pushCallback`: *DEVICES_SCHEMA.pushCallback.optional*
 
   <!--begin-request-body-post-accountdevice-pushCallback-->
@@ -1026,6 +1019,12 @@ can be made available to other connected devices.
   <!--begin-request-body-post-accountdevice-pushAuthKey-->
   
   <!--end-request-body-post-accountdevice-pushAuthKey-->
+
+* `capabilities`: *array, length(0), optional*
+
+  <!--begin-request-body-post-accountdevice-capabilities-->
+  
+  <!--end-request-body-post-accountdevice-capabilities-->
 
 ##### Response body
 
@@ -1052,12 +1051,6 @@ can be made available to other connected devices.
   <!--begin-response-body-post-accountdevice-type-->
   
   <!--end-response-body-post-accountdevice-type-->
-
-* `capabilities`: *DEVICES_SCHEMA.capabilities.optional*
-
-  <!--begin-response-body-post-accountdevice-capabilities-->
-  
-  <!--end-response-body-post-accountdevice-capabilities-->
 
 * `pushCallback`: *DEVICES_SCHEMA.pushCallback.optional*
 
@@ -1226,12 +1219,6 @@ for the authenticated user.
   
   <!--end-response-body-get-accountdevices-type-->
 
-* `capabilities`: *DEVICES_SCHEMA.capabilities.optional*
-
-  <!--begin-response-body-get-accountdevices-capabilities-->
-  
-  <!--end-response-body-get-accountdevices-capabilities-->
-
 * `pushCallback`: *DEVICES_SCHEMA.pushCallback.allow(null).optional*
 
   <!--begin-response-body-get-accountdevices-pushCallback-->
@@ -1345,12 +1332,6 @@ for the authenticated user.
   <!--begin-response-body-get-accountsessions-deviceType-->
   
   <!--end-response-body-get-accountsessions-deviceType-->
-
-* `deviceCapabilities`: *DEVICES_SCHEMA.capabilities.optional*
-
-  <!--begin-response-body-get-accountsessions-deviceCapabilities-->
-  
-  <!--end-response-body-get-accountsessions-deviceCapabilities-->
 
 * `deviceCallbackURL`: *DEVICES_SCHEMA.pushCallback.allow(null).required*
 
