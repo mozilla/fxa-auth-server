@@ -50,16 +50,13 @@ function makeRoutes (options = {}, requireMocks) {
   )
 }
 
-function runTest (route, request, assertions) {
+function runTest(route, request, assertions) {
   return new P(function (resolve, reject) {
-    route.handler(request, function (response) {
-      //resolve(response)
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    })
+    try {
+      return route.handler(request).then(resolve, reject)
+    } catch (err) {
+      reject(err)
+    }
   })
     .then(assertions)
 }
@@ -725,7 +722,7 @@ describe('/account/devices', () => {
         pushEndpointExpired: false
       }
     ]
-    isA.assert(res, route.config.response.schema)
+    isA.assert(res, route.options.response.schema)
   })
 
   it('should allow returning approximateLastAccessTime', () => {
@@ -739,7 +736,7 @@ describe('/account/devices', () => {
       name: 'test',
       type: 'test',
       pushEndpointExpired: false
-    }], route.config.response.schema)
+    }], route.options.response.schema)
   })
 
   it('should not allow returning approximateLastAccessTime < EARLIEST_SANE_TIMESTAMP', () => {
