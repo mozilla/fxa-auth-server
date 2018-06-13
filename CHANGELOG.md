@@ -1,3 +1,13 @@
+<a name="1.114.0"></a>
+# [1.114.0](https://github.com/mozilla/fxa-auth-server/compare/v1.113.3...v1.114.0) (2018-06-13)
+
+
+### Bug Fixes
+
+* **devices:** Remove the unused "device capabilities" API. (#2460); r=eoger ([9e53247](https://github.com/mozilla/fxa-auth-server/commit/9e53247)), closes [#2460](https://github.com/mozilla/fxa-auth-server/issues/2460)
+
+
+
 <a name="1.113.3"></a>
 ## [1.113.3](https://github.com/mozilla/fxa-auth-server/compare/v1.113.2...v1.113.3) (2018-05-31)
 
