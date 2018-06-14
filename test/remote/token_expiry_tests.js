@@ -45,7 +45,7 @@ describe('remote token expiry', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+     TestServer.stop(server)
   })
 })
 
@@ -72,5 +72,7 @@ describe('remote session token expiry', function () {
         )
   })
 
-  after(() => TestServer.stop(server))
+  after(() => {
+    TestServer.stop(server)
+  })
 })

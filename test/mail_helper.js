@@ -111,14 +111,14 @@ module.exports = (printLogs) => {
 
     async function loop(email) {
       var mail = users[email]
-      while ((! mail)) {
-        const wait = new Promise((res) => {
-          clearTimeout(wait);
-          setTimeout(res, 50)
+      if (! mail) {
+        return new Promise((res) => {
+          setTimeout(() => {
+            loop(email).then(res)
+          }, 50)
         })
-        mail = users[email]
-      }
-      return mail
+       }
+      return users[email]
     }
 
     api.route(
