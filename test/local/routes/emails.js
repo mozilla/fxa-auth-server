@@ -74,7 +74,6 @@ function runTest (route, request, assertions) {
     } catch (e) {
       reject(e)
     }
-
   })
     .then(assertions)
 }

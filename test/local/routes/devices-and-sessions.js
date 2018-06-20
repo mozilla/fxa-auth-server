@@ -51,14 +51,9 @@ function makeRoutes (options = {}, requireMocks) {
 }
 
 function runTest(route, request, assertions) {
-  return new P(function (resolve, reject) {
-    try {
-      return route.handler(request).then(resolve, reject)
-    } catch (err) {
-      reject(err)
-    }
-  })
-    .then(assertions)
+  return route.handler(request)
+  .then(() => { assertions })
+  .catch((err) => { throw err })
 }
 
 function hexString (bytes) {
@@ -916,4 +911,3 @@ describe('/account/sessions', () => {
     })
   })
 })
-

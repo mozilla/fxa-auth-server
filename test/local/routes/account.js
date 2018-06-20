@@ -1324,4 +1324,3 @@ describe('/account/destroy', function () {
     })
   })
 })
-

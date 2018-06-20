@@ -30,14 +30,17 @@ function makeRoutes (options = {}) {
 }
 
 function runTest (route, request) {
-  return new P((resolve, reject) => {
-    route.handler(request, response => {
+  return new P(function (resolve, reject) {
+    try {
+      const response = route.handler(request)
       if (response instanceof Error) {
         reject(response)
       } else {
         resolve(response)
       }
-    })
+    } catch (e) {
+      reject(e)
+    }
   })
 }
 
