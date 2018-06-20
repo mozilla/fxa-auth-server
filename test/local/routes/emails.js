@@ -63,19 +63,9 @@ var makeRoutes = function (options = {}, requireMocks) {
 }
 
 function runTest (route, request, assertions) {
-  return new P(function (resolve, reject) {
-    try {
-      const response = route.handler(request)
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    } catch (e) {
-      reject(e)
-    }
-  })
-    .then(assertions)
+  return route.handler(request)
+  .then(() => { assertions })
+  .catch((err) => { throw err })
 }
 
 describe('/recovery_email/status', function () {
