@@ -30,18 +30,9 @@ function makeRoutes (options = {}) {
 }
 
 function runTest (route, request) {
-  return new P(function (resolve, reject) {
-    try {
-      const response = route.handler(request)
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    } catch (e) {
-      reject(e)
-    }
-  })
+  return route.handler(request)
+  .then((res) => { return res })
+  .catch((err) => { throw err })
 }
 
 function hexString(bytes) {

@@ -484,8 +484,8 @@ describe('lib/server', () => {
         {
           path: '/account/create',
           method: 'POST',
-          handler (request, reply) {
-            return reply(response)
+          handler (request, h) {
+            return response
           }
         },
         {
@@ -497,8 +497,8 @@ describe('lib/server', () => {
               strategy: 'sessionToken'
             }
           },
-          handler (request, reply) {
-            return reply(response)
+          handler (request, h) {
+            return response
           }
         }
       ]
