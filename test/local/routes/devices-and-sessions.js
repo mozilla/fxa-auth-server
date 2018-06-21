@@ -50,18 +50,10 @@ function makeRoutes (options = {}, requireMocks) {
   )
 }
 
-function runTest (route, request, assertions) {
-  return new P(function (resolve, reject) {
-    route.handler(request, function (response) {
-      //resolve(response)
-      if (response instanceof Error) {
-        reject(response)
-      } else {
-        resolve(response)
-      }
-    })
-  })
-    .then(assertions)
+function runTest(route, request, assertions) {
+  return route.handler(request)
+  .then(() => { assertions })
+  .catch((err) => { throw err })
 }
 
 function hexString (bytes) {
@@ -725,7 +717,7 @@ describe('/account/devices', () => {
         pushEndpointExpired: false
       }
     ]
-    isA.assert(res, route.config.response.schema)
+    isA.assert(res, route.options.response.schema)
   })
 
   it('should allow returning approximateLastAccessTime', () => {
@@ -739,7 +731,7 @@ describe('/account/devices', () => {
       name: 'test',
       type: 'test',
       pushEndpointExpired: false
-    }], route.config.response.schema)
+    }], route.options.response.schema)
   })
 
   it('should not allow returning approximateLastAccessTime < EARLIEST_SANE_TIMESTAMP', () => {
@@ -919,4 +911,3 @@ describe('/account/sessions', () => {
     })
   })
 })
-

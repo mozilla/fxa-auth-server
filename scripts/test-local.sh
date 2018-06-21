@@ -12,7 +12,7 @@ if [ -z "$GLOB" ]; then
   GLOB="test/local test/remote"
 fi
 
-DEFAULT_ARGS="-R dot --recursive"
+DEFAULT_ARGS=" --recursive"
 
 # When running under Windows Subsystem for Linux,
 # some tests take unusually long to complete.

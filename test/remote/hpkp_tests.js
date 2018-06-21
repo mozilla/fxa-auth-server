@@ -5,9 +5,13 @@
 'use strict'
 
 const assert = require('insist')
+const sinon = require('sinon')
 const P = require('../../lib/promise')
 const TestServer = require('../test_server')
 const request = P.promisify(require('request'), { multiArgs: true })
+const mockLog = {
+  info: sinon.spy()
+}
 
 describe('remote hpkp', function() {
   this.timeout(30000)
@@ -19,9 +23,15 @@ describe('remote hpkp', function() {
       var config = require('../../config').getProperties()
       config.hpkpConfig.enabled = true
       config.hpkpConfig.sha256s = []
-      assert.throws(() => {
-        Server.create({},{},config,{})
-      }, 'ValidationError: child "sha256s" fails because ["sha256s" must contain at least 1 items]', 'assert server error if no sha passed')
+
+      return Server.create(mockLog,{},config,{})
+        .then(assert.fail, (err) => {
+          assert.equal(
+            err.message,
+            'ValidationError: child "sha256s" fails because ["sha256s" must contain at least 1 items]',
+            'assert server error if no sha passed')
+        })
+
     }
   )
 
@@ -30,12 +40,8 @@ describe('remote hpkp', function() {
     () => {
       var config = require('../../config').getProperties()
       config.hpkpConfig.enabled = false
-      var server
 
       return TestServer.start(config)
-        .then(function main(serverObj) {
-          server = serverObj
-        })
         .then(function () {
           return request({
             url: config.publicUrl + '/'
@@ -44,9 +50,7 @@ describe('remote hpkp', function() {
         .spread(function (res) {
           assert.equal(res.headers['public-key-pins-report-only'], undefined, 'HPKP header not set')
         })
-        .then(function () {
-          return server.stop()
-        })
+
     }
   )
 
@@ -54,16 +58,12 @@ describe('remote hpkp', function() {
     'Sends HPKP header',
     () => {
       var config = require('../../config').getProperties()
-      var server
       config.hpkpConfig.enabled = true
       config.hpkpConfig.reportOnly = false
       config.hpkpConfig.sha256s = ['sha1=', 'sha2=']
 
 
-      return TestServer.start(config)
-        .then(function main(serverObj) {
-          server = serverObj
-        })
+      TestServer.start(config)
         .then(function () {
           return request({
             url: config.publicUrl + '/'
@@ -73,9 +73,7 @@ describe('remote hpkp', function() {
           var headerValue = 'pin-sha256="sha1="; pin-sha256="sha2="; max-age=1; includeSubdomains'
           assert.equal(res.headers['public-key-pins'], headerValue, 'HPKP header was set correctly')
         })
-        .then(function () {
-          return server.stop()
-        })
+
     }
   )
 
@@ -83,7 +81,6 @@ describe('remote hpkp', function() {
     'Sends HPKP report header',
     () => {
       var config = require('../../config').getProperties()
-      var server
       config.hpkpConfig.enabled = true
       config.hpkpConfig.reportOnly = true
       config.hpkpConfig.sha256s = ['sha1=', 'sha2=']
@@ -91,9 +88,6 @@ describe('remote hpkp', function() {
 
 
       return TestServer.start(config)
-        .then(function main(serverObj) {
-          server = serverObj
-        })
         .then(function () {
           return request({
             url: config.publicUrl + '/'
@@ -103,13 +97,11 @@ describe('remote hpkp', function() {
           var headerValue = 'pin-sha256="sha1="; pin-sha256="sha2="; max-age=1; includeSubdomains; report-uri="http://example.com"'
           assert.equal(res.headers['public-key-pins-report-only'], headerValue, 'HPKP report header was set correctly')
         })
-        .then(function () {
-          return server.stop()
-        })
+
     }
   )
 
   after(() => {
-    return TestServer.stop()
+    TestServer.stop()
   })
 })

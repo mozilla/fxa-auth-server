@@ -36,6 +36,6 @@ describe('remote sign key', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

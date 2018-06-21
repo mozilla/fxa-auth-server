@@ -700,7 +700,7 @@ describe('remote emails', function () {
       'receives new device sign-in email',
       () => {
         config.signinConfirmation.skipForNewAccounts.enabled = true
-        return TestServer.start(config)
+          TestServer.start(config)
           .then(s => {
             server = s
             email = server.uniqueEmail()
@@ -738,7 +738,7 @@ describe('remote emails', function () {
             assert.equal(emailData.cc.length, 1)
             assert.equal(emailData.cc[0].address, secondEmail)
           })
-      }
+        }
     )
   })
 
@@ -899,7 +899,7 @@ describe('remote emails', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 
   function resetPassword(client, code, newPassword, headers, options) {

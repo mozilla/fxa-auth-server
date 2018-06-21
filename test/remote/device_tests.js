@@ -651,6 +651,6 @@ describe('remote device', function () {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

@@ -104,18 +104,21 @@ module.exports = (printLogs) => {
     // HTTP half
 
     var hapi = require('hapi')
-    var api = new hapi.Server()
-    api.connection({
-      host: config.smtp.api.host,
-      port: config.smtp.api.port
+    var api = new hapi.Server({
+        host: config.smtp.api.host,
+        port: config.smtp.api.port
     })
 
-    function loop(email, cb) {
+    async function loop(email) {
       var mail = users[email]
       if (! mail) {
-        return setTimeout(loop.bind(null, email, cb), 50)
-      }
-      cb(mail)
+        return new Promise((res) => {
+          setTimeout(() => {
+            loop(email).then(res)
+          }, 50)
+        })
+       }
+      return users[email]
     }
 
     api.route(
@@ -123,27 +126,24 @@ module.exports = (printLogs) => {
         {
           method: 'GET',
           path: '/mail/{email}',
-          handler: function (request, reply) {
-            loop(
-              decodeURIComponent(request.params.email),
-              function (emailData) {
-                reply(emailData)
-              }
-            )
+          handler: async function (request, h) {
+             const emailData = await loop(
+               decodeURIComponent(request.params.email)
+              )
+             return emailData
           }
         },
         {
           method: 'DELETE',
           path: '/mail/{email}',
-          handler: function (request, reply) {
-            delete users[decodeURIComponent(request.params.email)]
-            reply()
+          handler: async function (request, h) {
+            return delete users[decodeURIComponent(request.params.email)]
           }
         }
       ]
     )
 
-    api.start(function () {
+    api.start().then(() => {
       console.log('mail_helper started...')
 
       resolve({
@@ -157,7 +157,7 @@ module.exports = (printLogs) => {
                 resolve()
               }
             })
-            api.stop(() => {
+            api.stop().then(() => {
               apiClosed = true
               if (smtpClosed) {
                 resolve()

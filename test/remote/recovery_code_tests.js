@@ -180,6 +180,6 @@ describe('remote recovery codes', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

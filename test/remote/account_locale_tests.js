@@ -118,7 +118,7 @@ describe('remote account locale', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 
 })

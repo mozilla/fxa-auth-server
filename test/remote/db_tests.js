@@ -1037,7 +1037,7 @@ describe('remote db', function() {
   })
 
   after(() => {
-    return TestServer.stop(dbServer)
+     TestServer.stop(dbServer)
       .then(() => {
         return db && db.close()
       })

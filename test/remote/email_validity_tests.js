@@ -83,6 +83,6 @@ describe('remote email validity', function() {
   )
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

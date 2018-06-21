@@ -273,6 +273,6 @@ describe('remote totp', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

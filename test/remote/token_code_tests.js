@@ -195,7 +195,7 @@ describe('remote tokenCodes', function () {
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })
 

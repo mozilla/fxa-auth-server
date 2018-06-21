@@ -90,7 +90,7 @@ describe('remote sms without the signinCodes feature included in the payload', f
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })
 
@@ -119,6 +119,6 @@ describe('remote sms with the signinCodes feature included in the payload', func
   })
 
   after(() => {
-    return TestServer.stop(server)
+    TestServer.stop(server)
   })
 })

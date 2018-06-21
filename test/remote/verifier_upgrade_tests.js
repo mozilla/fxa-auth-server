@@ -43,7 +43,7 @@ describe('remote verifier upgrade', function() {
         var password = 'ok'
         var uid = null
 
-        return TestServer.start(config)
+        TestServer.start(config)
         .then(
           function main(server) {
             return Client.create(config.publicUrl, email, password, { preVerified: true, keys: true })
