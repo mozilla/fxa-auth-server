@@ -197,7 +197,7 @@ describe('remote session', function() {
       }
     )
 
-    it(
+    it.only(
       'creates independent verification state for the new token',
       () => {
         const email = server.uniqueEmail()
