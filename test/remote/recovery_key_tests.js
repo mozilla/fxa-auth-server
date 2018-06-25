@@ -75,6 +75,26 @@ describe('remote recovery keys', function () {
       })
   })
 
+  it('should fail if recoveryKeyId is missing', () => {
+    return getAccountResetToken(client, server, email)
+      .then(() => client.getRecoveryKey(recoveryKeyId))
+      .then((res) => assert.equal(res.recoveryData, recoveryData, 'recoveryData returned'))
+      .then(() => client.resetAccountWithRecoveryKey('newpass', keys.kB, undefined, {}, {keys: true}))
+      .then(assert.fail, (err) => {
+        assert.equal(err.errno, 107, 'invalid param')
+      })
+  })
+
+  it('should fail if wrapKb is missing', () => {
+    return getAccountResetToken(client, server, email)
+      .then(() => client.getRecoveryKey(recoveryKeyId))
+      .then((res) => assert.equal(res.recoveryData, recoveryData, 'recoveryData returned'))
+      .then(() => client.resetAccountWithRecoveryKey('newpass', keys.kB, recoveryKeyId, {}, {keys: true, undefinedWrapKb: true}))
+      .then(assert.fail, (err) => {
+        assert.equal(err.errno, 107, 'invalid param')
+      })
+  })
+
   it('should change password and keep kB', () => {
     return getAccountResetToken(client, server, email)
       .then(() => client.getRecoveryKey(recoveryKeyId))

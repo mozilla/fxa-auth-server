@@ -923,9 +923,6 @@ Failing requests may be caused
 by the following errors
 (this is not an exhaustive list):
 
-* `code: 400, errno: 107`:
-  Invalid parameter in request body
-
 * `code: 400, errno: 108`:
   Missing parameter in request body
 
@@ -2221,7 +2218,8 @@ Verify a session using a recovery code.
 :lock: HAWK-authenticated with session token
 <!--begin-route-post-recoverykeys-->
 Creates a new recovery key for a user. These are one time use
-keys.
+keys. More details on registering a recovery key can be
+found in /doc/recovery_keys.md
 <!--end-route-post-recoverykeys-->
 
 ##### Request body

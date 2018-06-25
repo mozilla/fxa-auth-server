@@ -217,22 +217,6 @@ describe('/account/reset', function () {
     })
   })
 
-  it('should fail to reset account with no recovery key id', () => {
-    mockRequest.payload.wrapKb = hexString(32)
-    return runTest(route, mockRequest)
-      .then(assert.fail, (err) => {
-        assert.equal(err.errno, 107, 'invalid parameter in request body errno')
-      })
-  })
-
-  it('should fail to reset account with no wrapKd', () => {
-    mockRequest.payload.recoveryKeyId = hexString(32)
-    return runTest(route, mockRequest)
-      .then(assert.fail, (err) => {
-        assert.equal(err.errno, 107, 'invalid parameter in request body errno')
-      })
-  })
-
   it('should reset account', () => {
     return runTest(route, mockRequest, function (res) {
       assert.equal(mockDB.resetAccount.callCount, 1)

@@ -100,13 +100,13 @@ describe('GET /recoveryKeys/{recoveryKeyId}', () => {
       assert.equal(args[1], request)
     })
 
-    it('called customs.check correctly', () => {
-      assert.equal(customs.check.callCount, 1)
-      const args = customs.check.args[0]
+    it('called customs.checkAuthenticated correctly', () => {
+      assert.equal(customs.checkAuthenticated.callCount, 1)
+      const args = customs.checkAuthenticated.args[0]
       assert.equal(args.length, 3)
-      assert.equal(args[0], request)
-      assert.equal(args[1], email)
-      assert.equal(args[2], 'getRecoveryKey')
+      assert.equal(args[0], 'getRecoveryKey')
+      assert.equal(args[1], request.app.clientAddress)
+      assert.equal(args[2], uid)
     })
 
     it('called db.getRecoveryKey correctly', () => {

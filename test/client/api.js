@@ -285,7 +285,7 @@ module.exports = config => {
             token,
             {
               authPW: authPW.toString('hex'),
-              wrapKb: wrapKb.toString('hex'),
+              wrapKb,
               sessionToken: true,
               recoveryKeyId
             },

@@ -570,7 +570,7 @@ module.exports = config => {
 
     return this.setupCredentials(email, newPassword)
       .then(function (/* bundle */) {
-        const wrapKb = butil.xorBuffers(kB, this.unwrapBKey)
+        const wrapKb = options.undefinedWrapKb ? undefined : butil.xorBuffers(kB, this.unwrapBKey).toString('hex')
 
         return this.api.accountResetWithRecoveryKey(
           this.accountResetToken,
