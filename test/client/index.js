@@ -558,7 +558,7 @@ module.exports = config => {
     return this.api.getRecoveryKey(this.accountResetToken, recoveryKeyId)
   }
 
-  Client.prototype.resetAccountWithRecoveryKey = function (newPassword, kB, recoveryKeyId, headers, options) {
+  Client.prototype.resetAccountWithRecoveryKey = function (newPassword, kB, recoveryKeyId, headers, options = {}) {
     if (! this.accountResetToken) {
       throw new Error('call verifyPasswordResetCode before calling resetAccountWithRecoveryKey')
     }
@@ -569,7 +569,7 @@ module.exports = config => {
     }
 
     return this.setupCredentials(email, newPassword)
-      .then(function (/* bundle */) {
+      .then((/* bundle */) => {
         const wrapKb = options.undefinedWrapKb ? undefined : butil.xorBuffers(kB, this.unwrapBKey).toString('hex')
 
         return this.api.accountResetWithRecoveryKey(
@@ -591,7 +591,7 @@ module.exports = config => {
             return response
           })
 
-      }.bind(this))
+      })
   }
 
   Client.prototype.resetPassword = function (newPassword, headers, options) {

@@ -9,7 +9,7 @@ const config = require('../../config').getProperties()
 const crypto = require('crypto')
 const TestServer = require('../test_server')
 const Client = require('../client')()
-const Promise = require('bluebird')
+const P = require('bluebird')
 
 describe('remote recovery keys', function () {
   this.timeout(10000)
@@ -31,7 +31,7 @@ describe('remote recovery keys', function () {
     const recoveryKey = crypto.randomBytes(16).toString('hex')
     const recoveryData = crypto.randomBytes(32).toString('hex')
 
-    return Promise.resolve({
+    return P.resolve({
       recoveryCode,
       recoveryData,
       recoveryKeyId,
