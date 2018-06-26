@@ -2217,9 +2217,13 @@ Verify a session using a recovery code.
 
 :lock: HAWK-authenticated with session token
 <!--begin-route-post-recoverykeys-->
-Creates a new recovery key for a user. These are one time use
-keys. More details on registering a recovery key can be
-found in /doc/recovery_keys.md
+Creates a new recovery key for a user.
+
+Recovery keys are one-time-use tokens
+that can be used to recover the user's kB
+if they forget their password.
+For more details, see the
+[recovery keys](recovery_keys.md) docs.
 <!--end-route-post-recoverykeys-->
 
 ##### Request body
@@ -2227,13 +2231,13 @@ found in /doc/recovery_keys.md
 * `recoveryKeyId`: *validators.recoveryKeyId*
 
   <!--begin-request-body-post-recoverykeys-recoveryKeyId-->
-  Recovery Key Id is a hash of the recovery key.
+  A unique identifier for this recovery key, derived from the key via HKDF.
   <!--end-request-body-post-recoverykeys-recoveryKeyId-->
 
 * `recoveryData`: *validators.recoveryData*
 
   <!--begin-request-body-post-recoverykeys-recoveryData-->
-  Recovery Data is an encrypted bundle containing the user's kB.
+  An encrypted bundle containing the user's kB.
   <!--end-request-body-post-recoverykeys-recoveryData-->
 
 
@@ -2241,7 +2245,7 @@ found in /doc/recovery_keys.md
 
 :lock: HAWK-authenticated with account reset token
 <!--begin-route-get-recoverykeysrecoverykeyid-->
-Retrieve the user's recovery data using their recovery key.
+Retrieve the account recovery data associated with the given recovery key.
 <!--end-route-get-recoverykeysrecoverykeyid-->
 
 
