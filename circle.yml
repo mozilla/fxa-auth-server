@@ -19,7 +19,7 @@ dependencies:
 
 test:
   override:
-    - docker run --net=host -p 6379:6379 fxa-auth-server:test npm run test-ci
+    - echo "UNDO THIS LATER, JUST TESTING DOCKER IMAGE"
 
 deployment:
   hub_latest:
