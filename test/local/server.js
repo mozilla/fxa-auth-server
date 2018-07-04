@@ -90,13 +90,9 @@ describe('lib/server', () => {
         })
       })
 
-      it('returned a hapi Server instance', () => {
-        assert.ok(instance.version)
-      })
-
       describe('server.start:', () => {
-        beforeEach(() => { return instance.start() })
-        afterEach(() => { return instance.stop() })
+        beforeEach(() => instance.start())
+        afterEach(() => instance.stop())
 
         it('did not call log.begin', () => {
           assert.equal(log.begin.callCount, 0)
@@ -468,7 +464,7 @@ describe('lib/server', () => {
         })
       })
 
-      afterEach(() => { return instance.stop() } )
+      afterEach(() => instance.stop())
 
       it('called db.sessionToken', () => {
         assert.equal(db.sessionToken.callCount, 1)
