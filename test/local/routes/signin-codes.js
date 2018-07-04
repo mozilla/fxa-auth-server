@@ -96,9 +96,8 @@ describe('/signinCodes/consume:', () => {
   })
 
   describe('db error:', () => {
-    beforeEach(() => setup(null, { db: { consumeSigninCode: new Error('foo') } }).catch((err) => {
-      assert(err.message, 'foo')
-    }))
+    beforeEach(() => setup(null, { db: { consumeSigninCode: new Error('foo') } })
+      .catch((err) => { assert(err.message, 'foo') }))
 
     it('called log.begin', () => {
       assert.equal(log.begin.callCount, 1)
@@ -123,9 +122,8 @@ describe('/signinCodes/consume:', () => {
 
   describe('customs error:', () => {
     beforeEach(() =>
-      setup(null, { customs: { checkIpOnly: new Error('foo') } }).catch((err) => {
-        assert(err.message, 'foo')
-      })
+      setup(null, { customs: { checkIpOnly: new Error('foo') } })
+        .catch((err) => { assert(err.message, 'foo') })
     )
 
     it('called log.begin', () => {
@@ -181,6 +179,4 @@ function makeRoutes (options = {}) {
 
 function runTest (route, request) {
   return route.handler(request)
-  .then((res) => { return res })
-  .catch((err) => { throw err })
 }

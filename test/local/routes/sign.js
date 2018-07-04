@@ -206,7 +206,7 @@ describe('/certificate/sign', () => {
       }
     })
     .then(onSuccess)
-    .catch(() => { onError })
+    .catch(onError)
   }
 
   function makeRoutes (options = {}) {
