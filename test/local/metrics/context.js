@@ -101,6 +101,10 @@ describe('metricsContext', () => {
       }, token).then(result => {
         assert.equal(result, 'wibble', 'result is correct')
 
+        assert.equal(cache.get.callCount, 1, 'cache.get was called once')
+        assert.equal(cache.get.args[0].length, 1, 'cache.get was passed one argument')
+        assert.equal(cache.get.args[0][0], hashToken(token), 'argument was correct')
+
         assert.equal(cache.set.callCount, 1, 'cache.set was called once')
         assert.equal(cache.set.args[0].length, 2, 'cache.set was passed two arguments')
         assert.equal(cache.set.args[0][0], hashToken(token), 'first argument was correct')
@@ -109,6 +113,33 @@ describe('metricsContext', () => {
           service: 'baz'
         }, 'second argument was correct')
 
+        assert.equal(log.error.callCount, 0, 'log.error was not called')
+      })
+    }
+  )
+
+  it(
+    'metricsContext.stash with clashing data',
+    () => {
+      results.get = P.resolve('wibble')
+      results.set = P.resolve('blee')
+      const token = {
+        uid: Array(64).fill('c').join(''),
+        id: 'foo'
+      }
+      return metricsContext.stash.call({
+        payload: {
+          metricsContext: {
+            foo: 'bar'
+          },
+          service: 'baz'
+        },
+        query: {}
+      }, token).then(result => {
+        assert.strictEqual(result, undefined, 'result is undefined')
+        assert.equal(cache.get.callCount, 1, 'cache.get was called once')
+        assert.equal(log.warn.callCount, 1, 'log.warn was called once')
+        assert.equal(cache.set.callCount, 0, 'cache.set was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       })
     }
@@ -132,6 +163,7 @@ describe('metricsContext', () => {
           service: 'qux'
         }
       }, token).then(result => {
+        assert.equal(cache.get.callCount, 1, 'cache.get was called once')
         assert.equal(cache.set.callCount, 1, 'cache.set was called once')
         assert.equal(cache.set.args[0][1].service, 'qux', 'service property was correct')
 
@@ -157,6 +189,7 @@ describe('metricsContext', () => {
       }).then(result => {
         assert.equal(result, undefined, 'result is undefined')
 
+        assert.equal(cache.get.callCount, 1, 'cache.get was called once')
         assert.equal(cache.set.callCount, 1, 'cache.set was called once')
 
         assert.equal(log.error.callCount, 1, 'log.error was called once')
@@ -193,6 +226,7 @@ describe('metricsContext', () => {
         assert.strictEqual(log.error.args[0][0].hasId, true, 'hasId property was correct')
         assert.strictEqual(log.error.args[0][0].hasUid, false, 'hasUid property was correct')
 
+        assert.equal(cache.get.callCount, 0, 'cache.get was not called')
         assert.equal(cache.set.callCount, 0, 'cache.set was not called')
       })
     }
@@ -210,6 +244,7 @@ describe('metricsContext', () => {
       }).then(result => {
         assert.equal(result, undefined, 'result is undefined')
 
+        assert.equal(cache.get.callCount, 0, 'cache.get was not called')
         assert.equal(cache.set.callCount, 0, 'cache.set was not called')
         assert.equal(log.error.callCount, 0, 'log.error was not called')
       })
