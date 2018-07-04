@@ -27,8 +27,7 @@ function makeRoutes (options = {}, requireMocks) {
 
 function runTest (route, request, assertions) {
   return route.handler(request)
-  .then(() => { assertions })
-  .catch((err) => { throw err })
+  .then(assertions)
 }
 
 describe('/account/login/send_unblock_code', function () {

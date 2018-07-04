@@ -128,6 +128,4 @@ function makeRoutes(options = {}) {
 
 function runTest(route, request) {
   return route.handler(request)
-  .then((res) => { return res })
-  .catch((err) => { throw err })
 }
