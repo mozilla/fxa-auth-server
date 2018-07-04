@@ -331,7 +331,7 @@ describe('remote account create', function() {
         redirectTo: 'http://accounts.firefox.com.evil.us'
       }
       return api.accountCreate(email, authPW, options)
-      .then(() => { assert.fail }, (err) => {
+      .then(assert.fail, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
@@ -339,7 +339,7 @@ describe('remote account create', function() {
           return api.passwordForgotSendCode(email, options)
         }
       )
-      .then(() => { assert.fail }, (err) => {
+      .then(assert.fail, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
@@ -357,7 +357,7 @@ describe('remote account create', function() {
       }
 
       return api.accountCreate(email, authPW, options)
-      .then(() => { assert.fail }, (err) => {
+      .then(assert.fail, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
@@ -367,7 +367,7 @@ describe('remote account create', function() {
           })
         }
       )
-      .then(() => {assert.fail}, (err) => {
+      .then(assert.fail, (err) => {
           assert.equal(err.errno, 107, 'bad redirectTo rejected')
         }
       )
