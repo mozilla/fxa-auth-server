@@ -46,8 +46,6 @@ function makeRoutes(options = {}) {
 
 function runRoute(routes, name, request) {
   return getRoute(routes, name).handler(request)
-  .then((res) => { return res })
-  .catch((err) => { throw err })
 }
 
 describe('/password', () => {

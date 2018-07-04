@@ -22,8 +22,6 @@ function runTest(routePath, requestOptions) {
   request.emitMetricsEvent = sinon.spy(() => P.resolve({}))
 
   return route.handler(request)
-    .then((res) => { return res })
-    .catch((err) => { throw err })
 }
 
 describe('recovery codes', () => {

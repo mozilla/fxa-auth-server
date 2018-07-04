@@ -19,8 +19,6 @@ function makeRoutes (options = {}, dependencies) {
 
 function runTest (route, request) {
   return route.handler(request)
-  .then((res) => { return res })
-  .catch((err) => { throw err })
 }
 
 describe('/sms with the signinCodes feature included in the payload', () => {
