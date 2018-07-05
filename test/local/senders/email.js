@@ -228,6 +228,8 @@ describe(
             mailer.mailer.sendMail = function (emailConfig) {
               assert.ok(includes(emailConfig.html, privacyLink))
               assert.ok(includes(emailConfig.text, privacyLink))
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
             }
             mailer[type](message)
           }
@@ -241,6 +243,9 @@ describe(
                 assert.ok(includes(emailConfig.headers['X-Link'], 'type=secondary'))
                 assert.ok(includes(emailConfig.html, 'type=secondary'))
                 assert.ok(includes(emailConfig.text, 'type=secondary'))
+                assert.ok(! includes(emailConfig.headers['X-Link'], 'utm_source=email'))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -291,6 +296,8 @@ describe(
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, supportTextLink))
                 assert.ok(includes(emailConfig.text, supportTextLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -306,6 +313,8 @@ describe(
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, resetPasswordLink))
                 assert.ok(includes(emailConfig.text, resetPasswordLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -321,6 +330,8 @@ describe(
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, passwordChangeLink))
                 assert.ok(includes(emailConfig.text, passwordChangeLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -362,6 +373,8 @@ describe(
                   mailer.createReportSignInLink(type, message)
                 assert.ok(includes(emailConfig.html, reportSignInLink))
                 assert.ok(includes(emailConfig.text, reportSignInLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -376,6 +389,7 @@ describe(
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, androidStoreLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
                 // only the html email contains links to the store
               }
               mailer[type](message)
@@ -391,6 +405,7 @@ describe(
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, iosStoreLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
                 // only the html email contains links to the store
               }
               mailer[type](message)
@@ -407,6 +422,8 @@ describe(
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, passwordManagerInfoUrl))
                 assert.ok(includes(emailConfig.text, passwordManagerInfoUrl))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -420,6 +437,8 @@ describe(
             mailer.mailer.sendMail = function (emailConfig) {
               assert.ok(includes(emailConfig.html, accountSettingsUrl))
               assert.ok(includes(emailConfig.text, accountSettingsUrl))
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
             }
             mailer[type](message)
           })
@@ -432,6 +451,8 @@ describe(
             mailer.mailer.sendMail = function (emailConfig) {
               assert.ok(includes(emailConfig.html, url))
               assert.ok(includes(emailConfig.text, url))
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
             }
             mailer[type](message)
           })
@@ -629,6 +650,7 @@ describe(
                 assert.ok(includes(emailConfig.html, syncLink))
                 assert.ok(includes(emailConfig.html, androidLink))
                 assert.ok(includes(emailConfig.html, iosLink))
+                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -639,6 +661,8 @@ describe(
               const verifyPrimaryEmailUrl = config.get('smtp').verifyPrimaryEmailUrl
               assert.ok(emailConfig.html.indexOf(verifyPrimaryEmailUrl) > 0)
               assert.ok(emailConfig.text.indexOf(verifyPrimaryEmailUrl) > 0)
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
             }
             mailer[type](message)
           })
