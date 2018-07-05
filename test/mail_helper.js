@@ -122,7 +122,7 @@ module.exports = (printLogs) => {
         {
           method: 'GET',
           path: '/mail/{email}',
-          handler: async function (request, h) {
+          handler: async function (request) {
             const emailLoop = function () {
               return new P((resolve) => {
                 loop(
@@ -142,7 +142,7 @@ module.exports = (printLogs) => {
         {
           method: 'DELETE',
           path: '/mail/{email}',
-          handler: async function (request, h) {
+          handler: async function (request) {
             delete users[decodeURIComponent(request.params.email)]
             return {}
           }
