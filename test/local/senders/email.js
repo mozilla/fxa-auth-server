@@ -228,8 +228,6 @@ describe(
             mailer.mailer.sendMail = function (emailConfig) {
               assert.ok(includes(emailConfig.html, privacyLink))
               assert.ok(includes(emailConfig.text, privacyLink))
-              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
-              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
             }
             mailer[type](message)
           }
@@ -296,8 +294,6 @@ describe(
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, supportTextLink))
                 assert.ok(includes(emailConfig.text, supportTextLink))
-                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
-                assert.ok(! includes(emailConfig.text, 'utm_source=email'))
               }
               mailer[type](message)
             }
@@ -389,7 +385,7 @@ describe(
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, androidStoreLink))
-                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(includes(emailConfig.html, 'utm_source=email'))
                 // only the html email contains links to the store
               }
               mailer[type](message)
@@ -405,7 +401,7 @@ describe(
 
               mailer.mailer.sendMail = function (emailConfig) {
                 assert.ok(includes(emailConfig.html, iosStoreLink))
-                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(includes(emailConfig.html, 'utm_source=email'))
                 // only the html email contains links to the store
               }
               mailer[type](message)
@@ -650,7 +646,7 @@ describe(
                 assert.ok(includes(emailConfig.html, syncLink))
                 assert.ok(includes(emailConfig.html, androidLink))
                 assert.ok(includes(emailConfig.html, iosLink))
-                assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+                assert.ok(includes(emailConfig.html, 'utm_source=email'))
               }
               mailer[type](message)
             }
