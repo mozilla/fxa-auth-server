@@ -15,6 +15,7 @@ dependencies:
         "$CIRCLE_BUILD_URL" \
         | tee config/version.json version.json
     - docker build -f Dockerfile-build -t fxa-auth-server:build .
+    - docker run -it --rm fxa-auth-server:build npm ls --production
     - docker build -f Dockerfile-test -t fxa-auth-server:test .
 
 test:
