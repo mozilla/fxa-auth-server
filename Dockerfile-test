@@ -1,2 +1,5 @@
 FROM fxa-auth-server:build
+USER root
+RUN apk add --no-cache make gcc g++ linux-headers openssl python
+USER app
 RUN npm install
