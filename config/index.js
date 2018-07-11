@@ -179,6 +179,11 @@ var conf = convict({
       default: 8001,
       env: 'EMAIL_SERVICE_PORT'
     },
+    provider: {
+      doc: 'email provider to use for fxa-email-service',
+      default: 'ses',
+      env: 'EMAIL_SERVICE_PROVIDER'
+    },
     forcedEmailAddresses: {
       doc: 'force usage of fxa-email-service when sending emails to addresses that match this pattern',
       format: RegExp,
