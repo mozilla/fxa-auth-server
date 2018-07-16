@@ -361,12 +361,6 @@ var conf = convict({
     }
   },
   redis: {
-    enabled: {
-      default: true,
-      doc: 'Enable redis cache',
-      format: Boolean,
-      env: 'USE_REDIS'
-    },
     host: {
       default: '127.0.0.1',
       env: 'REDIS_HOST',
@@ -379,23 +373,31 @@ var conf = convict({
       format: 'port',
       doc: 'Port for Redis server'
     },
-    sessionsKeyPrefix: {
-      default: 'fxa-auth-session',
-      env: 'SESSIONS_REDIS_KEY_PREFIX',
-      format: String,
-      doc: 'Key prefix for session tokens in Redis'
-    },
-    maxConnections: {
-      default: 200,
-      env: 'REDIS_POOL_MAX_CONNECTIONS',
-      format: 'int',
-      doc: 'Maximum connection count for Redis'
-    },
-    minConnections: {
-      default: 2,
-      env: 'REDIS_POOL_MIN_CONNECTIONS',
-      format: 'int',
-      doc: 'Minimum connection count for Redis'
+    sessionTokens: {
+      enabled: {
+        default: true,
+        doc: 'Enable Redis for session tokens',
+        format: Boolean,
+        env: 'USE_REDIS'
+      },
+      prefix: {
+        default: 'fxa-auth-session',
+        env: 'SESSIONS_REDIS_KEY_PREFIX',
+        format: String,
+        doc: 'Key prefix for session tokens in Redis'
+      },
+      maxConnections: {
+        default: 200,
+        env: 'REDIS_POOL_MAX_CONNECTIONS',
+        format: 'int',
+        doc: 'Maximum connection count for the session token Redis pool'
+      },
+      minConnections: {
+        default: 2,
+        env: 'REDIS_POOL_MIN_CONNECTIONS',
+        format: 'int',
+        doc: 'Minimum connection count for the session token Redis pool'
+      }
     },
     maxPending: {
       default: 1000,
