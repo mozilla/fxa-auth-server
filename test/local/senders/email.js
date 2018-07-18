@@ -7,18 +7,12 @@
 const ROOT_DIR = '../../..'
 
 const assert = require('insist')
-const sinon = require('sinon')
+const mocks = require('../../mocks')
 const P = require('bluebird')
-
-const mockLog = {
-  amplitudeEvent () {},
-  trace () {},
-  info: sinon.spy(),
-  error () {}
-}
+const proxyquire = require('proxyquire').noPreserveCache()
+const sinon = require('sinon')
 
 const config = require(`${ROOT_DIR}/config`)
-const Mailer = require(`${ROOT_DIR}/lib/senders/email`)(mockLog, config.getProperties())
 
 const TEMPLATE_VERSIONS = require(`${ROOT_DIR}/lib/senders/templates/_versions.json`)
 
@@ -155,20 +149,25 @@ function sesMessageTagsHeaderValue(templateName, serviceName) {
 describe(
   'lib/senders/email:',
   () => {
-    let mailer
+    let mockLog, redis, mailer
 
-    before(() => {
+    beforeEach(() => {
       return P.all([
         require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
         require(`${ROOT_DIR}/lib/senders/templates`).init()
       ]).spread((translator, templates) => {
+        mockLog = mocks.mockLog()
+        redis = {
+          get: sinon.spy(() => P.resolve())
+        }
+        const Mailer = proxyquire(`${ROOT_DIR}/lib/senders/email`, {
+          '../redis': () => redis
+        })(mockLog, config.getProperties())
         mailer = new Mailer(translator, templates, config.get('smtp'))
       })
     })
 
-    afterEach(() => {
-      mockLog.info.reset()
-    })
+    afterEach(() => mailer.stop())
 
     messageTypes.forEach(
       function (type) {
@@ -737,14 +736,15 @@ describe(
       }
     )
 
-    it(
-      'resolves sendMail status',
-      function () {
+    describe('mock sendMail method:', () => {
+      beforeEach(() => {
         sinon.stub(mailer.mailer, 'sendMail', function (config, cb) {
           cb(null, { resp: 'ok' })
         })
+      })
 
-        var message = {
+      it('resolves sendMail status', () => {
+        const message = {
           email: 'test@restmail.net',
           subject: 'subject',
           template: 'verifyLoginEmail',
@@ -752,16 +752,13 @@ describe(
         }
 
         return mailer.send(message)
-          .then(function (status) {
-            assert.equal(status.resp, 'ok')
+          .then(status => {
+            assert.deepEqual(status, [ { resp: 'ok' } ])
           })
-      }
-    )
+      })
 
-    it(
-      'logs emailEvent on send',
-      function () {
-        var message = {
+      it('logs emailEvent on send', () => {
+        const message = {
           email: 'test@restmail.net',
           flowId: 'wibble',
           subject: 'subject',
@@ -770,7 +767,7 @@ describe(
         }
 
         return mailer.send(message)
-          .then(function () {
+          .then(() => {
             assert.equal(mockLog.info.callCount, 3, 'calls log emailEvent')
             const emailEventLog = mockLog.info.getCalls()[2]
             assert.equal(emailEventLog.args[0].op, 'emailEvent', 'logs emailEvent')
@@ -782,13 +779,10 @@ describe(
             assert.equal(mailerSend1.args[0].op, 'mailer.send.1', 'logs mailer.send.1')
             assert.equal(mailerSend1.args[0].to, message.email, 'logs sender to email address')
           })
-      }
-    )
+      })
 
-    it(
-      'rejects sendMail status',
-      function () {
-        var message = {
+      it('rejects sendMail status', () => {
+        const message = {
           email: 'test@restmail.net',
           subject: 'subject',
           template: 'verifyLoginEmail',
@@ -796,14 +790,14 @@ describe(
         }
 
         return mailer.send(message)
-          .then(assert.notOk, function (err) {
+          .then(assert.notOk, err => {
             assert.equal(err.message, 'Fail')
           })
-      }
-    )
+      })
+    })
 
     describe('delete template versions', () => {
-      before(() => {
+      beforeEach(() => {
         Object.keys(TEMPLATE_VERSIONS).forEach(key => TEMPLATE_VERSIONS[key] = undefined)
       })
 
@@ -833,7 +827,7 @@ describe(
     describe(
       'sends request to the right mailer',
       () => {
-        before(() => {
+        beforeEach(() => {
           sinon.stub(
             mailer.mailer,
             'sendMail',
@@ -848,16 +842,6 @@ describe(
               cb(null, { resp: 'whatevs' })
             }
           )
-        })
-
-        beforeEach(() => {
-          mailer.mailer.sendMail.reset()
-          mailer.emailService.sendMail.reset()
-        })
-
-        after(() => {
-          mailer.mailer.sendMail.restore()
-          mailer.emailService.sendMail.restore()
         })
 
         it(
@@ -895,6 +879,8 @@ describe(
                   assert.equal(headers['X-SES-CONFIGURATION-SET'], 'wibble')
 
                   assert.equal(typeof args[1], 'function')
+
+                  assert.equal(redis.get.callCount, 1)
                 }
               )
           }
@@ -920,6 +906,8 @@ describe(
                   assert.equal(mailer.mailer.sendMail.args[0][0].headers['X-Template-Name'], 'verifyLoginEmail')
                   assert.equal(mailer.mailer.sendMail.args[0][0].headers['X-Uid'], 'foo')
                   assert.equal(typeof mailer.mailer.sendMail.args[0][1], 'function')
+
+                  assert.equal(redis.get.callCount, 1)
                 }
               )
           }
@@ -931,10 +919,10 @@ describe(
 )
 
 describe('mailer constructor:', () => {
-  let config, mailer
+  let mailerConfig, mockLog, mailer
 
   beforeEach(() => {
-    config = [
+    mailerConfig = [
       'accountSettingsUrl',
       'accountRecoveryCodesUrl',
       'androidUrl',
@@ -958,17 +946,21 @@ describe('mailer constructor:', () => {
       target[key] = `mock ${key}`
       return target
     }, {})
+    mockLog = mocks.mockLog()
 
     return P.all([
       require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
       require(`${ROOT_DIR}/lib/senders/templates`).init()
     ]).spread((translator, templates) => {
-      mailer = new Mailer(translator, templates, config)
+      const Mailer = require(`${ROOT_DIR}/lib/senders/email`)(mockLog, config.getProperties())
+      mailer = new Mailer(translator, templates, mailerConfig)
     })
   })
 
+  afterEach(() => mailer.stop())
+
   it('set properties on self from config correctly', () => {
-    Object.entries(config).forEach(([key, expected]) => {
+    Object.entries(mailerConfig).forEach(([key, expected]) => {
       assert.equal(mailer[key], expected, `${key} was correct`)
     })
   })

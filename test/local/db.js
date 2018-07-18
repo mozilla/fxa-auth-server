@@ -293,6 +293,7 @@ describe('redis enabled, token-pruning enabled:', () => {
         assert.equal(args[0].foo, 'bar', 'redisPool was passed config')
         assert.equal(args[0].baz, 'qux', 'redisPool was passed session token config')
         assert.equal(args[0].prefix, 'wibble', 'redisPool was passed session token prefix')
+        assert.equal(args[0].blee, undefined, 'redisPool was not passed email service config')
         assert.equal(args[1], log, 'redisPool was passed log')
         return redis
       }
@@ -304,6 +305,10 @@ describe('redis enabled, token-pruning enabled:', () => {
         sessionTokens: {
           baz: 'qux',
           prefix: 'wibble'
+        },
+        email: {
+          blee: 'blee',
+          prefix: 'blee'
         }
       },
       lastAccessTimeUpdates: {
@@ -1128,6 +1133,7 @@ describe('redis enabled, token-pruning disabled:', () => {
         assert.equal(args[0].foo, 'bar', 'redisPool was passed config')
         assert.equal(args[0].baz, 'qux', 'redisPool was passed session token config')
         assert.equal(args[0].prefix, 'wibble', 'redisPool was passed session token prefix')
+        assert.equal(args[0].blee, undefined, 'redisPool was not passed email service config')
         assert.equal(args[1], log, 'redisPool was passed log')
         return redis
       }
@@ -1141,6 +1147,10 @@ describe('redis enabled, token-pruning disabled:', () => {
         sessionTokens: {
           baz: 'qux',
           prefix: 'wibble'
+        },
+        email: {
+          blee: 'blee',
+          prefix: 'blee'
         }
       },
       lastAccessTimeUpdates: {

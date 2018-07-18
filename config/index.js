@@ -399,6 +399,32 @@ var conf = convict({
         doc: 'Minimum connection count for the session token Redis pool'
       }
     },
+    email: {
+      enabled: {
+        default: true,
+        doc: 'Enable Redis for email config',
+        format: Boolean,
+        env: 'EMAIL_CONFIG_USE_REDIS'
+      },
+      prefix: {
+        default: 'email:',
+        env: 'EMAIL_CONFIG_REDIS_KEY_PREFIX',
+        format: String,
+        doc: 'Key prefix for the email config Redis pool'
+      },
+      maxConnections: {
+        default: 10,
+        env: 'EMAIL_CONFIG_REDIS_POOL_MAX_CONNECTIONS',
+        format: 'int',
+        doc: 'Maximum connection count for the email config Redis pool'
+      },
+      minConnections: {
+        default: 1,
+        env: 'EMAIL_CONFIG_REDIS_POOL_MIN_CONNECTIONS',
+        format: 'int',
+        doc: 'Minimum connection count for the email config Redis pool'
+      }
+    },
     maxPending: {
       default: 1000,
       env: 'REDIS_POOL_MAX_PENDING',
