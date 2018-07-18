@@ -87,4 +87,3 @@ workflows:
           filters:
             tags:
               only: /.*/
-f
