@@ -19,3 +19,4 @@ npm-debug.log
 server.pot
 .mail_output
 fxa-content-server-l10n/
+lib/senders-transpiled

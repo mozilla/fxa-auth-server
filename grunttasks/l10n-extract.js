@@ -43,7 +43,7 @@ module.exports = function (grunt) {
 
     walker.on('end', function () {
       var jsWalker = extract({
-        'input-dir': path.join(pkgroot, 'lib/senders'),
+        'input-dir': path.join(pkgroot, 'lib/senders-transpiled'),
         outputDir: pkgroot,
         'output': 'server.pot',
         joinExisting: true,
