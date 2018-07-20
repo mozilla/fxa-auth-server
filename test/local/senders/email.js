@@ -913,6 +913,137 @@ describe(
           }
         )
 
+        it('sends request to fxa-email-service when selectEmailServices tells it to', () => {
+          const message = {
+            email: 'foo@example.com',
+            subject: 'subject',
+            template: 'verifyLoginEmail'
+          }
+          mailer.selectEmailServices = sinon.spy(() => P.resolve([
+            {
+              emailAddresses: [ message.email ],
+              emailService: 'fxa-email-service',
+              emailSender: 'sendgrid',
+              mailer: mailer.emailService
+            }
+          ]))
+
+          return mailer.send(message)
+            .then(() => {
+              assert.equal(mailer.selectEmailServices.callCount, 1)
+
+              let args = mailer.selectEmailServices.args[0]
+              assert.equal(args.length, 1)
+              assert.equal(args[0], message)
+
+              assert.equal(mailer.emailService.sendMail.callCount, 1)
+              assert.equal(mailer.mailer.sendMail.callCount, 0)
+
+              args = mailer.emailService.sendMail.args[0]
+              assert.equal(args.length, 2)
+              assert.equal(args[0].to, 'foo@example.com')
+
+              const headers = args[0].headers
+              assert.equal(headers['X-Email-Service'], 'fxa-email-service')
+              assert.equal(headers['X-Email-Sender'], 'sendgrid')
+            })
+        })
+
+        it('correctly handles multiple email addresses from selectEmailServices', () => {
+          const message = {
+            email: 'foo@example.com',
+            ccEmails: [ 'bar@example.com', 'baz@example.com' ],
+            subject: 'subject',
+            template: 'verifyLoginEmail'
+          }
+          mailer.selectEmailServices = sinon.spy(() => P.resolve([
+            {
+              emailAddresses: [ message.email, ...message.ccEmails ],
+              emailService: 'fxa-auth-server',
+              emailSender: 'ses',
+              mailer: mailer.mailer
+            }
+          ]))
+
+          return mailer.send(message)
+            .then(() => {
+              assert.equal(mailer.selectEmailServices.callCount, 1)
+              assert.equal(mailer.mailer.sendMail.callCount, 1)
+              assert.equal(mailer.emailService.sendMail.callCount, 0)
+
+              const args = mailer.mailer.sendMail.args[0]
+              assert.equal(args.length, 2)
+              assert.equal(args[0].to, 'foo@example.com')
+              assert.deepEqual(args[0].cc, [ 'bar@example.com', 'baz@example.com' ])
+
+              const headers = args[0].headers
+              assert.equal(headers['X-Email-Service'], 'fxa-auth-server')
+              assert.equal(headers['X-Email-Sender'], 'ses')
+            })
+        })
+
+        it('correctly handles multiple services from selectEmailServices', () => {
+          const message = {
+            email: 'foo@example.com',
+            ccEmails: [ 'bar@example.com', 'baz@example.com' ],
+            subject: 'subject',
+            template: 'verifyLoginEmail'
+          }
+          mailer.selectEmailServices = sinon.spy(() => P.resolve([
+            {
+              emailAddresses: [ message.email ],
+              emailService: 'fxa-email-service',
+              emailSender: 'sendgrid',
+              mailer: mailer.emailService
+            },
+            {
+              emailAddresses: message.ccEmails.slice(0, 1),
+              emailService: 'fxa-email-service',
+              emailSender: 'ses',
+              mailer: mailer.emailService
+            },
+            {
+              emailAddresses: message.ccEmails.slice(1),
+              emailService: 'fxa-auth-server',
+              emailSender: 'ses',
+              mailer: mailer.mailer
+            }
+          ]))
+
+          return mailer.send(message)
+            .then(() => {
+              assert.equal(mailer.selectEmailServices.callCount, 1)
+              assert.equal(mailer.emailService.sendMail.callCount, 2)
+              assert.equal(mailer.mailer.sendMail.callCount, 1)
+
+              let args = mailer.emailService.sendMail.args[0]
+              assert.equal(args.length, 2)
+              assert.equal(args[0].to, 'foo@example.com')
+              assert.equal(args[0].cc, undefined)
+
+              let headers = args[0].headers
+              assert.equal(headers['X-Email-Service'], 'fxa-email-service')
+              assert.equal(headers['X-Email-Sender'], 'sendgrid')
+
+              args = mailer.emailService.sendMail.args[1]
+              assert.equal(args.length, 2)
+              assert.equal(args[0].to, 'bar@example.com')
+              assert.equal(args[0].cc, undefined)
+
+              headers = args[0].headers
+              assert.equal(headers['X-Email-Service'], 'fxa-email-service')
+              assert.equal(headers['X-Email-Sender'], 'ses')
+
+              args = mailer.mailer.sendMail.args[0]
+              assert.equal(args.length, 2)
+              assert.equal(args[0].to, 'baz@example.com')
+              assert.equal(args[0].cc, undefined)
+
+              headers = args[0].headers
+              assert.equal(headers['X-Email-Service'], 'fxa-auth-server')
+              assert.equal(headers['X-Email-Sender'], 'ses')
+            })
+        })
       }
     )
 
