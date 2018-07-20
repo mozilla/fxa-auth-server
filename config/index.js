@@ -182,7 +182,7 @@ var conf = convict({
     forcedEmailAddresses: {
       doc: 'force usage of fxa-email-service when sending emails to addresses that match this pattern',
       format: RegExp,
-      default: /emailservice.[A-Za-z0-9._%+-]+@restmail.net$/,
+      default: /emailservice\.[A-Za-z0-9._%+-]+@restmail\.net$/,
       env: 'EMAIL_SERVICE_FORCE_EMAIL_REGEX'
     },
   },
