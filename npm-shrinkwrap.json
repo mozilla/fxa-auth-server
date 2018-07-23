@@ -14029,6 +14029,11 @@
       "integrity": "sha1-vsEf3IOp/aBjQBIQ5AF2wwJNFWc=",
       "dev": true
     },
+    "sandbox": {
+      "version": "0.8.6",
+      "resolved": "https://registry.npmjs.org/sandbox/-/sandbox-0.8.6.tgz",
+      "integrity": "sha1-0WnxhRNgTjJ8m/HMOYgbC+xO17Y="
+    },
     "sax": {
       "version": "1.2.1",
       "resolved": "https://registry.npmjs.org/sax/-/sax-1.2.1.tgz",

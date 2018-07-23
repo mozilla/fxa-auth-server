@@ -1555,3 +1555,142 @@ describe('mailer constructor:', () => {
     })
   })
 })
+
+describe('call selectEmailServices with mocked sandbox:', () => {
+  const emailAddress = 'foo@example.com'
+  let mockLog, redis, Sandbox, sandbox, mailer, promise, result, failed
+
+  beforeEach(done => {
+    P.all([
+      require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
+      require(`${ROOT_DIR}/lib/senders/templates`).init()
+    ]).spread((translator, templates) => {
+      mockLog = mocks.mockLog()
+      redis = {
+        get: sinon.spy(() => P.resolve({ sendgrid: { regex: '^foo@example\.com$' } }))
+      }
+      Sandbox = sinon.spy(function () { return sandbox })
+      sandbox = {
+        run: sinon.spy()
+      }
+      const Mailer = proxyquire(`${ROOT_DIR}/lib/senders/email`, {
+        '../redis': () => redis,
+        'sandbox': Sandbox
+      })(mockLog, config.getProperties())
+      mailer = new Mailer(translator, templates, config.get('smtp'))
+      promise = mailer.selectEmailServices({
+        email: emailAddress
+      })
+        .then(r => result = r)
+        .catch(() => failed = true)
+      setImmediate(done)
+    })
+  })
+
+  afterEach(() => mailer.stop())
+
+  it('called the sandbox correctly', () => {
+    assert.equal(Sandbox.callCount, 1)
+
+    let args = Sandbox.args[0]
+    assert.equal(args.length, 1)
+    assert.deepEqual(args[0], {
+      timeout: 100
+    })
+
+    assert.equal(sandbox.run.callCount, 1)
+
+    args = sandbox.run.args[0]
+    assert.equal(args.length, 2)
+    assert.equal(args[0], 'new RegExp("^foo@example\.com$").test("foo@example.com")')
+    assert.equal(typeof args[1], 'function')
+  })
+
+  describe('call sandbox result handler with match:', () => {
+    beforeEach(() => {
+      sandbox.run.args[0][1]({ result: 'true' })
+      return promise
+    })
+
+    it('resolved', () => {
+      assert.deepEqual(result, [
+        {
+          emailAddresses: [ 'foo@example.com' ],
+          mailer: mailer.emailService,
+          emailService: 'fxa-email-service',
+          emailSender: 'sendgrid'
+        }
+      ])
+    })
+
+    it('did not fail', () => {
+      assert.equal(failed, undefined)
+    })
+  })
+
+  describe('call sandbox result handler with timeout:', () => {
+    beforeEach(() => {
+      sandbox.run.args[0][1]({ result: 'TimeoutError' })
+      return promise
+    })
+
+    it('resolved', () => {
+      assert.deepEqual(result, [
+        {
+          emailAddresses: [ 'foo@example.com' ],
+          mailer: mailer.mailer,
+          emailService: 'fxa-auth-server',
+          emailSender: 'ses'
+        }
+      ])
+    })
+
+    it('did not fail', () => {
+      assert.equal(failed, undefined)
+    })
+  })
+})
+
+describe('call selectEmailServices with mocked safe-regex, regex-only match and redos regex:', () => {
+  const emailAddress = 'foo@example.com'
+  let mockLog, redis, safeRegex, mailer
+
+  beforeEach(() => {
+    return P.all([
+      require(`${ROOT_DIR}/lib/senders/translator`)(['en'], 'en'),
+      require(`${ROOT_DIR}/lib/senders/templates`).init()
+    ]).spread((translator, templates) => {
+      mockLog = mocks.mockLog()
+      redis = {
+        get: sinon.spy(() => P.resolve({ sendgrid: { regex: '^((((.*)*)*)*)*@example\.com$' } }))
+      }
+      safeRegex = sinon.spy(function () { return true })
+      const Mailer = proxyquire(`${ROOT_DIR}/lib/senders/email`, {
+        '../redis': () => redis,
+        'safe-regex': safeRegex
+      })(mockLog, config.getProperties())
+      mailer = new Mailer(translator, templates, config.get('smtp'))
+    })
+  })
+
+  afterEach(() => mailer.stop())
+
+  it('email address was treated as mismatch', () => {
+    return mailer.selectEmailServices({ email: emailAddress })
+      .then(result => {
+        assert.deepEqual(result, [
+          {
+            mailer: mailer.mailer,
+            emailAddresses: [ emailAddress ],
+            emailService: 'fxa-auth-server',
+            emailSender: 'ses'
+          }
+        ])
+
+        assert.equal(safeRegex.callCount, 1)
+        const args = safeRegex.args[0]
+        assert.equal(args.length, 1)
+        assert.equal(args[0], '^((((.*)*)*)*)*@example\.com$')
+      })
+  })
+})
