@@ -1352,6 +1352,24 @@ describe(
             ]))
         })
       })
+
+      describe('redis.get returns unsafe regex:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({ sendgrid: { regex: '^(.+)+@example\.com$' } }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.mailer,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }
+            ]))
+        })
+      })
     })
 
     describe('single email address matching local static email service config:', () => {
