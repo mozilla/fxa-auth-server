@@ -1197,6 +1197,60 @@ describe(
         })
       })
 
+      describe('redis.get returns socketlabs percentage-only match:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: thresholdPercentage + 1 } }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.emailService,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-email-service',
+                emailSender: 'socketlabs'
+              }
+            ]))
+        })
+      })
+
+      describe('redis.get returns socketlabs percentage-only mismatch:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: thresholdPercentage } }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.mailer,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }
+            ]))
+        })
+      })
+
+      describe('redis.get returns socketlabs regex-only match:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({ socketlabs: { regex: '^foo@example\.com$' } }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.emailService,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-email-service',
+                emailSender: 'socketlabs'
+              }
+            ]))
+        })
+      })
+
       describe('redis.get returns ses percentage-only match:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({ ses: { percentage: thresholdPercentage + 1 } }))
