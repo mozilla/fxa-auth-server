@@ -1467,13 +1467,25 @@ describe(
     })
 
     describe('multiple email addresses:', () => {
-      const emailAddresses = [ 'foo@example.com', 'bar@example.com', 'baz@example.com' ]
+      const emailAddresses = [ 'a@example.com', 'b@example.com', 'c@example.com' ]
+      const thresholdPercentages = emailAddresses.map(emailAddress => {
+        return emailAddress.split('')
+          .reduce((sum, character) => sum + character.charCodeAt(0), 0) % 100
+      })
+
+      it('fixture data threshold percentages are sensible', () => {
+        thresholdPercentages.forEach(thresholdPercentage => {
+          assert.ok(thresholdPercentage > 0 && thresholdPercentage < 100)
+        })
+        assert.equal(thresholdPercentages[0], thresholdPercentages[1] - 1)
+        assert.equal(thresholdPercentages[1], thresholdPercentages[2] - 1)
+      })
 
       describe('redis.get returns sendgrid and ses matches and a mismatch:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { regex: 'foo' },
-            ses: { regex: 'bar' }
+            sendgrid: { regex: '^a' },
+            ses: { regex: '^b' }
           }))
         })
 
@@ -1508,8 +1520,8 @@ describe(
       describe('redis.get returns a sendgrid match and two ses matches:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { regex: 'foo' },
-            ses: { regex: 'ba' }
+            sendgrid: { regex: '^a' },
+            ses: { regex: '^b|c' }
           }))
         })
 
@@ -1553,6 +1565,117 @@ describe(
                 mailer: mailer.mailer,
                 emailAddresses: emailAddresses,
                 emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }
+            ]))
+        })
+      })
+
+      describe('redis.get returns overlapping percentage-only matches:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({
+            sendgrid: { percentage: thresholdPercentages[0] + 1 },
+            socketlabs: { percentage: 1 },
+            ses: { percentage: 1 }
+          }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({
+            email: emailAddresses[0],
+            ccEmails: emailAddresses.slice(1)
+          })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(0, 1),
+                emailService: 'fxa-email-service',
+                emailSender: 'sendgrid'
+              },
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(1, 2),
+                emailService: 'fxa-email-service',
+                emailSender: 'socketlabs'
+              },
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(2),
+                emailService: 'fxa-email-service',
+                emailSender: 'ses'
+              }
+            ]))
+        })
+      })
+
+      describe('redis.get returns overlapping combined mismatch:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({
+            sendgrid: { percentage: thresholdPercentages[0] + 1 },
+            socketlabs: { regex: '@example\.com$', percentage: 1 },
+            ses: { percentage: 1 }
+          }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({
+            email: emailAddresses[0],
+            ccEmails: emailAddresses.slice(1)
+          })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(0, 1),
+                emailService: 'fxa-email-service',
+                emailSender: 'sendgrid'
+              },
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(1, 2),
+                emailService: 'fxa-email-service',
+                emailSender: 'ses'
+              },
+              {
+                mailer: mailer.mailer,
+                emailAddresses: emailAddresses.slice(2),
+                emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }
+            ]))
+        })
+      })
+
+      describe('redis.get returns overlapping combined matches:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve({
+            sendgrid: { regex: '@example\.com$', percentage: thresholdPercentages[0] + 1 },
+            socketlabs: { regex: '@example\.com$', percentage: 1 },
+            ses: { regex: '@example\.com$', percentage: 1 }
+          }))
+        })
+
+        it('selectEmailServices returns the correct data', () => {
+          return mailer.selectEmailServices({
+            email: emailAddresses[0],
+            ccEmails: emailAddresses.slice(1)
+          })
+            .then(result => assert.deepEqual(result, [
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(0, 1),
+                emailService: 'fxa-email-service',
+                emailSender: 'sendgrid'
+              },
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(1, 2),
+                emailService: 'fxa-email-service',
+                emailSender: 'socketlabs'
+              },
+              {
+                mailer: mailer.emailService,
+                emailAddresses: emailAddresses.slice(2),
+                emailService: 'fxa-email-service',
                 emailSender: 'ses'
               }
             ]))
