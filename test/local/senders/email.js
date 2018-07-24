@@ -1049,17 +1049,14 @@ describe(
 
     describe('single email address:', () => {
       const emailAddress = 'foo@example.com'
-      const thresholdPercentage = emailAddress.split('')
-        .reduce((sum, character) => sum + character.charCodeAt(0), 0) % 100
-
-      it('fixture data threshold percentage is sensible', () => {
-        assert.ok(thresholdPercentage > 0 && thresholdPercentage < 100)
-      })
 
       describe('redis.get returns sendgrid percentage-only match:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ sendgrid: { percentage: thresholdPercentage + 1 } }))
+          redis.get = sinon.spy(() => P.resolve({ sendgrid: { percentage: 11 } }))
+          sinon.stub(Math, 'random', () => 0.109)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1076,8 +1073,11 @@ describe(
 
       describe('redis.get returns sendgrid percentage-only mismatch:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ sendgrid: { percentage: thresholdPercentage } }))
+          redis.get = sinon.spy(() => P.resolve({ sendgrid: { percentage: 11 } }))
+          sinon.stub(Math, 'random', () => 0.11)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1132,11 +1132,14 @@ describe(
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
             sendgrid: {
-              percentage: thresholdPercentage + 1,
+              percentage: 1,
               regex: '^foo@example\.com$'
             }
           }))
+          sinon.stub(Math, 'random', () => 0.009)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1155,11 +1158,14 @@ describe(
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
             sendgrid: {
-              percentage: thresholdPercentage,
+              percentage: 1,
               regex: '^foo@example\.com$'
             }
           }))
+          sinon.stub(Math, 'random', () => 0.01)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1178,11 +1184,14 @@ describe(
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
             sendgrid: {
-              percentage: thresholdPercentage + 1,
+              percentage: 1,
               regex: '^ffoo@example\.com$'
             }
           }))
+          sinon.stub(Math, 'random', () => 0)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1199,8 +1208,11 @@ describe(
 
       describe('redis.get returns socketlabs percentage-only match:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: thresholdPercentage + 1 } }))
+          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: 42 } }))
+          sinon.stub(Math, 'random', () => 0.419)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1217,8 +1229,11 @@ describe(
 
       describe('redis.get returns socketlabs percentage-only mismatch:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: thresholdPercentage } }))
+          redis.get = sinon.spy(() => P.resolve({ socketlabs: { percentage: 42 } }))
+          sinon.stub(Math, 'random', () => 0.42)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1253,8 +1268,11 @@ describe(
 
       describe('redis.get returns ses percentage-only match:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ ses: { percentage: thresholdPercentage + 1 } }))
+          redis.get = sinon.spy(() => P.resolve({ ses: { percentage: 100 } }))
+          sinon.stub(Math, 'random', () => 0.999)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1271,8 +1289,11 @@ describe(
 
       describe('redis.get returns ses percentage-only mismatch:', () => {
         beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({ ses: { percentage: thresholdPercentage } }))
+          redis.get = sinon.spy(() => P.resolve({ ses: { percentage: 99 } }))
+          sinon.stub(Math, 'random', () => 0.999)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1308,10 +1329,13 @@ describe(
       describe('redis.get returns sendgrid and ses matches:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentage + 1 },
+            sendgrid: { percentage: 10 },
             ses: { regex: '^foo@example\.com$' }
           }))
+          sinon.stub(Math, 'random', () => 0.09)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1329,10 +1353,13 @@ describe(
       describe('redis.get returns sendgrid match and ses mismatch:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentage + 1 },
+            sendgrid: { percentage: 10 },
             ses: { regex: '^ffoo@example\.com$' }
           }))
+          sinon.stub(Math, 'random', () => 0.09)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1350,10 +1377,13 @@ describe(
       describe('redis.get returns sendgrid mismatch and ses match:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentage },
+            sendgrid: { percentage: 10 },
             ses: { regex: '^foo@example\.com$' }
           }))
+          sinon.stub(Math, 'random', () => 0.1)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1371,10 +1401,13 @@ describe(
       describe('redis.get returns sendgrid and ses mismatches:', () => {
         beforeEach(() => {
           redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentage },
+            sendgrid: { percentage: 10 },
             ses: { regex: '^ffoo@example\.com$' }
           }))
+          sinon.stub(Math, 'random', () => 0.1)
         })
+
+        afterEach(() => Math.random.restore())
 
         it('selectEmailServices returns the correct data', () => {
           return mailer.selectEmailServices({ email: emailAddress })
@@ -1468,18 +1501,6 @@ describe(
 
     describe('multiple email addresses:', () => {
       const emailAddresses = [ 'a@example.com', 'b@example.com', 'c@example.com' ]
-      const thresholdPercentages = emailAddresses.map(emailAddress => {
-        return emailAddress.split('')
-          .reduce((sum, character) => sum + character.charCodeAt(0), 0) % 100
-      })
-
-      it('fixture data threshold percentages are sensible', () => {
-        thresholdPercentages.forEach(thresholdPercentage => {
-          assert.ok(thresholdPercentage > 0 && thresholdPercentage < 100)
-        })
-        assert.equal(thresholdPercentages[0], thresholdPercentages[1] - 1)
-        assert.equal(thresholdPercentages[1], thresholdPercentages[2] - 1)
-      })
 
       describe('redis.get returns sendgrid and ses matches and a mismatch:', () => {
         beforeEach(() => {
@@ -1565,117 +1586,6 @@ describe(
                 mailer: mailer.mailer,
                 emailAddresses: emailAddresses,
                 emailService: 'fxa-auth-server',
-                emailSender: 'ses'
-              }
-            ]))
-        })
-      })
-
-      describe('redis.get returns overlapping percentage-only matches:', () => {
-        beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentages[0] + 1 },
-            socketlabs: { percentage: 1 },
-            ses: { percentage: 1 }
-          }))
-        })
-
-        it('selectEmailServices returns the correct data', () => {
-          return mailer.selectEmailServices({
-            email: emailAddresses[0],
-            ccEmails: emailAddresses.slice(1)
-          })
-            .then(result => assert.deepEqual(result, [
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(0, 1),
-                emailService: 'fxa-email-service',
-                emailSender: 'sendgrid'
-              },
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(1, 2),
-                emailService: 'fxa-email-service',
-                emailSender: 'socketlabs'
-              },
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(2),
-                emailService: 'fxa-email-service',
-                emailSender: 'ses'
-              }
-            ]))
-        })
-      })
-
-      describe('redis.get returns overlapping combined mismatch:', () => {
-        beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { percentage: thresholdPercentages[0] + 1 },
-            socketlabs: { regex: '@example\.com$', percentage: 1 },
-            ses: { percentage: 1 }
-          }))
-        })
-
-        it('selectEmailServices returns the correct data', () => {
-          return mailer.selectEmailServices({
-            email: emailAddresses[0],
-            ccEmails: emailAddresses.slice(1)
-          })
-            .then(result => assert.deepEqual(result, [
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(0, 1),
-                emailService: 'fxa-email-service',
-                emailSender: 'sendgrid'
-              },
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(1, 2),
-                emailService: 'fxa-email-service',
-                emailSender: 'ses'
-              },
-              {
-                mailer: mailer.mailer,
-                emailAddresses: emailAddresses.slice(2),
-                emailService: 'fxa-auth-server',
-                emailSender: 'ses'
-              }
-            ]))
-        })
-      })
-
-      describe('redis.get returns overlapping combined matches:', () => {
-        beforeEach(() => {
-          redis.get = sinon.spy(() => P.resolve({
-            sendgrid: { regex: '@example\.com$', percentage: thresholdPercentages[0] + 1 },
-            socketlabs: { regex: '@example\.com$', percentage: 1 },
-            ses: { regex: '@example\.com$', percentage: 1 }
-          }))
-        })
-
-        it('selectEmailServices returns the correct data', () => {
-          return mailer.selectEmailServices({
-            email: emailAddresses[0],
-            ccEmails: emailAddresses.slice(1)
-          })
-            .then(result => assert.deepEqual(result, [
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(0, 1),
-                emailService: 'fxa-email-service',
-                emailSender: 'sendgrid'
-              },
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(1, 2),
-                emailService: 'fxa-email-service',
-                emailSender: 'socketlabs'
-              },
-              {
-                mailer: mailer.emailService,
-                emailAddresses: emailAddresses.slice(2),
-                emailService: 'fxa-email-service',
                 emailSender: 'ses'
               }
             ]))
