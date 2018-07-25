@@ -866,6 +866,7 @@ describe(
                   assert.equal(args.length, 2)
                   assert.equal(args[0].to, 'emailservice.foo@restmail.net')
                   assert.equal(args[0].subject, 'subject')
+                  assert.equal(args[0].provider, 'ses')
 
                   const headers = args[0].headers
 
@@ -900,11 +901,14 @@ describe(
               .then(
                 response => {
                   assert(! mailer.emailService.sendMail.called)
-                  assert( mailer.mailer.sendMail.called)
-                  assert.equal(mailer.mailer.sendMail.args[0][0].to, 'foo@restmail.net')
-                  assert.equal(mailer.mailer.sendMail.args[0][0].subject, 'subject')
-                  assert.equal(mailer.mailer.sendMail.args[0][0].headers['X-Template-Name'], 'verifyLoginEmail')
-                  assert.equal(mailer.mailer.sendMail.args[0][0].headers['X-Uid'], 'foo')
+                  assert( mailer.mailer.sendMail.calledOnce)
+                  const args = mailer.mailer.sendMail.args[0]
+                  assert.equal(args.length, 2)
+                  assert.equal(args[0].to, 'foo@restmail.net')
+                  assert.equal(args[0].subject, 'subject')
+                  assert.equal(args[0].headers['X-Template-Name'], 'verifyLoginEmail')
+                  assert.equal(args[0].headers['X-Uid'], 'foo')
+                  assert.equal(args[0].provider, undefined)
                   assert.equal(typeof mailer.mailer.sendMail.args[0][1], 'function')
 
                   assert.equal(redis.get.callCount, 1)
@@ -942,6 +946,7 @@ describe(
               args = mailer.emailService.sendMail.args[0]
               assert.equal(args.length, 2)
               assert.equal(args[0].to, 'foo@example.com')
+              assert.equal(args[0].provider, 'sendgrid')
 
               const headers = args[0].headers
               assert.equal(headers['X-Email-Service'], 'fxa-email-service')
@@ -1020,6 +1025,7 @@ describe(
               assert.equal(args.length, 2)
               assert.equal(args[0].to, 'foo@example.com')
               assert.equal(args[0].cc, undefined)
+              assert.equal(args[0].provider, 'sendgrid')
 
               let headers = args[0].headers
               assert.equal(headers['X-Email-Service'], 'fxa-email-service')
@@ -1029,6 +1035,7 @@ describe(
               assert.equal(args.length, 2)
               assert.equal(args[0].to, 'bar@example.com')
               assert.equal(args[0].cc, undefined)
+              assert.equal(args[0].provider, 'ses')
 
               headers = args[0].headers
               assert.equal(headers['X-Email-Service'], 'fxa-email-service')
@@ -1038,6 +1045,7 @@ describe(
               assert.equal(args.length, 2)
               assert.equal(args[0].to, 'baz@example.com')
               assert.equal(args[0].cc, undefined)
+              assert.equal(args[0].provider, undefined)
 
               headers = args[0].headers
               assert.equal(headers['X-Email-Service'], 'fxa-auth-server')
