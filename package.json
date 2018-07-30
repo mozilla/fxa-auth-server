@@ -1,6 +1,6 @@
 {
   "name": "fxa-auth-server",
-  "version": "1.116.1",
+  "version": "1.117.1",
   "description": "Firefox Accounts, an identity provider for Mozilla cloud services",
   "bin": {
     "fxa-auth": "./bin/key_server.js"
@@ -59,7 +59,6 @@
     "hapi-hpkp": "2.0.0",
     "hkdf": "0.0.2",
     "i18n-abide": "0.0.25",
-    "inert": "5.1.0",
     "jed": "0.5.4",
     "joi": "13.3.0",
     "keyv": "3.0.0",
