@@ -13,8 +13,18 @@ const _configureSentry = require('../../lib/server')._configureSentry
 const server = new Hapi.Server({})
 
 describe('Sentry', () => {
+  let sentryDsn
+
+  beforeEach(() => {
+    sentryDsn = config.sentryDsn
+  })
+
+  afterEach(() => {
+    config.sentryDsn = sentryDsn
+  })
+
   it('can be set up when sentry is enabled', () => {
-    process.env.SENTRY_DSN = 'https://deadbeef:deadbeef@127.0.0.1/123'
+    config.sentryDsn = 'https://deadbeef:deadbeef@127.0.0.1/123'
     assert.doesNotThrow(() => _configureSentry(server, config))
   })
 
