@@ -32,10 +32,6 @@ jobs:
           command: docker build -f Dockerfile-build -t fxa-auth-server:build .
 
       - run:
-          name: Check npm install
-          command: docker run --rm -it fxa-auth-server:build npm ls --production
-
-      - run:
           name: Start redis
           command: docker pull redis && docker run -d --name redis-server -p 6379:6379 redis
 
