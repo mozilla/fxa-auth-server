@@ -58,7 +58,7 @@ jobs:
               DOCKER_TAG="$CIRCLE_TAG"
             fi
 
-            if [ -n "${DOCKER_TAG}" ];f then
+            if [ -n "${DOCKER_TAG}" ]; then
               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
               echo ${DOCKERHUB_REPO}:${DOCKER_TAG}
               docker tag fxa-auth-server:build ${DOCKERHUB_REPO}:${DOCKER_TAG}
