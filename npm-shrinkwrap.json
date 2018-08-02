@@ -1,6 +1,6 @@
 {
   "name": "fxa-auth-server",
-  "version": "1.117.1",
+  "version": "1.117.2",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -440,9 +440,12 @@
       "integrity": "sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY="
     },
     "asn1": {
-      "version": "0.2.3",
-      "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.2.3.tgz",
-      "integrity": "sha1-2sh4dxPJlmhJ/IGAd36+nB3fO4Y="
+      "version": "0.2.4",
+      "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.2.4.tgz",
+      "integrity": "sha512-jxwzQpLQjSmWXgwaCZE9Nz+glAG01yF1QnWgbhGwHI5A6FRIEY6IVqtHhIepHqI7/kyEyQEagBC5mBEFlIYvdg==",
+      "requires": {
+        "safer-buffer": "~2.1.0"
+      }
     },
     "asn1.js": {
       "version": "1.0.3",
@@ -565,9 +568,9 @@
       }
     },
     "big-integer": {
-      "version": "1.6.32",
-      "resolved": "https://registry.npmjs.org/big-integer/-/big-integer-1.6.32.tgz",
-      "integrity": "sha512-ljKJdR3wk9thHfLj4DtrNiOSTxvGFaMjWrG4pW75juXC4j7+XuKJVFdg4kgFMYp85PVkO05dFMj2dk2xVsH4xw=="
+      "version": "1.6.34",
+      "resolved": "https://registry.npmjs.org/big-integer/-/big-integer-1.6.34.tgz",
+      "integrity": "sha512-+w6B0Uo0ZvTSzDkXjoBCTNK0oe+aVL+yPi7kwGZm8hd8+Nj1AFPoxoq1Bl/mEu/G/ivOkUc1LRqVR0XeWFUzuA=="
     },
     "big-time": {
       "version": "2.0.1",
@@ -692,9 +695,9 @@
       "integrity": "sha1-+OcRMvf/5uAaXJaXpMbz5I1cyBk="
     },
     "buffer-from": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.0.tgz",
-      "integrity": "sha512-c5mRlguI/Pe2dSZmpER62rSCu0ryKmWddzRYsuXc50U2/g8jMOulc31VZMa4mYx31U5xsmSOpDCgH88Vl9cDGQ=="
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.1.tgz",
+      "integrity": "sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A=="
     },
     "buildmail": {
       "version": "4.0.1",
@@ -10946,7 +10949,7 @@
       "from": "git+https://github.com/vladikoff/node-uap.git#9cdd16247",
       "requires": {
         "array.prototype.find": "2.0.0",
-        "uap-core": "git://github.com/ua-parser/uap-core.git#fdee91274bbd6c36dd9f7d9b6673db80505d2c53",
+        "uap-core": "git://github.com/ua-parser/uap-core.git#f4d16a53e4771cf6deed18eb7273226606a4de21",
         "uap-ref-impl": "0.2.0",
         "yamlparser": "0.0.2"
       }
@@ -13727,7 +13730,7 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uap-core": {
-      "version": "git://github.com/ua-parser/uap-core.git#fdee91274bbd6c36dd9f7d9b6673db80505d2c53",
+      "version": "git://github.com/ua-parser/uap-core.git#f4d16a53e4771cf6deed18eb7273226606a4de21",
       "from": "git://github.com/ua-parser/uap-core.git"
     },
     "uap-ref-impl": {

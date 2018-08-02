@@ -22,9 +22,9 @@ const messageTypes = [
   'passwordChangedEmail',
   'passwordResetEmail',
   'passwordResetRequiredEmail',
+  'postAddAccountRecoveryEmail',
   'postAddTwoStepAuthenticationEmail',
   'postChangePrimaryEmail',
-  'postRemoveTwoStepAuthenticationEmail',
   'postConsumeRecoveryCodeEmail',
   'postNewRecoveryCodesEmail',
   'postVerifyEmail',
@@ -35,7 +35,10 @@ const messageTypes = [
   'verifyLoginEmail',
   'verifyLoginCodeEmail',
   'verifyPrimaryEmail',
-  'verifySecondaryEmail'
+  'verifySecondaryEmail',
+  'passwordResetAccountRecoveryEmail',
+  'postAddAccountRecoveryEmail',
+  'postRemoveAccountRecoveryEmail'
 ]
 
 const typesContainSupportLinks = [
@@ -52,7 +55,10 @@ const typesContainSupportLinks = [
   'verifyEmail',
   'verifyLoginCodeEmail',
   'verifyPrimaryEmail',
-  'verifySecondaryEmail'
+  'verifySecondaryEmail',
+  'passwordResetAccountRecoveryEmail',
+  'postAddAccountRecoveryEmail',
+  'postRemoveAccountRecoveryEmail'
 ]
 
 const typesContainPasswordResetLinks = [
@@ -73,6 +79,9 @@ const typesContainPasswordChangeLinks = [
   'postVerifySecondaryEmail',
   'postConsumeRecoveryCodeEmail',
   'postNewRecoveryCodesEmail',
+  'passwordResetAccountRecoveryEmail',
+  'postAddAccountRecoveryEmail',
+  'postRemoveAccountRecoveryEmail'
 ]
 
 const typesContainUnblockCode = [
@@ -81,6 +90,14 @@ const typesContainUnblockCode = [
 
 const typesContainTokenCode = [
   'verifyLoginCodeEmail'
+]
+
+const typesContainRevokeAccountRecoveryLinks = [
+  'postAddAccountRecoveryEmail'
+]
+
+const typesContainCreateAccountRecoveryLinks = [
+  'passwordResetAccountRecoveryEmail'
 ]
 
 const typesContainReportSignInLinks = [
@@ -108,6 +125,9 @@ const typesContainLocationData = [
   'verifySecondaryEmail',
   'postConsumeRecoveryCodeEmail',
   'postNewRecoveryCodesEmail',
+  'passwordResetAccountRecoveryEmail',
+  'postRemoveTwoStepAuthenticationEmail',
+  'postRemoveAccountRecoveryEmail'
 ]
 
 const typesContainPasswordManagerInfoLinks = [
@@ -122,6 +142,8 @@ const typesContainManageSettingsLinks = [
   'postRemoveTwoStepAuthenticationEmail',
   'postNewRecoveryCodesEmail',
   'postConsumeRecoveryCodeEmail',
+  'postRemoveTwoStepAuthenticationEmail',
+  'postRemoveAccountRecoveryEmail'
 ]
 
 const typesContainRecoveryCodeLinks = [
@@ -377,6 +399,32 @@ describe(
               mailer[type](message)
             }
           )
+        }
+
+        if (includes(typesContainRevokeAccountRecoveryLinks, type)) {
+          it('revoke account recovery link is in email template output for ' + type, () => {
+            mailer.mailer.sendMail = function (emailConfig) {
+              const link = mailer.createRevokeAccountRecoveryLink(type, message)
+              assert.ok(includes(emailConfig.html, link))
+              assert.ok(includes(emailConfig.text, link))
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
+            }
+            mailer[type](message)
+          })
+        }
+
+        if (includes(typesContainCreateAccountRecoveryLinks, type)) {
+          it('create account recovery link is in email template output for ' + type, () => {
+            mailer.mailer.sendMail = function (emailConfig) {
+              const link = mailer._generateCreateAccountRecoveryLinks(message, type).link
+              assert.ok(includes(emailConfig.html, link))
+              assert.ok(includes(emailConfig.text, link))
+              assert.ok(! includes(emailConfig.html, 'utm_source=email'))
+              assert.ok(! includes(emailConfig.text, 'utm_source=email'))
+            }
+            mailer[type](message)
+          })
         }
 
         if (includes(typesContainAndroidStoreLinks, type)) {
