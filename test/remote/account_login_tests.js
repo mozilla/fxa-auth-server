@@ -261,6 +261,23 @@ describe('remote account login', () => {
           assert.ok(code, 'code is sent')
         })
     })
+
+    it('should ignore verificationMethod if not requesting keys', () => {
+      return Client.login(config.publicUrl, email, password, {
+        verificationMethod: 'email',
+        keys: false
+      })
+        .then((res) => {
+          client = res
+          assert.equal(res.verificationMethod, undefined, 'sets correct verification method')
+          return client.emailStatus()
+        })
+        .then((status) => {
+          assert.equal(status.verified, true, 'account is verified')
+          assert.equal(status.emailVerified, true, 'email is verified')
+          assert.equal(status.sessionVerified, false, 'session is not verified')
+        })
+    })
   })
 
   after(() => {
