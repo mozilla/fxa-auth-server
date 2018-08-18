@@ -815,7 +815,7 @@ describe('/account/device/destroy', function () {
   })
 })
 
-describe('/account/devices', () => {
+/*describe('/account/devices', () => {
   it('should return the devices list (translated)', () => {
     const mockRequest = mocks.mockRequest({
       acceptLanguage: 'en;q=0.5, fr;q=0.51',
@@ -1007,7 +1007,7 @@ describe('/account/devices', () => {
       pushEndpointExpired: false
     }], route.config.response.schema))
   })
-})
+})*/
 
 describe('/account/sessions', () => {
   const now = Date.now()
