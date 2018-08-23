@@ -1,3 +1,14 @@
+<a name="1.119.3"></a>
+## [1.119.3](https://github.com/mozilla/fxa-auth-server/compare/v1.119.1...v1.119.3) (2018-08-23)
+
+
+
+### chore
+
+* **docs:** changelog updates ([8b6141e](https://github.com/mozilla/fxa-auth-server/commit/8b6141e))
+
+
+
 <a name="1.119.2"></a>
 ## [1.119.2](https://github.com/mozilla/fxa-auth-server/compare/v1.119.1...v1.119.2) (2018-08-23)
 
@@ -5,8 +16,6 @@
 ### Bug Fixes
 
 * **devices:** Add feature-flag for the "device commands" functionality. (#2591) r=@vladikoff ([85889ee](https://github.com/mozilla/fxa-auth-server/commit/85889ee)), closes [#2591](https://github.com/mozilla/fxa-auth-server/issues/2591)
-* **npm:**  new shrinkwrap
-
 
 <a name="1.119.1"></a>
 ## [1.119.1](https://github.com/mozilla/fxa-auth-server/compare/v1.119.0...v1.119.1) (2018-08-21)
