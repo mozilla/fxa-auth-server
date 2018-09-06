@@ -539,7 +539,7 @@ function mockRequest (data, errors) {
   return {
     app: {
       acceptLanguage: data.acceptLanguage || 'en-US',
-      clientAddress: data.clientAddress || '63.245.221.32',
+      clientAddress: data.clientAddress || '63.245.221.198',
       devices,
       features: new Set(data.features),
       geo,

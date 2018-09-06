@@ -189,7 +189,7 @@ describe('IP Profiling', () => {
   it(
     'previously verified session with suspicious request',
     () => {
-      mockRequest.app.clientAddress = '63.245.221.32'
+      mockRequest.app.clientAddress = '63.245.221.198'
       mockRequest.app.isSuspiciousRequest = true
 
       return runTest(route, mockRequest, function (response) {
