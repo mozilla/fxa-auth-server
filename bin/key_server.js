@@ -18,7 +18,7 @@ function run(config) {
   var getGeoData = require('../lib/geodb')(log)
   // Force the geo to load and run at startup, not waiting for it to run on
   // some route later.
-  const knownIp = '63.245.221.32' // Mozilla MTV
+  const knownIp = '63.245.221.198' // Mozilla MTV
   const location = getGeoData(knownIp)
   log.info({ op: 'geodb.check', result: location })
 
