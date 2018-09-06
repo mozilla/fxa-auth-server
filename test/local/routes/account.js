@@ -1053,7 +1053,7 @@ describe('/account/login', function () {
       return P.resolve(new Array(200))
     })
     mockLog.error = sinon.spy()
-    mockRequest.app.clientAddress = '63.245.221.32'
+    mockRequest.app.clientAddress = '63.245.221.198'
     return runTest(route, mockRequest, function () {
       assert.equal(mockLog.error.callCount, 0, 'log.error was not called')
     }).then(function () {
