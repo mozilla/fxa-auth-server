@@ -1,3 +1,13 @@
+<a name="1.119.7"></a>
+## [1.119.7](https://github.com/mozilla/fxa-auth-server/compare/v1.119.6...v1.119.7) (2018-09-07)
+
+
+### Bug Fixes
+
+* **push:** temporary fix the callback validation ([f9f70a4](https://github.com/mozilla/fxa-auth-server/commit/f9f70a4))
+
+
+
 <a name="1.119.6"></a>
 ## [1.119.6](https://github.com/mozilla/fxa-auth-server/compare/v1.119.5...v1.119.6) (2018-09-07)
 
