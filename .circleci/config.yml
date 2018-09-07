@@ -31,6 +31,17 @@ jobs:
           name: Build deployment container image
           command: docker build -f Dockerfile-build -t fxa-auth-server:build .
 
+      - persist_to_workspace:
+          root: /var/lib/docker/graph/
+          paths: ./*
+
+  test:
+    docker:
+      - image: circleci/node
+    steps:
+      - attach_workspace:
+          at: /var/lib/docker/graph/
+
       - run:
           name: Start redis
           command: docker pull redis && docker run -d --name redis-server -p 6379:6379 redis
@@ -83,3 +94,6 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test:
+          requires:
+              - build
