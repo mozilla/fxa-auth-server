@@ -9,12 +9,16 @@ set -u
 
 GLOB=$*
 if [ -z "$GLOB" ]; then
-  GLOB="test/local test/remote"
+  GLOB="test/local"
 fi
 
 DEFAULT_ARGS="-R dot --recursive --timeout 5000 --exit"
 
 ./scripts/gen_keys.js
 ./scripts/gen_vapid_keys.js
-./scripts/mocha-coverage.js $DEFAULT_ARGS $GLOB
-grunt eslint copyright
+
+for ((n=0;n<10;n++))
+do
+    echo "Loop " $n
+    ./scripts/mocha-coverage.js $DEFAULT_ARGS $GLOB
+done
