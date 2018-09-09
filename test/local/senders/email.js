@@ -6,7 +6,7 @@
 
 const ROOT_DIR = '../../..'
 
-const assert = require('insist')
+const { assert } = require('chai')
 const cp = require('child_process')
 const mocks = require('../../mocks')
 const P = require('bluebird')
@@ -832,6 +832,12 @@ describe(
             assert.equal(mailerSend1.args[0].to, message.email, 'logs sender to email address')
           })
       })
+    })
+
+    describe('mock failing sendMail method:', () => {
+      beforeEach(() => {
+        sinon.stub(mailer.mailer, 'sendMail', (config, cb) => cb(new Error('Fail')))
+      })
 
       it('rejects sendMail status', () => {
         const message = {
@@ -1551,6 +1557,49 @@ describe(
                 emailSender: 'ses'
               }
             ]))
+        })
+      })
+
+      describe('redis.get fails:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.reject({ message: 'wibble' }))
+        })
+
+        it('selectEmailServices returns fallback data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => {
+              assert.deepEqual(result, [{
+                mailer: mailer.mailer,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }])
+              assert.equal(mockLog.error.callCount, 1)
+              assert.deepEqual(mockLog.error.args[0][0], {
+                op: 'emailConfig.read.error',
+                err: 'wibble'
+              })
+            })
+        })
+      })
+
+      describe('redis.get returns invalid JSON:', () => {
+        beforeEach(() => {
+          redis.get = sinon.spy(() => P.resolve('wibble'))
+        })
+
+        it('selectEmailServices returns fallback data', () => {
+          return mailer.selectEmailServices({ email: emailAddress })
+            .then(result => {
+              assert.deepEqual(result, [{
+                mailer: mailer.mailer,
+                emailAddresses: [ emailAddress ],
+                emailService: 'fxa-auth-server',
+                emailSender: 'ses'
+              }])
+              assert.equal(mockLog.error.callCount, 1)
+              assert.deepEqual(mockLog.error.args[0][0].op, 'emailConfig.parse.error')
+            })
         })
       })
     })

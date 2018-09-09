@@ -4,14 +4,14 @@
 
 'use strict'
 
-const assert = require('insist')
+const { assert } = require('chai')
 const base64url = require('base64url')
 const config = require('../../config').getProperties()
 const crypto = require('crypto')
 const P = require('../../lib/promise')
 const sinon = require('sinon')
 const TestServer = require('../test_server')
-const UnblockCode = require('../../lib/crypto/base32')(config.signinUnblock.codeLength)
+const UnblockCode = require('../../lib/crypto/random').base32(config.signinUnblock.codeLength)
 const uuid = require('uuid')
 
 const log = { trace () {}, info () {}, error () {} }
