@@ -9,7 +9,7 @@ set -u
 
 GLOB=$*
 if [ -z "$GLOB" ]; then
-  GLOB="test/local"
+  GLOB="test/remote"
 fi
 
 DEFAULT_ARGS="-R dot --recursive --timeout 5000 --exit"
@@ -17,8 +17,8 @@ DEFAULT_ARGS="-R dot --recursive --timeout 5000 --exit"
 ./scripts/gen_keys.js
 ./scripts/gen_vapid_keys.js
 
-for ((n=0;n<10;n++))
+for i in 1 2 3 4 5 6 7
 do
-    echo "Loop " $n
-    ./scripts/mocha-coverage.js $DEFAULT_ARGS $GLOB
+  echo "Looping ... number $i"
+  ./scripts/mocha-coverage.js $DEFAULT_ARGS $GLOB
 done
