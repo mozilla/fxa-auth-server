@@ -24,6 +24,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
   * [Account](#account)
     * [POST /account/create](#post-accountcreate)
     * [POST /account/login](#post-accountlogin)
+    * [GET /account/oauth_exchange (:lock: oauthToken)](#get-accountoauth_exchange)
     * [GET /account/status (:lock::unlock: sessionToken)](#get-accountstatus)
     * [POST /account/status](#post-accountstatus)
     * [GET /account/profile (:lock: sessionToken, oauthToken)](#get-accountprofile)
@@ -295,6 +296,8 @@ for `code` and `errno` are:
   This request requires two step authentication enabled on your account.
 * `code: 400, errno: 161`:
   Recovery key already exists.
+* `code: 401, errno: 162`:
+  The required scope(s) for this request was not found.
 * `code: 503, errno: 201`:
   Service unavailable
 * `code: 503, errno: 202`:
@@ -327,6 +330,7 @@ include additional response properties:
 * `errno: 135`: bouncedAt
 * `errno: 152`
 * `errno: 153`
+* `errno: 162`: requiredScopes
 * `errno: 201`: retryAfter
 * `errno: 202`: retryAfter
 * `errno: 203`: service, operation
@@ -714,6 +718,23 @@ by the following errors
 
 * `code: 400, errno: 160`:
   This request requires two step authentication enabled on your account.
+
+
+#### GET /account/oauth_exchange
+
+:lock: authenticated with OAuth bearer token
+<!--begin-route-get-accountoauth_exchange-->
+
+<!--end-route-get-accountoauth_exchange-->
+
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+* `code: 401, errno: 162`:
+  The required scope(s) for this request was not found.
 
 
 #### GET /account/status
