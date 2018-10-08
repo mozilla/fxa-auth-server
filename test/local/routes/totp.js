@@ -21,7 +21,8 @@ describe('totp', () => {
       metricsContext: mocks.mockMetricsContext(),
       credentials: {
         uid: 'uid',
-        email: TEST_EMAIL
+        email: TEST_EMAIL,
+        id: 'session'
       },
       log: log,
       payload: {
@@ -161,20 +162,29 @@ describe('totp', () => {
         })
     })
 
-    it('should return false for invalid TOTP code', () => {
+    it('should remove previous sessions when TOTP enabled', () => {
+      const authenticator = new otplib.authenticator.Authenticator()
+      authenticator.options = Object.assign({}, otplib.authenticator.options, {secret})
       requestOptions.payload = {
-        code: 'NOTVALID'
+        code: authenticator.generate(secret)
       }
-      return setup({db: {email: TEST_EMAIL}}, {}, '/session/verify/totp', requestOptions)
+      const anotherSession = {
+        id: 'anotherSession'
+      }
+      const sessions = [{id: 'session'}, anotherSession]
+      return setup({
+        db: {email: TEST_EMAIL, sessions},
+        totpTokenVerified: false
+      }, {}, '/session/verify/totp', requestOptions)
         .then((response) => {
-          assert.equal(response.success, false, 'should be valid code')
-          assert.equal(db.totpToken.callCount, 1, 'called get TOTP token')
+          assert.equal(response.success, true, 'should be valid code')
+          assert.equal(db.sessions.callCount, 1, 'called get sessions')
+          let args = db.sessions.args[0]
+          assert.equal(args[0], 'uid', 'called with uid')
 
-          // emits correct metrics
-          assert.equal(request.emitMetricsEvent.callCount, 1, 'called emitMetricsEvent')
-          const args = request.emitMetricsEvent.args[0]
-          assert.equal(args[0], 'totpToken.unverified', 'called emitMetricsEvent with correct event')
-          assert.equal(args[1]['uid'], 'uid', 'called emitMetricsEvent with correct event')
+          assert.equal(db.deleteSessionToken.callCount, 1, 'called delete session')
+          args = db.deleteSessionToken.args[0]
+          assert.deepEqual(args[0], anotherSession, 'called delete with correct session object')
         })
     })
   })
