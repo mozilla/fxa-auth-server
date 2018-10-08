@@ -271,6 +271,35 @@ describe('remote totp', function () {
     })
   })
 
+  it('should revoke sessions when TOTP token is verified', () => {
+    email = server.uniqueEmail()
+    let client1, client2
+    return Client.createAndVerify(config.publicUrl, email, password, server.mailbox)
+      .then((x) => {
+        client1 = x
+        return Client.login(config.publicUrl, email, password)
+      })
+      .then((x) => {
+        client2 = x
+        return client1.createTotpToken({metricsContext})
+      })
+      .then((result) => {
+        authenticator = new otplib.authenticator.Authenticator()
+        authenticator.options = Object.assign({}, otplib.authenticator.options, {secret: result.secret})
+        const code = authenticator.generate()
+        // Verify TOTP on client 1
+        return client1.verifyTotpCode(code, {metricsContext, service: 'sync'})
+      })
+      .then((result) => {
+        assert.equal(result.success, true, 'totp verified')
+        // Check session status using client 2
+        return client2.sessionStatus()
+      })
+      .then(assert.fail, (err) => {
+        assert.equal(err.errno, 110, 'invalid token errno');
+      })
+  })
+
   after(() => {
     return TestServer.stop(server)
   })
