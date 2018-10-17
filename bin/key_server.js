@@ -177,7 +177,10 @@ function main() {
       })
     }
   })
-  .catch(process.exit.bind(null, 8))
+  .catch((err) => {
+    console.error(err)
+    process.exit(8)
+  })
 }
 
 if (require.main === module) {
