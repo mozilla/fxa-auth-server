@@ -129,11 +129,11 @@ jobs:
             fi
 
             if [ -n "${DOCKER_TAG}" ]; then
-              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-              echo mozilla/fxa-oauth-server:${DOCKER_TAG}
-              docker tag fxa-oauth-server:build mozilla/fxa-oauth-server:${DOCKER_TAG}
+              echo "$DOCKER_OAUTH_PASS" | docker login -u "$DOCKER_OAUTH_USER" --password-stdin
+              echo ${DOCKERHUB_OAUTH_REPO}:${DOCKER_TAG}
+              docker tag fxa-oauth-server:build ${DOCKERHUB_OAUTH_REPO}:${DOCKER_TAG}
               docker images
-              docker push mozilla/fxa-oauth-server:${DOCKER_TAG}
+              docker push ${DOCKERHUB_OAUTH_REPO}:${DOCKER_TAG}
             fi
 
 workflows:
