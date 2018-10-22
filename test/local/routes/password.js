@@ -30,6 +30,11 @@ function makeRoutes(options = {}) {
   const customs = options.customs || {}
   const signinUtils = require('../../../lib/routes/utils/signin')(log, config, customs, db, mailer)
   config.secondaryEmail = config.secondaryEmail || {}
+  const clients = options.clients || mocks.mockClients({
+    async accountPushClientsAndDevices() {
+      return []
+    }
+  })
   return require('../../../lib/routes/password')(
     log,
     db,
@@ -40,7 +45,8 @@ function makeRoutes(options = {}) {
     options.customs || {},
     signinUtils,
     options.push || {},
-    config
+    config,
+    clients,
   )
 }
 
@@ -293,6 +299,11 @@ describe('/password', () => {
           uid,
           devices
         })
+        const mockClients = mocks.mockClients({
+          async accountPushClientsAndDevices() {
+            return devices
+          }
+        })
         var mockPush = mocks.mockPush()
         var mockMailer = mocks.mockMailer()
         var mockLog = mocks.mockLog()
@@ -319,7 +330,8 @@ describe('/password', () => {
           db: mockDB,
           push: mockPush,
           mailer: mockMailer,
-          log: mockLog
+          log: mockLog,
+          clients: mockClients,
         })
 
         return runRoute(passwordRoutes, '/password/change/finish', mockRequest)

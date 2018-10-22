@@ -401,6 +401,9 @@ particular user.
     - `scope`: (optional) A subset of scopes provided to this
       refresh_token originally, to receive an access_token with less
       permissions.
+    - `instance_id`: (optional) Allows updating the instance ID
+      associated to the provided refresh_token and the resulting
+      access_token.
   - If `urn:ietf:params:oauth:grant-type:jwt-bearer`:
     - `assertion`: A signed JWT assertion. See [Service
       Clients][] for more.
@@ -485,6 +488,7 @@ user and scopes are permitted for the token.
 #### Request Parameters
 
 - `token`: A token string received from a client
+- `type`: (optional) Either `access_token` (default) or `refresh_token`.
 
 **Example:**
 
@@ -494,7 +498,8 @@ curl -v \
 -H "Content-Type: application/json" \
 "https://oauth.accounts.firefox.com/v1/verify" \
 -d '{
-  "token": "558f9980ad5a9c279beb52123653967342f702e84d3ab34c7f80427a6a37e2c0"
+  "token": "558f9980ad5a9c279beb52123653967342f702e84d3ab34c7f80427a6a37e2c0",
+  "type": "refresh_token"
 }'
 ```
 
@@ -505,6 +510,7 @@ A valid request will return JSON with these properties:
 - `user`: The uid of the respective user.
 - `client_id`: The client_id of the respective client.
 - `scope`: An array of scopes allowed for this token.
+- `instance_id`: (optional) The instance ID associated with this token.
 - `email`: **DEPRECATED** The email of the respective user.
 
 **Example:**

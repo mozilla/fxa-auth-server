@@ -11,6 +11,7 @@ require('../lib/newrelic')()
 
 var config = require('../config').getProperties()
 var log = require('../lib/log')(config.log.level, 'profile-server-messaging')
+var clients = require('../lib/clients')
 var error = require('../lib/error')
 var Token = require('../lib/tokens')(log, config)
 var SQSReceiver = require('../lib/sqs')(log)
@@ -35,6 +36,6 @@ var profileUpdatesQueue = new SQSReceiver(config.profileServerMessaging.region, 
 DB.connect(config[config.db.backend])
   .then(
     function (db) {
-      profileUpdates(profileUpdatesQueue, push(log, db, config), db)
+      profileUpdates(profileUpdatesQueue, push(log, db, config), clients(log, db, config))
     }
   )

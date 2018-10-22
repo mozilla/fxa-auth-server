@@ -11,7 +11,7 @@ var spawn = require('child_process').spawn
 var config = require('../config').getProperties()
 var TestServer = require('../test/test_server')
 
-TestServer.start(config, false)
+TestServer.start(config, {printLogs: false})
   .then(
   function (server) {
     var cp = spawn(

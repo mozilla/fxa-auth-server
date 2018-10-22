@@ -9,6 +9,10 @@ const config = require('./config');
 exports.HEX_STRING = /^(?:[0-9a-f]{2})+$/;
 exports.B64URL_STRING = /^[A-Za-z0-9-_]+$/;
 
+exports.uid = Joi.string()
+  .regex(exports.HEX_STRING)
+  .required();
+
 exports.clientId = Joi.string()
   .length(config.get('unique.id') * 2) // hex = bytes*2
   .regex(exports.HEX_STRING)
@@ -46,3 +50,7 @@ exports.jwe = Joi.string()
   .max(1024)
   // JWE token format: 'protectedheader.encryptedkey.iv.cyphertext.authenticationtag'
   .regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/);
+
+exports.instanceId = Joi.string()
+  .length(config.get('unique.instanceId') * 2) // hex = bytes*2
+  .regex(exports.HEX_STRING);

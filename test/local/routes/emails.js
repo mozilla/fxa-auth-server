@@ -52,13 +52,15 @@ var makeRoutes = function (options = {}, requireMocks) {
     check: function () { return P.resolve(true) }
   }
   var push = options.push || require('../../../lib/push')(log, db, {})
+  var clients = options.clients || mocks.mockClients()
   return proxyquire('../../../lib/routes/emails', requireMocks || {})(
     log,
     db,
     options.mailer || {},
     config,
     customs,
-    push
+    push,
+    clients
   )
 }
 

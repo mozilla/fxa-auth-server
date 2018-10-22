@@ -125,12 +125,12 @@ function run(config) {
             init()
 
           })
-      },
-      function (err) {
-        log.error({ op: 'DB.connect', err: { message: err.message } })
-        process.exit(1)
       }
     )
+    .catch((err) => {
+      log.error({ op: 'DB.connect', err: { message: err.message } })
+      process.exit(1)
+    })
     .then(() => {
       return {
         log: log,

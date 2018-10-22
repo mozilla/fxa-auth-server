@@ -12,7 +12,8 @@ module.exports = {
   validate: {
     payload: {
       token: validators.token.required(),
-      email: Joi.boolean().optional()
+      email: Joi.boolean().optional(),
+      type: Joi.string().valid('access_token', 'refresh_token').optional(),
     }
   },
   response: {
@@ -21,25 +22,25 @@ module.exports = {
       client_id: Joi.string().required(),
       scope: Joi.array(),
       email: Joi.string(),
-      profile_changed_at: Joi.number().min(0)
+      profile_changed_at: Joi.number().min(0),
+      instance_id: validators.instanceId,
     }
   },
   handler: async function verify(req) {
-    return token.verify(req.payload.token).then(function(info) {
-      info.scope = info.scope.getScopeValues();
-      if (req.payload.email !== undefined) {
-        logger.warn('email.requested', {
-          user: info.user,
-          client_id: info.client_id,
-          scope: info.scope
-        });
-      }
-      delete info.email;
-      logger.info('verify.success', {
+    const info = await token.verify(req.payload.token, req.payload.type);
+    info.scope = info.scope.getScopeValues();
+    if (req.payload.email !== undefined) {
+      logger.warn('email.requested', {
+        user: info.user,
         client_id: info.client_id,
         scope: info.scope
       });
-      return info;
+    }
+    delete info.email;
+    logger.info('verify.success', {
+      client_id: info.client_id,
+      scope: info.scope
     });
+    return info;
   }
 };

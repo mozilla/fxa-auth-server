@@ -46,9 +46,11 @@ function makeRoutes (options = {}, requireMocks) {
   }
   const push = options.push || require('../../../lib/push')(log, db, {})
   const pushbox = options.pushbox || mocks.mockPushbox()
+  const clients = options.clients || mocks.mockClients()
   return proxyquire('../../../lib/routes/devices-and-sessions', requireMocks || {})(
     log, db, config, customs, push, pushbox,
-    options.devices || require('../../../lib/devices')(log, db, push)
+    options.devices || require('../../../lib/devices')(log, db, push),
+    clients,
   )
 }
 
@@ -638,13 +640,10 @@ describe('/account/devices/invoke_command', function () {
       type: 'desktop',
     }
   ]
-  let mockLog, mockDB, mockRequest, mockPush, mockCustoms
+  let mockLog, mockRequest, mockPush, mockCustoms, mockClients
 
   beforeEach(() => {
     mockLog = mocks.mockLog()
-    mockDB = mocks.mockDB({
-      devices: mockDevices
-    })
     mockRequest = mocks.mockRequest({
       log: mockLog,
       credentials: {
@@ -654,6 +653,11 @@ describe('/account/devices/invoke_command', function () {
     })
     mockPush = mocks.mockPush()
     mockCustoms = mocks.mockCustoms()
+    mockClients = mocks.mockClients({
+      findDeviceOrClientInstance: sinon.spy((uid, id) => {
+        return mockDevices.find(d => d.id === id)
+      })
+    })
   })
 
   it('stores commands using the pushbox service and sends a notification', () => {
@@ -673,12 +677,12 @@ describe('/account/devices/invoke_command', function () {
       log: mockLog,
       push: mockPush,
       pushbox: mockPushbox,
-      db: mockDB
+      clients: mockClients
     }), '/account/devices/invoke_command')
 
     return runTest(route, mockRequest).then(() => {
-      assert.equal(mockDB.device.callCount, 1, 'device record was fetched')
-      assert.calledWithExactly(mockDB.device, uid, target)
+      assert.equal(mockClients.findDeviceOrClientInstance.callCount, 1, 'device record was fetched')
+      assert.calledWithExactly(mockClients.findDeviceOrClientInstance, uid, target)
 
       assert.equal(mockPushbox.store.callCount, 1, 'pushbox was called')
       assert.calledWithExactly(mockPushbox.store, uid, target, {
@@ -695,6 +699,60 @@ describe('/account/devices/invoke_command', function () {
          sender,
          15,
          'https://public.url/v1/account/device/commands?index=15&limit=1',
+         undefined
+      )
+    })
+  })
+
+  it('sends back a different URL if the target is a client instance', () => {
+    const mockPushbox = mocks.mockPushbox({
+      store: sinon.spy(async () => ({ index: 15 }))
+    })
+    const target = 'mockclientinstanceid'
+    const sender = 'bogusid2'
+    const payload = { 'bogus': 'payload' }
+    const instance = {
+      id: 'mockclientinstanceid',
+      name: 'Lockbox',
+      availableCommands: {
+        [command]: 'bar',
+      },
+    }
+    const mockClients = mocks.mockClients({
+      findDeviceOrClientInstance: sinon.spy((uid, id) => instance)
+    })
+    mockRequest.payload = {
+      target,
+      command,
+      payload
+    }
+    const route = getRoute(makeRoutes({
+      customs: mockCustoms,
+      log: mockLog,
+      push: mockPush,
+      pushbox: mockPushbox,
+      clients: mockClients
+    }), '/account/devices/invoke_command')
+
+    return runTest(route, mockRequest).then(() => {
+      assert.equal(mockClients.findDeviceOrClientInstance.callCount, 1, 'device record was fetched')
+      assert.calledWithExactly(mockClients.findDeviceOrClientInstance, uid, target)
+
+      assert.equal(mockPushbox.store.callCount, 1, 'pushbox was called')
+      assert.calledWithExactly(mockPushbox.store, uid, target, {
+        command,
+        payload,
+        sender,
+      }, undefined)
+
+      assert.equal(mockPush.notifyCommandReceived.callCount, 1, 'notifyCommandReceived was called')
+      assert.calledWithExactly(mockPush.notifyCommandReceived,
+         uid,
+         instance,
+         command,
+         sender,
+         15,
+         'https://public.url/v1/client_instance/pending_commands?index=15&limit=1',
          undefined
       )
     })
@@ -719,7 +777,7 @@ describe('/account/devices/invoke_command', function () {
       log: mockLog,
       push: mockPush,
       pushbox: mockPushbox,
-      db: mockDB
+      clients: mockClients
     }), '/account/devices/invoke_command')
 
     return runTest(route, mockRequest).then(() => {
@@ -752,13 +810,13 @@ describe('/account/devices/invoke_command', function () {
       command,
       payload
     }
-    mockDB.device = sinon.spy(() => P.reject(error.unknownDevice()))
+    mockClients.findDeviceOrClientInstance = sinon.spy(() => P.reject(error.unknownDevice()))
     const route = getRoute(makeRoutes({
       customs: mockCustoms,
       log: mockLog,
       push: mockPush,
       pushbox: mockPushbox,
-      db: mockDB
+      clients: mockClients
     }), '/account/devices/invoke_command')
 
     return runTest(route, mockRequest, () => {
@@ -784,7 +842,7 @@ describe('/account/devices/invoke_command', function () {
       log: mockLog,
       push: mockPush,
       pushbox: mockPushbox,
-      db: mockDB
+      clients: mockClients
     }), '/account/devices/invoke_command')
 
     return runTest(route, mockRequest, () => {
@@ -818,7 +876,7 @@ describe('/account/devices/invoke_command', function () {
       log: mockLog,
       push: mockPush,
       pushbox: mockPushbox,
-      db: mockDB
+      clients: mockClients
     }), '/account/devices/invoke_command')
 
     return runTest(route, mockRequest, () => {
@@ -900,6 +958,15 @@ describe('/account/devices', () => {
       sessionToken: crypto.randomBytes(16).toString('hex'),
       lastAccessTime: EARLIEST_SANE_TIMESTAMP
     }
+    const mockClients = mocks.mockClients({
+      getClientsInstances() {
+        return [{
+          id: 'mockclientinstanceid',
+          name: 'Lockbox',
+          availableCommands: {},
+        }]
+      },
+    })
     const mockRequest = mocks.mockRequest({
       acceptLanguage: 'en;q=0.5, fr;q=0.51',
       credentials,
@@ -937,6 +1004,7 @@ describe('/account/devices', () => {
     const log = mocks.mockLog()
     const accountRoutes = makeRoutes({
       db: mockDB,
+      clients: mockClients,
       devices: mockDevices,
       log
     })
@@ -946,7 +1014,7 @@ describe('/account/devices', () => {
       const now = Date.now()
 
       assert.ok(Array.isArray(response), 'response is array')
-      assert.equal(response.length, 4, 'response contains 4 items')
+      assert.equal(response.length, 5, 'response contains 5 items')
 
       assert.equal(response[0].name, 'current session')
       assert.equal(response[0].type, 'mobile')
@@ -985,6 +1053,16 @@ describe('/account/devices', () => {
       assert.equal(response[3].approximateLastAccessTime, undefined)
       assert.equal(response[3].approximateLastAccessTimeFormatted, undefined)
 
+      // Should include client instances.
+      assert.equal(response[4].id,  'mockclientinstanceid')
+      assert.equal(response[4].isCurrentDevice, false)
+      assert.equal(response[4].lastAccessTime, null)
+      assert.equal(response[4].name, 'Lockbox')
+      assert.equal(response[4].type, 'oauth')
+      assert.equal(response[4].lastAccessTimeFormatted, undefined)
+      assert.equal(response[4].approximateLastAccessTime, undefined)
+      assert.equal(response[4].approximateLastAccessTimeFormatted, undefined)
+
       assert.equal(log.error.callCount, 0, 'log.error was not called')
 
       assert.equal(mockDB.devices.callCount, 0, 'db.devices was not called')
@@ -1000,6 +1078,11 @@ describe('/account/devices', () => {
       uid: crypto.randomBytes(16).toString('hex'),
       id: crypto.randomBytes(16).toString('hex')
     }
+    const mockClients = mocks.mockClients({
+      getClientsInstances() {
+        return []
+      },
+    })
     const request = mocks.mockRequest({
       acceptLanguage: 'en-US,en;q=0.5',
       credentials,
@@ -1022,7 +1105,7 @@ describe('/account/devices', () => {
     const db = mocks.mockDB()
     const devices = mocks.mockDevices()
     const log = mocks.mockLog()
-    const accountRoutes = makeRoutes({ db, devices, log })
+    const accountRoutes = makeRoutes({ db, devices, log, clients: mockClients })
     const route = getRoute(accountRoutes, '/account/devices')
 
     return runTest(route, request, response => {

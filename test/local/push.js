@@ -148,6 +148,43 @@ describe('push', () => {
   )
 
   it(
+    'sendPush works with client instances too',
+    () => {
+      const clientsInstances = [{
+        'pushEndpoint': 'https://updates.push.services.mozilla.com/update/abcdef01234567890abcdefabcdef01234567890abcdef',
+        'pushPublicKey': mocks.MOCK_PUSH_KEY,
+        'pushAuthKey': 'w3b14Zjc-Afj2SDOLOyong=='
+      }]
+
+      var successCalled = 0
+      var thisMockLog = mockLog({
+        info: function (log) {
+          if (log.name === 'push.account_verify.success') {
+            // notification sent
+            successCalled++
+          }
+        }
+      })
+
+      var requireMocks = {
+        'web-push': {
+          sendNotification: function (sub, payload, options) {
+            assert.equal(sub.endpoint, clientsInstances[0].pushEndpoint)
+            return P.resolve()
+          }
+        }
+      }
+
+      const push = proxyquire(pushModulePath, requireMocks)(thisMockLog, mockDb, mockConfig)
+      var options = { TTL: TTL }
+      return push.sendPush(mockUid, clientsInstances, 'accountVerify', options)
+        .then(() => {
+          assert.equal(successCalled, 1)
+        })
+    }
+  )
+
+  it(
     'sendPush sends data',
     () => {
       var count = 0
@@ -286,7 +323,7 @@ describe('push', () => {
 
   it(
     'sendPush pushes to ios >=10.0 devices if it is triggered with a "device connected" command',
-    () => {
+    async () => {
       const data = {command: 'fxaccounts:device_connected'}
       let endPoints = []
       const mocks = {
@@ -300,51 +337,43 @@ describe('push', () => {
 
       const push = proxyquire(pushModulePath, mocks)(mockLog(), mockDb, mockConfig)
       const options = { data: data }
-      return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
-        .then(() => {
-          assert.equal(endPoints.length, 2)
-          assert.equal(endPoints[0], mockDevices[0].pushCallback)
-          assert.equal(endPoints[1], mockDevices[1].pushCallback)
-          // iOS not notified due to unknown browser version
-        }).then(() => {
-          endPoints = []
-          mockDevices[2].uaBrowserVersion = '8.2'
-          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
-        }).then(() => {
-          assert.equal(endPoints.length, 2)
-          assert.equal(endPoints[0], mockDevices[0].pushCallback)
-          assert.equal(endPoints[1], mockDevices[1].pushCallback)
-          // iOS not notified due to unsupported browser version
-        }).then(() => {
-          endPoints = []
-          mockDevices[2].uaBrowserVersion = '10.0'
-          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
-        }).then(() => {
-          assert.equal(endPoints.length, 3)
-          assert.equal(endPoints[0], mockDevices[0].pushCallback)
-          assert.equal(endPoints[1], mockDevices[1].pushCallback)
-          assert.equal(endPoints[2], mockDevices[2].pushCallback)
-        }).then(() => {
-          endPoints = []
-          mockDevices[2].uaBrowserVersion = '10.1'
-          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
-        }).then(() => {
-          assert.equal(endPoints.length, 3)
-          assert.equal(endPoints[0], mockDevices[0].pushCallback)
-          assert.equal(endPoints[1], mockDevices[1].pushCallback)
-          assert.equal(endPoints[2], mockDevices[2].pushCallback)
-        }).then(() => {
-          endPoints = []
-          mockDevices[2].uaBrowserVersion = '11.2'
-          return push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
-        }).then(() => {
-          assert.equal(endPoints.length, 3)
-          assert.equal(endPoints[0], mockDevices[0].pushCallback)
-          assert.equal(endPoints[1], mockDevices[1].pushCallback)
-          assert.equal(endPoints[2], mockDevices[2].pushCallback)
-        }).finally(() => {
-          delete mockDevices[2].uaBrowserVersion
-        })
+      try {
+        await push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        assert.equal(endPoints.length, 2)
+        assert.equal(endPoints[0], mockDevices[0].pushCallback)
+        assert.equal(endPoints[1], mockDevices[1].pushCallback)
+        // iOS not notified due to unknown browser version
+        endPoints = []
+        mockDevices[2].uaBrowserVersion = '8.2'
+        await push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        assert.equal(endPoints.length, 2)
+        assert.equal(endPoints[0], mockDevices[0].pushCallback)
+        assert.equal(endPoints[1], mockDevices[1].pushCallback)
+        // iOS not notified due to unsupported browser version
+        endPoints = []
+        mockDevices[2].uaBrowserVersion = '10.0'
+        await push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        assert.equal(endPoints.length, 3)
+        assert.equal(endPoints[0], mockDevices[0].pushCallback)
+        assert.equal(endPoints[1], mockDevices[1].pushCallback)
+        assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        endPoints = []
+        mockDevices[2].uaBrowserVersion = '10.1'
+        await push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        assert.equal(endPoints.length, 3)
+        assert.equal(endPoints[0], mockDevices[0].pushCallback)
+        assert.equal(endPoints[1], mockDevices[1].pushCallback)
+        assert.equal(endPoints[2], mockDevices[2].pushCallback)
+        endPoints = []
+        mockDevices[2].uaBrowserVersion = '11.2'
+        await push.sendPush(mockUid, mockDevices, 'devicesNotify', options)
+        assert.equal(endPoints.length, 3)
+        assert.equal(endPoints[0], mockDevices[0].pushCallback)
+        assert.equal(endPoints[1], mockDevices[1].pushCallback)
+        assert.equal(endPoints[2], mockDevices[2].pushCallback)
+      } catch (err) {
+        delete mockDevices[2].uaBrowserVersion
+      }
     }
   )
 
@@ -364,11 +393,11 @@ describe('push', () => {
       var devices = [{
         'id': 'foo',
         'name': 'My Phone',
+        'type': 'mobile',
         'pushCallback': 'https://updates.push.services.mozilla.com/update/abcdef01234567890abcdefabcdef01234567890abcdef',
         'pushAuthKey': 'bogus',
         'pushEndpointExpired': false
       }]
-
       const push = require(pushModulePath)(thisMockLog, mockDb, mockConfig)
       var options = { data: Buffer.from('foobar') }
       return push.sendPush(mockUid, devices, 'accountVerify', options)
@@ -463,7 +492,7 @@ describe('push', () => {
         assert.equal(thisMockLog.error.callCount, 1, 'log.error was called')
         var arg = thisMockLog.error.getCall(0).args[0]
         assert.equal(arg.op, 'push.sendPush')
-        assert.equal(arg.err.message, 'Too many devices connected to account')
+        assert.equal(arg.err.message, 'Too many targets connected to account')
       })
     }
   )

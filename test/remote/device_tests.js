@@ -16,17 +16,13 @@ const mocks = require('../mocks')
 describe('remote device', function () {
   this.timeout(15000)
   let server
-  before(() => {
+  before(async () => {
     config.lastAccessTimeUpdates = {
       enabled: true,
       sampleRate: 1,
       earliestSaneTimestamp: config.lastAccessTimeUpdates.earliestSaneTimestamp
     }
-
-    return TestServer.start(config)
-      .then(s => {
-        server = s
-      })
+    server = await TestServer.start(config)
   })
 
   it(

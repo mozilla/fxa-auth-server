@@ -173,17 +173,19 @@ const QUERY_CLIENT_DELETE = 'DELETE clients, codes, tokens, refreshTokens, clien
   'LEFT JOIN clientDevelopers ON clients.id = clientDevelopers.clientId ' +
   'WHERE clients.id=?';
 const QUERY_CODE_INSERT =
-  'INSERT INTO codes (clientId, userId, email, scope, authAt, amr, aal, offline, code, codeChallengeMethod, codeChallenge, keysJwe, profileChangedAt) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  'INSERT INTO codes (clientId, userId, email, scope, authAt, amr, aal, offline, code, codeChallengeMethod, codeChallenge, keysJwe, profileChangedAt, instanceId) ' +
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 const QUERY_ACCESS_TOKEN_INSERT =
   'INSERT INTO tokens (clientId, userId, email, scope, type, expiresAt, ' +
-  'token) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  'token, instanceId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 const QUERY_REFRESH_TOKEN_INSERT =
-  'INSERT INTO refreshTokens (clientId, userId, email, scope, token, profileChangedAt) VALUES ' +
-  '(?, ?, ?, ?, ?, ?)';
+  'INSERT INTO refreshTokens (clientId, userId, email, scope, token, profileChangedAt, instanceId) VALUES ' +
+  '(?, ?, ?, ?, ?, ?, ?)';
 const QUERY_ACCESS_TOKEN_FIND = 'SELECT * FROM tokens WHERE token=?';
 const QUERY_REFRESH_TOKEN_FIND = 'SELECT * FROM refreshTokens where token=?';
+const QUERY_REFRESH_TOKEN_FIND_USER = 'SELECT * FROM refreshTokens where userId=?';
 const QUERY_REFRESH_TOKEN_LAST_USED_UPDATE = 'UPDATE refreshTokens SET lastUsedAt=? WHERE token=?';
+const QUERY_REFRESH_TOKEN_UPDATE_INSTANCE_ID = 'UPDATE refreshTokens SET instanceId=? WHERE token=?';
 const QUERY_CODE_FIND = 'SELECT * FROM codes WHERE code=?';
 const QUERY_CODE_DELETE = 'DELETE FROM codes WHERE code=?';
 const QUERY_ACCESS_TOKEN_DELETE = 'DELETE FROM tokens WHERE token=?';
@@ -391,6 +393,7 @@ MysqlStore.prototype = {
     return this._write(QUERY_CLIENT_DELETE, [buf(id)]);
   },
   generateCode: function generateCode(codeObj) {
+    const instanceId = codeObj.instanceId ? buf(codeObj.instanceId) : unique.instanceId();
     var code = unique.code();
     var hash = encrypt.hash(code);
     return this._write(QUERY_CODE_INSERT, [
@@ -406,7 +409,8 @@ MysqlStore.prototype = {
       codeObj.codeChallengeMethod,
       codeObj.codeChallenge,
       codeObj.keysJwe,
-      codeObj.profileChangedAt
+      codeObj.profileChangedAt,
+      instanceId
     ]).then(function() {
       return code;
     });
@@ -428,6 +432,7 @@ MysqlStore.prototype = {
     return this._write(QUERY_CODE_DELETE, [hash]);
   },
   generateAccessToken: function generateAccessToken(vals) {
+    const instanceId = vals.instanceId ? buf(vals.instanceId) : unique.instanceId();
     var t = {
       clientId: buf(vals.clientId),
       userId: buf(vals.userId),
@@ -436,7 +441,7 @@ MysqlStore.prototype = {
       token: unique.token(),
       type: 'bearer',
       expiresAt: vals.expiresAt || new Date(Date.now() + (vals.ttl  * 1000 || MAX_TTL)),
-      profileChangedAt: vals.profileChangedAt || 0
+      instanceId
     };
     return this._write(QUERY_ACCESS_TOKEN_INSERT, [
       t.clientId,
@@ -446,7 +451,7 @@ MysqlStore.prototype = {
       t.type,
       t.expiresAt,
       encrypt.hash(t.token),
-      t.profileChangedAt,
+      t.instanceId,
     ]).then(function() {
       return t;
     });
@@ -522,12 +527,14 @@ MysqlStore.prototype = {
   },
 
   generateRefreshToken: function generateRefreshToken(vals) {
+    const instanceId = vals.instanceId ? buf(vals.instanceId) : unique.instanceId();
     var t = {
       clientId: vals.clientId,
       userId: vals.userId,
       email: vals.email,
       scope: vals.scope,
-      profileChangedAt: vals.profileChangedAt
+      profileChangedAt: vals.profileChangedAt,
+      instanceId
     };
     var token = unique.token();
     var hash = encrypt.hash(token);
@@ -537,7 +544,8 @@ MysqlStore.prototype = {
       t.email,
       t.scope.toString(),
       hash,
-      t.profileChangedAt
+      t.profileChangedAt,
+      t.instanceId
     ]).then(function() {
       t.token = token;
       return t;
@@ -552,6 +560,22 @@ MysqlStore.prototype = {
       }
       return t;
     });
+  },
+
+  async getRefreshTokensForUser(uid) {
+    const rows = await this._read(QUERY_REFRESH_TOKEN_FIND_USER, [buf(uid)]);
+    for (const row of rows) {
+      row.scope = ScopeSet.fromString(row.scope);
+    }
+    return rows;
+  },
+
+  updateRefreshTokenInstanceId(token, instanceId) {
+    return this._write(QUERY_REFRESH_TOKEN_UPDATE_INSTANCE_ID, [
+      instanceId,
+      // WHERE
+      token
+    ]);
   },
 
   usedRefreshToken: function usedRefreshToken(token) {

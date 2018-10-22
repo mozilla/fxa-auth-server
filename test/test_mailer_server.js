@@ -11,7 +11,7 @@ function TestServer(config) {
   this.server = null
 }
 
-TestServer.start = function (config, printLogs) {
+TestServer.start = function (config) {
   return createDBServer().then(
     function (db) {
       db.listen(config.httpdb.url.split(':')[2])

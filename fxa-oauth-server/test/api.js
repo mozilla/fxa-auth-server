@@ -913,6 +913,7 @@ describe('/v1', function() {
             assert(res.result.expires_in <= defaultExpiresIn);
             assert(res.result.expires_in > defaultExpiresIn - 10);
             assert(res.result.auth_at);
+            assert(res.result.instance_id); // If unspecified in the request, a random one is created.
           });
         });
 
@@ -931,6 +932,23 @@ describe('/v1', function() {
             assertSecurityHeaders(res);
             assert(res.result.expires_in <= ttl);
             assert(res.result.expires_in > ttl - 10);
+          });
+        });
+
+        it('honours the instance_id parameter', function() {
+          var instance_id = 'd52788fbfd0ebe69a1b494e13fb71329';
+          mockAssertion().reply(200, VERIFY_GOOD);
+          return Server.api.post({
+            url: '/authorization',
+            payload: authParams({
+              client_id: client2.id,
+              response_type: 'token',
+              instance_id
+            })
+          }).then(function(res) {
+            assert.equal(res.statusCode, 200);
+            assertSecurityHeaders(res);
+            assert.equal(res.result.instance_id, instance_id);
           });
         });
       });
@@ -2126,6 +2144,140 @@ describe('/v1', function() {
 
     });
 
+    describe('instance_id', () => {
+      function getCodeWithInstanceId(clientId, instanceId, access_type = 'online') {
+        mockAssertion().reply(200, VERIFY_GOOD);
+        return Server.api.post({
+          url: '/authorization',
+          payload: authParams({
+            client_id: clientId,
+            instance_id: instanceId,
+            access_type,
+          })
+        }).then((res) => {
+          return res.result.code;
+        });
+      }
+
+      it('is present in the created access token', () => {
+        var instance_id = 'd52788fbfd0ebe69a1b494e13fb71329';
+        return getCodeWithInstanceId(clientId, instance_id).then((code) => {
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              code: code
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.result.instance_id, instance_id);
+          return db.getAccessToken(encrypt.hash(res.result.access_token)).then(function(tok) {
+            assert.equal(tok.instanceId.toString('hex'), instance_id);
+          });
+        });
+      });
+
+      it('is also present in the created refresh token', () => {
+        var instance_id = 'd52788fbfd0ebe69a1b494e13fb71329';
+        return getCodeWithInstanceId(clientId, instance_id, 'offline').then((code) => {
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              code: code
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.result.instance_id, instance_id);
+          return db.getRefreshToken(encrypt.hash(res.result.refresh_token)).then(function(tok) {
+            assert.equal(tok.instanceId.toString('hex'), instance_id);
+          }).then(() => db.getAccessToken(encrypt.hash(res.result.access_token))).then(function(tok) {
+            assert.equal(tok.instanceId.toString('hex'), instance_id);
+          });
+        });
+      });
+
+      it('is randomly generated if not specified in the request', () => {
+        return getCodeWithInstanceId(clientId).then((code) => {
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              code: code
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert(res.result.instance_id);
+          return db.getAccessToken(encrypt.hash(res.result.access_token)).then(function(tok) {
+            assert(tok.instanceId);
+          });
+        });
+      });
+
+      it('is randomly generated if not specified in the request (offline mode)', () => {
+        return getCodeWithInstanceId(clientId, undefined, 'offline').then((code) => {
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              code: code
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert(res.result.instance_id);
+          return db.getRefreshToken(encrypt.hash(res.result.refresh_token)).then(function(tok) {
+            assert(tok.instanceId);
+          }).then(() => db.getAccessToken(encrypt.hash(res.result.access_token))).then(function(tok) {
+            assert(tok.instanceId);
+          });
+        });
+      });
+
+      it('can be updated in refresh_tokens', () => {
+        var old_instance_id = 'd52788fbfd0ebe69a1b494e13fb71329';
+        var new_instance_id = 'a1b494e13fb71329d52788fbfd0ebe69';
+        let refresh;
+        return getCodeWithInstanceId(clientId, old_instance_id, 'offline').then((code) => {
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              code: code
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.result.instance_id, old_instance_id);
+          refresh = res.result.refresh_token;
+          return Server.api.post({
+            url: '/token',
+            payload: {
+              client_id: clientId,
+              client_secret: secret,
+              instance_id: new_instance_id,
+              grant_type: 'refresh_token',
+              refresh_token: refresh,
+            }
+          });
+        }).then((res) => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.result.instance_id, new_instance_id);
+          return db.getRefreshToken(encrypt.hash(refresh)).then(function(tok) {
+            assert.equal(tok.instanceId.toString('hex'), new_instance_id);
+          });
+        });
+      });
+    });
+
   });
 
   describe('/client', function() {
@@ -2910,7 +3062,29 @@ describe('/v1', function() {
           assert.equal(res.result.scope[0], 'profile');
           assert.equal(res.result.email, undefined);
           assert.equal(res.result.profile_changed_at, undefined);
+          assert(res.result.instance_id);
         });
+      });
+
+      it('can return refresh tokens', async () => {
+        let res = await newToken({scope: 'profile', access_type: 'offline'});
+        assert.equal(res.statusCode, 200);
+        assertSecurityHeaders(res);
+        res = await Server.api.post({
+          url: '/verify',
+          payload: {
+            token: res.result.refresh_token,
+            type: 'refresh_token',
+          }
+        });
+        assert.equal(res.statusCode, 200);
+        assertSecurityHeaders(res);
+        assert.equal(res.result.user, USERID);
+        assert.equal(res.result.client_id, clientId);
+        assert.equal(res.result.scope[0], 'profile');
+        assert.equal(res.result.email, undefined);
+        assert.equal(res.result.profile_changed_at, undefined);
+        assert(res.result.instance_id);
       });
 
       it('should return profile_changed_at when set', function () {
@@ -3612,5 +3786,34 @@ describe('/v1', function() {
 
     });
 
+  });
+
+  describe('/refresh-tokens', () => {
+    it('is authenticated with a secret passphrase', async () => {
+      const res = await Server.api.get({
+        url: `/refresh-tokens/${USERID}`,
+      });
+      assert.equal(res.statusCode, 401);
+      assertSecurityHeaders(res);
+      assert.equal(res.result.errno, 111);
+    });
+
+    it('should list all the refresh tokens for a user', async () => {
+      const uid = unique(16).toString('hex');
+      const {result: t1} = await newToken({ access_type: 'offline' }, {verifierResponse: mockVerifierResult({uid})});
+      const {result: t2} = await newToken({ access_type: 'offline' }, {verifierResponse: mockVerifierResult({uid})});
+      const {result: t3} = await newToken({ access_type: 'offline' }, {verifierResponse: mockVerifierResult({uid})});
+      const res = await Server.api.get({
+        url: `/refresh-tokens/${uid}`,
+        headers: {
+          authorization: `FxA-Shared-Secret ${config.get('sharedSecrets.authServer')}`
+        },
+      });
+      const tokens = new Set(res.result.map(t => t.token));
+      assert.equal(tokens.size, 3);
+      assert.ok(tokens.has(encrypt.hash(t1.refresh_token).toString('hex')));
+      assert.ok(tokens.has(encrypt.hash(t2.refresh_token).toString('hex')));
+      assert.ok(tokens.has(encrypt.hash(t3.refresh_token).toString('hex')));
+    });
   });
 });

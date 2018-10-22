@@ -56,7 +56,8 @@ return DB.connect(config[config.db.backend]).then(db => {
     config,
     mockCustoms,
     signinUtils,
-    require('../lib/push')(log, db, config)
+    require('../lib/push')(log, db, config),
+    require('../lib/clients')(log, db, config)
   ).find(r => r.path === '/account/destroy')
 
 

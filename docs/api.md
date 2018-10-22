@@ -32,6 +32,12 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/unlock/verify_code](#post-accountunlockverify_code)
     * [POST /account/reset (:lock: accountResetToken)](#post-accountreset)
     * [POST /account/destroy (:lock::unlock: sessionToken)](#post-accountdestroy)
+  * [Clients instances](#clients-instances)
+    * [GET /clients_instances (:lock: sessionToken, oauthToken)](#get-clients_instances)
+    * [GET /client_instance (:lock: refreshToken)](#get-client_instance)
+    * [POST /client_instance (:lock: refreshToken)](#post-client_instance)
+    * [GET /client_instance/pending_commands (:lock: refreshToken)](#get-client_instancepending_commands)
+    * [POST /clients_instances/invoke_command (:lock: oauthToken)](#post-clients_instancesinvoke_command)
   * [Devices and sessions](#devices-and-sessions)
     * [POST /account/device (:lock: sessionToken)](#post-accountdevice)
     * [GET /account/device/commands (:lock: sessionToken)](#get-accountdevicecommands)
@@ -273,7 +279,7 @@ for `code` and `errno` are:
   This email can not currently be used to login
 * `code: 400, errno: 150`:
   Can not resend email code to an email that does not belong to this account
-* `code: 422, errno: 151`:
+* `code: 500, errno: 151`:
   Failed to send email
 * `code: 400, errno: 152`:
   Invalid token verification code
@@ -537,9 +543,6 @@ by the following errors
 
 * `code: 400, errno: 144`:
   Email already exists
-
-* `code: 422, errno: 151`:
-  Failed to send email
 
 
 #### POST /account/login
@@ -990,6 +993,161 @@ by the following errors
 
 * `code: 400, errno: 138`:
   Unverified session
+
+
+### Clients instances
+
+#### GET /clients_instances
+
+:lock: authenticated with OAuth bearer token, or HAWK-authenticated with session token
+<!--begin-route-get-clients_instances-->
+
+<!--end-route-get-clients_instances-->
+
+##### Response body
+
+* `id`: *string, required*
+
+  <!--begin-response-body-get-clients_instances-id-->
+  
+  <!--end-response-body-get-clients_instances-id-->
+
+* `clientId`: *string, required*
+
+  <!--begin-response-body-get-clients_instances-clientId-->
+  
+  <!--end-response-body-get-clients_instances-clientId-->
+
+* `name`: *string, required, allow(null)*
+
+  <!--begin-response-body-get-clients_instances-name-->
+  
+  <!--end-response-body-get-clients_instances-name-->
+
+* `pushEndpoint`: *string, required, allow(null)*
+
+  <!--begin-response-body-get-clients_instances-pushEndpoint-->
+  
+  <!--end-response-body-get-clients_instances-pushEndpoint-->
+
+* `pushPublicKey`: *string, required, allow(null)*
+
+  <!--begin-response-body-get-clients_instances-pushPublicKey-->
+  
+  <!--end-response-body-get-clients_instances-pushPublicKey-->
+
+* `pushAuthKey`: *string, required, allow(null)*
+
+  <!--begin-response-body-get-clients_instances-pushAuthKey-->
+  
+  <!--end-response-body-get-clients_instances-pushAuthKey-->
+
+* `availableCommands`: *object, required*
+
+  <!--begin-response-body-get-clients_instances-availableCommands-->
+  
+  <!--end-response-body-get-clients_instances-availableCommands-->
+
+
+#### GET /client_instance
+
+:lock: HAWK-authenticated with refresh token
+<!--begin-route-get-client_instance-->
+
+<!--end-route-get-client_instance-->
+
+
+#### POST /client_instance
+
+:lock: HAWK-authenticated with refresh token
+<!--begin-route-post-client_instance-->
+
+<!--end-route-post-client_instance-->
+
+
+#### GET /client_instance/pending_commands
+
+:lock: HAWK-authenticated with refresh token
+<!--begin-route-get-client_instancepending_commands-->
+
+<!--end-route-get-client_instancepending_commands-->
+
+##### Query parameters
+
+* `index`: *number, optional*
+
+  <!--begin-query-param-get-client_instancepending_commands-index-->
+  
+  <!--end-query-param-get-client_instancepending_commands-index-->
+
+* `limit`: *number, optional, min(0), max(100), default(100)*
+
+  <!--begin-query-param-get-client_instancepending_commands-limit-->
+  
+  <!--end-query-param-get-client_instancepending_commands-limit-->
+
+##### Response body
+
+* `index`: *number, required*
+
+  <!--begin-response-body-get-client_instancepending_commands-index-->
+  
+  <!--end-response-body-get-client_instancepending_commands-index-->
+
+* `last`: *boolean, optional*
+
+  <!--begin-response-body-get-client_instancepending_commands-last-->
+  
+  <!--end-response-body-get-client_instancepending_commands-last-->
+
+* `messages`: *array, items(object({ index: number, required, data: object({ command: string, max(255), required, payload: object, required, sender: string, optional }), required })), optional*
+
+  <!--begin-response-body-get-client_instancepending_commands-messages-->
+  
+  <!--end-response-body-get-client_instancepending_commands-messages-->
+
+
+#### POST /clients_instances/invoke_command
+
+:lock: authenticated with OAuth bearer token
+<!--begin-route-post-clients_instancesinvoke_command-->
+
+<!--end-route-post-clients_instancesinvoke_command-->
+
+##### Request body
+
+* `target`: *string, required*
+
+  <!--begin-request-body-post-clients_instancesinvoke_command-target-->
+  
+  <!--end-request-body-post-clients_instancesinvoke_command-target-->
+
+* `command`: *string, required*
+
+  <!--begin-request-body-post-clients_instancesinvoke_command-command-->
+  
+  <!--end-request-body-post-clients_instancesinvoke_command-command-->
+
+* `payload`: *object, required*
+
+  <!--begin-request-body-post-clients_instancesinvoke_command-payload-->
+  
+  <!--end-request-body-post-clients_instancesinvoke_command-payload-->
+
+* `ttl`: *number, integer, min(0), max(10000000), optional*
+
+  <!--begin-request-body-post-clients_instancesinvoke_command-ttl-->
+  
+  <!--end-request-body-post-clients_instancesinvoke_command-ttl-->
+
+##### Error responses
+
+Failing requests may be caused
+by the following errors
+(this is not an exhaustive list):
+
+* `code: 400, errno: 157`:
+  Unavailable device command.
 
 
 ### Devices and sessions
@@ -1875,9 +2033,6 @@ by the following errors
 
 * `code: 400, errno: 141`:
   Email already exists
-
-* `code: 422, errno: 151`:
-  Failed to send email
 
 
 #### POST /recovery_email/destroy

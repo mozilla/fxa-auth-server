@@ -18,6 +18,7 @@ const db = require('../db');
 const encrypt = require('../encrypt');
 const logger = require('../logging')('routes.token');
 const P = require('../promise');
+const unique = require('../unique');
 const util = require('../util');
 const validators = require('../validators');
 
@@ -103,6 +104,12 @@ const PAYLOAD_SCHEMA = Joi.object({
     otherwise: Joi.optional()
   }),
 
+  instance_id: Joi.alternatives().when('grant_type', {
+    is: GRANT_REFRESH_TOKEN,
+    then: validators.instanceId,
+    otherwise: Joi.optional()
+  }),
+
   code: Joi.string()
     .length(config.get('unique.code') * 2)
     .regex(validators.HEX_STRING)
@@ -168,7 +175,8 @@ module.exports = {
       token_type: Joi.string().valid('bearer').required(),
       expires_in: Joi.number().max(MAX_TTL_S).required(),
       auth_at: Joi.number(),
-      keys_jwe: validators.jwe.optional()
+      keys_jwe: validators.jwe.optional(),
+      instance_id: validators.instanceId.optional(),
     })
   },
   handler: async function tokenEndpoint(req) {
@@ -234,6 +242,9 @@ module.exports = {
       vals.ttl = params.ttl;
       if (vals.scope && vals.scope.contains(SCOPE_OPENID)) {
         vals.idToken = true;
+      }
+      if (! vals.instanceId) {
+        vals.instanceId = unique.instanceId();
       }
       return vals;
     })
@@ -344,39 +355,41 @@ function confirmCode(id, code) {
   });
 }
 
-function confirmRefreshToken(params) {
-  return db.getRefreshToken(encrypt.hash(params.refresh_token))
-  .then(function(tokObj) {
-    if (! tokObj) {
-      logger.debug('refresh_token.notFound', params.refresh_token);
-      throw AppError.invalidToken();
-    } else if (hex(tokObj.clientId) !== hex(params.client_id)) {
-      logger.debug('refresh_token.mismatch', {
-        client: params.client_id,
-        code: tokObj.clientId
-      });
-      throw AppError.invalidToken();
-    } else if (! tokObj.scope.contains(params.scope)) {
-      logger.debug('refresh_token.invalidScopes', {
-        allowed: tokObj.scope,
-        requested: params.scope
-      });
-      throw AppError.invalidScopes();
-    }
-    tokObj.scope = params.scope;
+async function confirmRefreshToken(params) {
+  const tokObj = await db.getRefreshToken(encrypt.hash(params.refresh_token));
+  if (! tokObj) {
+    logger.debug('refresh_token.notFound', params.refresh_token);
+    throw AppError.invalidToken();
+  } else if (hex(tokObj.clientId) !== hex(params.client_id)) {
+    logger.debug('refresh_token.mismatch', {
+      client: params.client_id,
+      code: tokObj.clientId
+    });
+    throw AppError.invalidToken();
+  } else if (! tokObj.scope.contains(params.scope)) {
+    logger.debug('refresh_token.invalidScopes', {
+      allowed: tokObj.scope,
+      requested: params.scope
+    });
+    throw AppError.invalidScopes();
+  }
+  tokObj.scope = params.scope;
 
-    var now = new Date();
-    var lastUsedAt = tokObj.lastUsedAt;
+  var now = new Date();
+  var lastUsedAt = tokObj.lastUsedAt;
 
-    if ((now - lastUsedAt) > REFRESH_LAST_USED_AT_UPDATE_AFTER_MS){
-      db.usedRefreshToken(encrypt.hash(params.refresh_token)).then(function() {
-        logger.debug('usedRefreshToken.updated', now);
-      });
-    } else {
-      logger.debug('usedRefreshToken.not_updated');
-    }
-    return tokObj;
-  });
+  if (params.instance_id && tokObj.instanceId !== params.instance_id) {
+    await db.updateRefreshTokenInstanceId(encrypt.hash(params.refresh_token), buf(params.instance_id));
+    tokObj.instanceId = params.instance_id;
+  }
+
+  if ((now - lastUsedAt) > REFRESH_LAST_USED_AT_UPDATE_AFTER_MS){
+    await db.usedRefreshToken(encrypt.hash(params.refresh_token));
+    logger.debug('usedRefreshToken.updated', now);
+  } else {
+    logger.debug('usedRefreshToken.not_updated');
+  }
+  return tokObj;
 }
 
 function confirmJwt(params) {
@@ -468,43 +481,36 @@ function generateIdToken(options, access) {
   return ID_TOKEN_KEY.sign(claims);
 }
 
-function generateTokens (options) {
+async function generateTokens (options) {
   // we always are generating an access token here
   // but depending on options, we may also be generating a refresh_token
-  return db.generateAccessToken(options)
-    .then((access) => {
-      const promises = {};
-      if (options.offline) {
-        promises.refresh = db.generateRefreshToken(options);
-      }
-      if (options.idToken) {
-        promises.idToken = generateIdToken(options, access);
-      }
+  const access = await db.generateAccessToken(options);
+  const [refresh, idToken] = await P.all([
+    options.offline ? db.generateRefreshToken(options) : P.resolve(null),
+    options.idToken ? generateIdToken(options, access) : P.resolve(null),
+  ]);
 
-      return P.props(promises).then(function (result) {
-        const refresh = result.refresh;
-        const idToken = result.idToken;
-
-        const json = {
-          access_token: access.token.toString('hex'),
-          token_type: access.type,
-          scope: access.scope.toString()
-        };
-        if (options.authAt) {
-          json.auth_at = options.authAt;
-        }
-        json.expires_in = options.ttl;
-        if (refresh) {
-          json.refresh_token = refresh.token.toString('hex');
-        }
-        if (idToken) {
-          json.id_token = idToken;
-        }
-        if (options.keysJwe) {
-          json.keys_jwe = options.keysJwe;
-        }
-        return json;
-      });
-    });
+  const json = {
+    access_token: access.token.toString('hex'),
+    token_type: access.type,
+    scope: access.scope.toString()
+  };
+  if (options.authAt) {
+    json.auth_at = options.authAt;
+  }
+  json.expires_in = options.ttl;
+  if (refresh) {
+    json.refresh_token = refresh.token.toString('hex');
+  }
+  if (idToken) {
+    json.id_token = idToken;
+  }
+  if (options.keysJwe) {
+    json.keys_jwe = options.keysJwe;
+  }
+  if (options.instanceId) {
+    json.instance_id = options.instanceId.toString('hex');
+  }
+  return json;
 }
 

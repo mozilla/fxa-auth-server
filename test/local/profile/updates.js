@@ -8,7 +8,7 @@ const { assert } = require('chai')
 
 const EventEmitter = require('events').EventEmitter
 const sinon = require('sinon')
-const { mockDB, mockLog } = require('../../mocks')
+const { mockLog, mockClients } = require('../../mocks')
 const profileUpdates = require('../../../lib/profile/updates')
 const P = require('../../../lib/promise')
 
@@ -32,7 +32,7 @@ const mockPush = {
 }
 
 function mockProfileUpdates(log) {
-  return profileUpdates(log)(mockDeliveryQueue, mockPush, mockDB())
+  return profileUpdates(log)(mockDeliveryQueue, mockPush, mockClients())
 }
 
 describe('profile updates', () => {

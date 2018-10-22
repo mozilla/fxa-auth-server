@@ -619,6 +619,12 @@ var conf = convict({
       format: 'duration',
       default: '3 days',
       env: 'OAUTH_CLIENT_INFO_CACHE_TTL'
+    },
+    sharedSecretKey: {
+      doc: 'A shared secret between this server and oauth server that allows it to use privileged APIs',
+      env: 'OAUTH_SERVER_SECRET_KEY',
+      format: String,
+      default: 'megaz0rd',
     }
   },
   metrics: {

@@ -16,7 +16,7 @@ var createOauthHelper = require('./oauth_helper')
 let currentServer
 
 /* eslint-disable no-console */
-function TestServer(config, printLogs) {
+function TestServer(config, {printLogs, oauth} = {}) {
   currentServer = this
   if (printLogs === undefined) {
 
@@ -36,17 +36,17 @@ function TestServer(config, printLogs) {
   this.config = config
   this.server = null
   this.mail = null
-  this.oauth = null
+  this.oauth = oauth || null
   this.mailbox = mailbox(config.smtp.api.host, config.smtp.api.port, this.printLogs)
 }
 
-TestServer.start = function (config, printLogs) {
+TestServer.start = function (config, options) {
   return TestServer.stop().then(() => {
     return createDBServer()
   }).then((db) => {
     db.listen(config.httpdb.url.split(':')[2])
     db.on('error', function () {})
-    var testServer = new TestServer(config, printLogs)
+    var testServer = new TestServer(config, options)
     testServer.db = db
     return testServer.start().then(() => testServer)
   })
@@ -58,14 +58,16 @@ TestServer.prototype.start = function () {
     createMailHelper(this.printLogs)
   ]
 
-  if (this.config.oauth.url) {
+  if (! this.oauth && this.config.oauth.url) {
     promises.push(createOauthHelper())
   }
   return P.all(promises)
     .spread((auth, mail, oauth) => {
       this.server = auth
       this.mail = mail
-      this.oauth = oauth
+      if (oauth) {
+        this.oauth = oauth
+      }
     })
 }
 

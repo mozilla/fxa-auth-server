@@ -9,7 +9,8 @@ const hapi = require('hapi')
 const url = require('url')
 const P = require('../lib/promise')
 
-module.exports = () => {
+module.exports = (data = {}) => {
+  const {refreshTokens = []} = data
   return new P((resolve, reject) => {
     const api = new hapi.Server({
       host: url.parse(config.oauth.url).hostname,
@@ -24,6 +25,18 @@ module.exports = () => {
           handler: async function (request, h) {
             const data = JSON.parse(Buffer.from(request.payload.token, 'hex'))
             return h.response(data).code(data.code || 200)
+          }
+        }
+      ]
+    )
+
+    api.route(
+      [
+        {
+          method: 'GET',
+          path: '/v1/refresh-tokens/{uid}',
+          handler: async function (request, h) {
+            return h.response(refreshTokens).code(200)
           }
         }
       ]

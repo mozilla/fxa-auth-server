@@ -65,7 +65,8 @@ function generateCode(claims, client, scope, req) {
     codeChallengeMethod: req.payload.code_challenge_method,
     codeChallenge: req.payload.code_challenge,
     keysJwe: req.payload.keys_jwe,
-    profileChangedAt: claims['fxa-profileChangedAt']
+    profileChangedAt: claims['fxa-profileChangedAt'],
+    instanceId: req.payload.instance_id,
   }).then(function(code) {
     logger.debug('redirecting', { uri: req.payload.redirect_uri });
 
@@ -99,14 +100,16 @@ function generateGrant(claims, client, scope, req) {
     email: claims['fxa-verifiedEmail'],
     scope: scope,
     ttl: req.payload.ttl,
-    profileChangedAt: claims['fxa-profileChangedAt']
+    profileChangedAt: claims['fxa-profileChangedAt'],
+    instanceId: req.payload.instance_id,
   }).then(function(token) {
     return {
       access_token: hex(token.token),
       token_type: 'bearer',
       expires_in: Math.floor((token.expiresAt - Date.now()) / 1000),
       scope: scope.toString(),
-      auth_at: claims['fxa-lastAuthAt']
+      auth_at: claims['fxa-lastAuthAt'],
+      instance_id: hex(token.instanceId),
     };
   });
 }
@@ -192,6 +195,8 @@ module.exports = {
           then: Joi.optional(),
           otherwise: Joi.forbidden()
         }),
+      instance_id: validators.instanceId
+        .optional().allow(null),
       acr_values: Joi.string().max(256).optional().allow(null)
     }
   },
@@ -204,12 +209,14 @@ module.exports = {
       token_type: Joi.string().valid('bearer'),
       scope: Joi.string().allow(''),
       auth_at: Joi.number(),
-      expires_in: Joi.number()
+      expires_in: Joi.number(),
+      instance_id: validators.instanceId,
     }).with('access_token', [
       'token_type',
       'scope',
       'auth_at',
-      'expires_in'
+      'expires_in',
+      'instance_id',
     ]).with('code', [
       'state',
       'redirect',

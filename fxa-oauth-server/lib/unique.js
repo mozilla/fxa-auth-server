@@ -21,5 +21,6 @@ unique.developerId = fn('developerId');
 unique.secret = fn('clientSecret');
 unique.code = fn('code');
 unique.token = fn('token');
+unique.instanceId = fn('instanceId');
 
 module.exports = unique;

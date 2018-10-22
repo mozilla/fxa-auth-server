@@ -218,6 +218,7 @@ MemoryStore.prototype = {
     return P.resolve();
   },
   generateCode: function generateCode(codeObj) {
+    codeObj.instanceId = codeObj.instanceId ? buf(codeObj.instanceId) : unique.instanceId();
     codeObj = clone(codeObj);
     codeObj.createdAt = new Date();
     var code = unique.code();
@@ -233,6 +234,7 @@ MemoryStore.prototype = {
     return P.resolve();
   },
   generateAccessToken: function generateAccessToken(vals) {
+    const instanceId = vals.instanceId ? buf(vals.instanceId) : unique.instanceId();
     var token = unique.token();
     var now = new Date();
     var t = {
@@ -244,7 +246,8 @@ MemoryStore.prototype = {
       createdAt: now,
       // ttl is in seconds
       expiresAt: new Date(+now + (vals.ttl * 1000 || MAX_TTL)),
-      token: encrypt.hash(token)
+      token: encrypt.hash(token),
+      instanceId,
     };
     var ret = clone(t);
     this.tokens[unbuf(t.token)] = t;
@@ -321,6 +324,7 @@ MemoryStore.prototype = {
     return P.resolve({});
   },
   generateRefreshToken: function generateRefreshToken(vals) {
+    const instanceId = vals.instanceId ? buf(vals.instanceId) : unique.instanceId();
     var token = unique.token();
     var t = {
       clientId: vals.clientId,
@@ -330,7 +334,8 @@ MemoryStore.prototype = {
       createdAt: new Date(),
       lastUsedAt: new Date(),
       token: encrypt.hash(token),
-      profileChangedAt: vals.profileChangedAt
+      profileChangedAt: vals.profileChangedAt,
+      instanceId
     };
     var ret = clone(t);
     this.refreshTokens[unbuf(t.token)] = t;
@@ -339,6 +344,12 @@ MemoryStore.prototype = {
   },
   getRefreshToken: function getRefreshToken(token) {
     return P.resolve(clone(this.refreshTokens[unbuf(token)]));
+  },
+  async getRefreshTokensForUser(uid) {
+    uid = uid.toString('hex');
+    return Object.values(this.refreshTokens).filter(({userId}) =>
+      userId.toString('hex') === uid
+    );
   },
   usedRefreshToken: function usedRefreshToken(token) {
     if (! token) {
@@ -353,7 +364,19 @@ MemoryStore.prototype = {
 
     return P.resolve(old);
   },
+  updateRefreshTokenInstanceId(token, instanceId) {
+    if (! token) {
+      return P.reject(new Error('Update needs a token'));
+    }
+    var hex = unbuf(token);
+    if (! this.refreshTokens[hex]) {
+      return P.reject(new Error('Token does not exist'));
+    }
+    var old = this.refreshTokens[hex];
+    old.instanceId = instanceId;
 
+    return P.resolve(old);
+  },
   removeRefreshToken: function removeRefreshToken(id) {
     delete this.refreshTokens[unbuf(id)];
     return P.resolve();

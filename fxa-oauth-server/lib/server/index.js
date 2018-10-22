@@ -6,6 +6,7 @@ const Hapi = require('hapi');
 
 const AppError = require('../error');
 const authBearer = require('../auth_bearer');
+const authSecret = require('../auth_secret');
 const config = require('../config').getProperties();
 const configureSentry = require('./configureSentry');
 const env = require('../env');
@@ -28,6 +29,11 @@ exports.create = async function createServer() {
 
   server.auth.scheme(authBearer.AUTH_SCHEME, authBearer.strategy);
   server.auth.strategy(authBearer.AUTH_STRATEGY, authBearer.AUTH_SCHEME);
+
+  server.auth.scheme(authSecret.AUTH_SCHEME, authSecret.strategy);
+  server.auth.strategy('authServerSecret', authSecret.AUTH_SCHEME, {
+    secretName: 'authServer',
+  });
 
   if (config.hpkpConfig && config.hpkpConfig.enabled) {
     var hpkpOptions = {

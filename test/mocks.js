@@ -29,6 +29,8 @@ const DB_METHOD_NAMES = [
   'accountRecord',
   'accountResetToken',
   'checkPassword',
+  'clientInstance',
+  'clientsInstances',
   'consumeUnblockCode',
   'consumeSigninCode',
   'consumeRecoveryCode',
@@ -79,6 +81,7 @@ const DB_METHOD_NAMES = [
   'updateLocale',
   'updateSessionToken',
   'updateTotpToken',
+  'upsertClientInstance',
   'verifyEmail',
   'verifyTokens',
   'verifyTokenCode',
@@ -144,6 +147,13 @@ const PUSHBOX_METHOD_NAMES = [
   'store'
 ]
 
+const CLIENTS_METHOD_NAMES = [
+  'getClientsInstances',
+  'findDeviceOrClientInstance',
+  'findClientInstanceOrDevice',
+  'accountPushClientsAndDevices'
+]
+
 module.exports = {
   MOCK_PUSH_KEY: 'BDLugiRzQCANNj5KI1fAqui8ELrE7qboxzfa5K_R0wnUoJ89xY1D_SOXI_QJKNmellykaW_7U2BZ7hnrPW3A3LM',
   generateMetricsContext: generateMetricsContext,
@@ -156,6 +166,7 @@ module.exports = {
   mockMetricsContext,
   mockPush,
   mockPushbox,
+  mockClients,
   mockRequest
 }
 
@@ -316,8 +327,20 @@ function mockDB (data, errors) {
       assert.ok(typeof uid === 'string')
       assert.ok(typeof deviceId === 'string')
       const device = data.devices.find(d => d.id === deviceId)
-      assert.ok(device)
+      if (! device) {
+        throw error.unknownDevice()
+      }
       return P.resolve(device)
+    }),
+    clientsInstances: sinon.spy((uid) => {
+      assert.ok(typeof uid === 'string')
+      return P.resolve(data.clientsInstances || [])
+    }),
+    clientInstance: sinon.spy((uid, instanceId) => {
+      assert.ok(typeof uid === 'string')
+      assert.ok(typeof instanceId === 'string')
+      const instance = (data.clientsInstances || []).find(d => d.id === instanceId)
+      return P.resolve(instance)
     }),
     deleteSessionToken: sinon.spy(() => {
       return P.resolve()
@@ -372,6 +395,10 @@ function mockDB (data, errors) {
     updateDevice: sinon.spy((uid, sessionTokenId, device) => {
       assert.ok(typeof uid === 'string')
       return P.resolve(device)
+    }),
+    upsertClientInstance: sinon.spy((uid, id, instance) => {
+      assert.ok(typeof uid === 'string')
+      return P.resolve(instance)
     }),
     sessionToken: sinon.spy(() => {
       const res = {
@@ -432,6 +459,16 @@ function mockPushbox (methods) {
     }
   })
   return pushbox
+}
+
+function mockClients (methods) {
+  const clients = Object.assign({}, methods)
+  CLIENTS_METHOD_NAMES.forEach((name) => {
+    if (! clients[name]) {
+      clients[name] = sinon.spy(() => P.resolve())
+    }
+  })
+  return clients
 }
 
 function mockDevices (data, errors) {
@@ -542,10 +579,20 @@ function mockRequest (data, errors) {
     metricsContextData = {}
   }
 
+  let uid
+  if (data.credentials) {
+    if (data.credentials.uid) {
+      uid = data.credentials.uid
+    } else if (data.credentials.user) {
+      uid = data.credentials.user
+    }
+  }
+
   return {
     app: {
       acceptLanguage: data.acceptLanguage || 'en-US',
       clientAddress: data.clientAddress || '63.245.221.32',
+      uid,
       devices,
       features: new Set(data.features),
       geo,

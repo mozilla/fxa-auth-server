@@ -20,7 +20,7 @@ describe('lib/devices:', () => {
   })
 
   describe('instantiate:', () => {
-    let log, deviceCreatedAt, deviceId, device, db, push, devices
+    let log, deviceCreatedAt, deviceId, device, db, push, devices, clients
 
     beforeEach(() => {
       log = mocks.mockLog()
@@ -36,7 +36,12 @@ describe('lib/devices:', () => {
         deviceId: deviceId
       })
       push = mocks.mockPush()
-      devices = require(MODULE_PATH)(log, db, push)
+      clients = mocks.mockClients({
+        accountPushClientsAndDevices(uid) {
+          return db.devices(uid)
+        }
+      })
+      devices = require(MODULE_PATH)(log, db, push, clients)
     })
 
     it('returns the expected interface', () => {

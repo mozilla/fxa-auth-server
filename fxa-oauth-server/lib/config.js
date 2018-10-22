@@ -281,6 +281,14 @@ const conf = convict({
     default: 'http://127.0.0.1:9010',
     env: 'PUBLIC_URL'
   },
+  sharedSecrets: {
+    authServer: {
+      doc: 'A shared secret between this server and auth server that allows it to use privileged APIs',
+      env: 'FXA_SHARED_AUTH_SECRET',
+      format: String,
+      default: 'megaz0rd',
+    },
+  },
   server: {
     host: {
       env: 'HOST',
@@ -338,6 +346,10 @@ const conf = convict({
     },
     developerId: {
       doc: 'Bytes of generated developer ids',
+      default: 16
+    },
+    instanceId: {
+      doc: 'Bytes of generated client instance ids',
       default: 16
     }
   },

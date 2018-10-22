@@ -86,7 +86,7 @@
     "web-push": "3.3.0"
   },
   "devDependencies": {
-    "acorn": "5.0.3",
+    "acorn": "6.0.4",
     "audit-filter": "0.3.0",
     "chai": "4.1.2",
     "commander": "2.18.0",

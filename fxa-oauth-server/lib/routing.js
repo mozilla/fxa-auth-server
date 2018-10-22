@@ -86,6 +86,11 @@ exports.routes = [
     method: 'DELETE',
     path: v('/client-tokens/{client_id}'),
     config: require('./routes/client-tokens/delete')
+  },
+  {
+    method: 'GET',
+    path: v('/refresh-tokens/{uid}'),
+    config: require('./routes/refresh-tokens')
   }
 ];
 
