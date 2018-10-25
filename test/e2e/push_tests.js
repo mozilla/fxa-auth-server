@@ -51,7 +51,11 @@ describe('e2e/push', () => {
           }
         ], 'accountVerify', options)
           .then(() => {
-            assert.equal(thisSpyLog.error.callCount, 0, 'No errors should have been logged')
+            let assertionMessage = 'No errors should have been logged'
+            if (thisSpyLog.error.callCount > 0) {
+              assertionMessage = JSON.stringify(thisSpyLog.error.args[0][0])
+            }
+            assert.equal(thisSpyLog.error.callCount, 0, assertionMessage)
             assert.equal(count, 1, 'log.info::push.account_verify.success was called once')
           })
       })
