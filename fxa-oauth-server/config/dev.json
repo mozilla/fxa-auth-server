@@ -106,6 +106,7 @@
       "imageUri": "",
       "redirectUri": "urn:ietf:wg:oauth:2.0:oob",
       "trusted": true,
+      "allowedScopes": "https://identity.mozilla.com/apps/oldsync",
       "canGrant": true
     },
     {
