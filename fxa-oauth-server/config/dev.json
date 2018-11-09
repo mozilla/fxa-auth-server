@@ -134,7 +134,18 @@
       "redirectUri": "urn:ietf:wg:oauth:2.0:oob",
       "trusted": true,
       "canGrant": true
-    }
+    },
+	{
+	  "id": "42c02d0c1e811cd5",
+	  "name": "Firefox Special Event",
+	  "hashedSecret": "39433bf5bd2293d5982211b6d83209cab60f6a4e21ac63415679b8119950cee1",
+	  "redirectUri": "http://127.0.0.1:8082/login_complete",
+	  "imageUri": "",
+	  "canGrant": false,
+	  "termsUri": "",
+	  "privacyUri": "",
+	  "trusted": true
+	}
   ],
   "localRedirects": true,
   "logging": {
