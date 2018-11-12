@@ -1216,7 +1216,12 @@ describe('/account/sessions', () => {
     }
   ]
   const db = mocks.mockDB({ sessions })
-  const accountRoutes = makeRoutes({ db })
+  const mockClients = mocks.mockClients({
+    getClientsInstances() {
+      return []
+    },
+  })
+  const accountRoutes = makeRoutes({ db, clients: mockClients })
   const request = mocks.mockRequest({
     acceptLanguage: 'xx',
     credentials: {
