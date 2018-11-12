@@ -441,7 +441,11 @@ MysqlStore.prototype = {
       token: unique.token(),
       type: 'bearer',
       expiresAt: vals.expiresAt || new Date(Date.now() + (vals.ttl  * 1000 || MAX_TTL)),
-      instanceId
+      instanceId,
+      // We're not yet able to persist this value into the db
+      // for operational reasons, but it's here for consistency
+      // with the other token types.
+      profileChangedAt: vals.profileChangedAt || 0
     };
     return this._write(QUERY_ACCESS_TOKEN_INSERT, [
       t.clientId,
