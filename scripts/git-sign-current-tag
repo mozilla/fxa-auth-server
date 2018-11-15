@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Forcibly recreates the current tag as a signed tag.
+
+# First, check that we're actually on a commit
+# that corresponds to a tag.
+TAG=`git describe --abbrev=0`
+if [ $TAG != `git describe` ]; then
+  echo "Error: current HEAD does not correspond to a tag."
+  exit 1
+fi
+
+# Forcibly re-generate it as a signed tag.
+# XXX TODO: should probably preserve message etc.
+git tag --sign --force $TAG $@

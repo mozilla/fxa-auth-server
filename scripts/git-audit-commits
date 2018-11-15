@@ -1,0 +1,202 @@
+#!/bin/bash
+#
+# A tool to help you audit the commits that will be included in a git tag.
+#
+# If you're about to generate a new signed tag in git, then you should
+# be confident that all the commits included in that tag are meant to
+# be there.  This is a tool that can help you do that by checking for
+# signatures on the individual commits, and letting you review any that
+# are unsigned or otherwise unexpected.
+#
+# For it to work as intended, you'll need to have imported the GPG keys
+# of developers on your project into your local keychain, as well as the
+# special key that github uses to sign edits made through the web interface.
+# Then you can run it like so:
+#
+#   $> git-audit-commits
+#
+# Without arguments, the script will identify all commits that have not been
+# previously included in a tag, and will:
+#
+#  * Check for signatures on the parent tags of those commits
+#  * Check for signatures on each untagged commit
+#
+# You can opt to accept all tags and commits signed by particular user
+# in order to speed up the audit.  Any unsigned tags or commits will be
+# listed individually for your review.
+
+# XXX TODO: add some convenient command-line arguments.
+
+# To avoid having to review many commits from trusted authors,
+# we keep a list of users whose signatures we will automatically
+# accept.  To deal with merge commits signed by the github web
+# ui key, we keep a second list of users from whom we will accept
+# empty merge commits, but not diffs.
+
+SIGFROM_ACCEPT_ALL=""
+SIGFROM_ACCEPT_EMPTY=""
+
+sigfrom_hash() {
+  # SHA-256 saves me from worry about spaces in the values.
+  echo "$1" | sha256sum | cut -d ' ' -f 1
+}
+
+sigfrom_add_accept_all() {
+  if [ "x$1" != "x" ]; then
+    local SIGFROM=`sigfrom_hash "$1"`
+    SIGFROM_ACCEPT_ALL="$SIGFROM_ACCEPT_ALL $SIGFROM"
+  fi
+}
+
+sigfrom_add_accept_empty() {
+  if [ "x$1" != "x" ]; then
+    local SIGFROM=`sigfrom_hash "$1"`
+    SIGFROM_ACCEPT_EMPTY="$SIGFROM_ACCEPT_ALL $SIGFROM"
+  fi
+}
+
+sigfrom_check_accept_all() {
+  local SIGFROM=`sigfrom_hash "$1"`
+  for ACCEPT in $SIGFROM_ACCEPT_ALL; do
+    if [ $ACCEPT = $SIGFROM ]; then
+      return 0;
+    fi;
+  done;
+  return 1
+}
+
+sigfrom_check_accept_empty() {
+  local SIGFROM=`sigfrom_hash "$1"`
+  for ACCEPT in $SIGFROM_ACCEPT_EMPTY; do
+    if [ $ACCEPT = $SIGFROM ]; then
+      return 0;
+    fi;
+  done;
+  return 1
+}
+
+# Some convient git helpers.
+
+git_summary() {
+  git log -1 --oneline "$1"
+}
+
+git_is_empty_merge_commit() {
+  local TYPE=$1
+  local REF=$2
+  if [ $TYPE = "commit" ]; then
+    if git diff-tree --exit-code $REF 2>&1 > /dev/null; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+git_verify_signature() {
+  local TYPE=$1
+  local REF=$2
+  if git verify-$TYPE $REF; then
+    return 0
+  fi
+  # No output gets printed when there's no signature on a commit.
+  # Try to print some so the user knows what's going on.
+  if [ $TYPE = "commit" ]; then
+    if git verify-commit $REF 2>&1 | grep gpg > /dev/null; then true; else
+      echo "Unsigned commit: $REF"
+    fi
+  fi
+  return 1
+}
+
+git_extract_sigfrom() {
+  local TYPE=$1
+  local REF=$2
+  git verify-$TYPE $REF 2>&1 | grep "Good signature from " | sed -e "s/^gpg: Good signature from //g" | head -n 1
+}
+
+# This is the main audit procedure.
+# Call it like `git_audit_ref $TYPE $REF`
+# where $TYPE is either "tag" or "commit".
+
+git_audit_ref() {
+  local TYPE=$1
+  local REF=$2
+  local SIGFROM=""
+  echo ""
+  git_summary $REF
+  if git_verify_signature $TYPE $REF; then
+    SIGFROM=`git_extract_sigfrom $TYPE $REF`
+    if sigfrom_check_accept_all $SIGFROM; then
+      echo "Accepting $TYPE signed by $SIGFROM"
+      return 0
+    fi
+    if git_is_empty_merge_commit $TYPE $REF; then
+      if sigfrom_check_accept_empty $SIGFROM; then
+        echo "Accepting empty merge commit signed by $SIGFROM"
+        return 0
+      fi
+    fi
+  fi
+  REPLY=""
+  while [ "x$REPLY" = "x" ]; do
+    echo ""
+    echo "What would you like to do with this $TYPE?"
+    echo "a) Accept this $TYPE"
+    echo "r) Reject this $TYPE"
+    echo "v) View its contents"
+    if [ "x$SIGFROM" != "x" ]; then
+      echo "A) Accept anything signed by $SIGFROM";
+      if git_is_empty_merge_commit $TYPE $REF; then
+        echo "E) Accept empty merge commits signed by $SIGFROM";
+      fi
+    fi
+    read -p "Choice: " -n 1
+    echo ""
+    # Slight hack: ignore uppercase options when no signature.
+    # "A" will accept just that commit, and "E" will be rejected.
+    if [ "x$SIGFROM" = "x" ]; then
+      REPLY=`echo $REPLY | tr "[:upper:]" "[:lower:]"`
+    fi;
+    case $REPLY in
+      a) return 0;;
+      r) echo "Rejected $TYPE $REF"; exit 1;;
+      v) git show $REF; git_summary $REF; REPLY="";;
+      A) sigfrom_add_accept_all $SIGFROM;  return 0;;
+      E) sigfrom_add_accept_empty $SIGFROM;  return 0;;
+      *) echo "Unknown choice: $REPLY"; REPLY="";;
+    esac
+  done;
+}
+
+# This is how we identify the "untagged commits".
+# They're the commits that are ancestors of the given HEAD
+# but are not ancestors of an existing tag.
+#
+# The double use of `--not` here is so that users can pass an
+# arbitrary git-rev-list spec as $HEAD and it'll work as intended.
+#
+# XXX TODO: take $HEAD from command-line arguments.
+HEAD="HEAD"
+LIST_UNTAGGED_COMMITS="git rev-list --not --tags --not $HEAD"
+
+echo "Auditing `$LIST_UNTAGGED_COMMITS | wc -l` untagged commits."
+
+# This finds the set of parent tags for the untagged commits.
+# It will often be just a single tag, but may not be due to
+# e.g. point-releases being merged back to master.
+echo "Checking parent tags."
+for TAG in `$LIST_UNTAGGED_COMMITS | xargs git describe --abbrev=0 --tags | sort | uniq`; do
+  git_audit_ref tag $TAG
+done
+
+# Check for signatures on each untagged commit,
+# allowing the option to review each in turn.
+echo ""
+echo "Checking commits."
+for COMMIT in `$LIST_UNTAGGED_COMMITS --reverse`; do
+  git_audit_ref commit $COMMIT
+done
+
+echo ""
+echo "OK, looks like everything checks out!"
+exit 0
