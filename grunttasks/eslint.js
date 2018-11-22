@@ -8,7 +8,7 @@ module.exports = function (grunt) {
   grunt.config('eslint', {
     app: {
       src: [
-        '{,bin/,config/,grunttasks/,lib/**/,scripts/**/,test/**/}*.js'
+        '{,bin/,config/,grunttasks/,lib/**/,scripts/**/,test/**/,fxa-oauth-server/}*.js'
       ]
     }
   })
