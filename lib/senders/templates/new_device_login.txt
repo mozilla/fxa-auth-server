@@ -5,7 +5,7 @@
 {{#if ip}}{{t "IP address: %(ip)s" }}{{/if}}
 {{#if timestamp}}{{ timestamp }}{{/if}}
 
-{{t "Manage account here  %(link)s"}}
+{{t "Manage account:"}} {{{ link }}}
 
 {{{t "This is an automated email; if you didn’t add a new device to your Firefox Account, you should change your password immediately at %(passwordChangeLink)s"}}}
 
