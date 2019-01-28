@@ -50,6 +50,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /recovery_email/set_primary (:lock: sessionToken)](#post-recovery_emailset_primary)
   * [Oauth](#oauth)
     * [GET /oauth/client/{client_id}](#get-oauthclientclient_id)
+    * [POST /oauth/token](#post-oauthtoken)
     * [POST /account/scoped-key-data (:lock: sessionToken)](#post-accountscoped-key-data)
   * [Password](#password)
     * [POST /password/change/start](#post-passwordchangestart)
@@ -1994,6 +1995,12 @@ such as its display-name and redirect URI.
   <!--begin-response-body-get-oauthclientclient_id-redirect_uri-->
   
   <!--end-response-body-get-oauthclientclient_id-redirect_uri-->
+
+
+#### POST /oauth/token
+<!--begin-route-post-oauthtoken-->
+
+<!--end-route-post-oauthtoken-->
 
 
 #### POST /account/scoped-key-data
