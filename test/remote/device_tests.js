@@ -188,14 +188,11 @@ describe('remote device', function () {
           function (client) {
             return client.updateDevice({ type: 'mobile' })
               .then(
-                function (r) {
-                  assert(false, 'request should have failed')
-                }
-              )
-              .catch(
-                function (err) {
-                  assert.equal(err.code, 400, 'err.code was 400')
-                  assert.equal(err.errno, 108, 'err.errno was 108')
+                function (device) {
+                  assert.ok(device.id, 'device.id was set')
+                  assert.ok(device.createdAt > 0, 'device.createdAt was set')
+                  assert.equal(device.name, '', 'device.name is empty')
+                  assert.equal(device.type, 'mobile', 'device.type is correct')
                 }
               )
           }
@@ -207,20 +204,17 @@ describe('remote device', function () {
     'device registration without required type parameter',
     () => {
       var email = server.uniqueEmail()
+      var deviceName = 'test device'
       var password = 'test password'
       return Client.create(config.publicUrl, email, password)
         .then(
           function (client) {
             return client.updateDevice({ name: 'test device' })
               .then(
-                function () {
-                  assert(false, 'request should have failed')
-                }
-              )
-              .catch(
-                function (err) {
-                  assert.equal(err.code, 400, 'err.code was 400')
-                  assert.equal(err.errno, 108, 'err.errno was 108')
+                function (device) {
+                  assert.ok(device.id, 'device.id was set')
+                  assert.ok(device.createdAt > 0, 'device.createdAt was set')
+                  assert.equal(device.name, deviceName, 'device.name is correct')
                 }
               )
           }
@@ -755,7 +749,7 @@ describe('remote device', function () {
             })
             .then((devices) => {
               assert.equal(devices.length, 1, 'devices returned 1 item')
-              assert.equal(devices[0].name, '', 'placeholder device record had no name')
+              assert.equal(devices[0].name, '', 'placeholder device record has an empty name')
               assert.equal(devices[0].type, 'desktop', 'placeholder device record type defaults to desktop')
 
               // Now attempt to update the name on the placeholder record.

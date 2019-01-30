@@ -101,7 +101,7 @@
     "audit-filter": "0.3.0",
     "chai": "4.1.2",
     "eslint-plugin-fxa": "git+https://github.com/mozilla/eslint-plugin-fxa#master",
-    "fxa-auth-db-mysql": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#master",
+    "fxa-auth-db-mysql": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#feature.devices2",
     "fxa-conventional-changelog": "1.1.0",
     "grunt": "1.0.3",
     "grunt-bump": "0.8.0",

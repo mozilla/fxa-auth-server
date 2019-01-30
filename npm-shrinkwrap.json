@@ -217,9 +217,9 @@
       },
       "dependencies": {
         "@sinonjs/samsam": {
-          "version": "3.2.0",
-          "resolved": "https://registry.npmjs.org/@sinonjs/samsam/-/samsam-3.2.0.tgz",
-          "integrity": "sha512-j5F1rScewLtx6pbTK0UAjA3jJj4RYiSKOix53YWv+Jzy/AZ69qHxUpU8fwVLjyKbEEud9QrLpv6Ggs7WqTimYw==",
+          "version": "3.3.0",
+          "resolved": "https://registry.npmjs.org/@sinonjs/samsam/-/samsam-3.3.0.tgz",
+          "integrity": "sha512-beHeJM/RRAaLLsMJhsCvHK31rIqZuobfPLa/80yGH5hnD8PV1hyh9xJBJNFfNmO7yWqm+zomijHsXpI6iTQJfQ==",
           "dev": true,
           "requires": {
             "@sinonjs/commons": "^1.0.2",
@@ -497,9 +497,9 @@
       }
     },
     "async-each": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/async-each/-/async-each-1.0.1.tgz",
-      "integrity": "sha1-GdOGodntxufByF04iu28xW0zYC0=",
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/async-each/-/async-each-1.0.2.tgz",
+      "integrity": "sha512-6xrbvN0MOBKSJDdonmSSz2OwFSgxRaVtBDes26mj9KIGtDo+g9xosFRSC+i1gQh2oAN/tQ62AI/pGZGQjVOiRg==",
       "optional": true
     },
     "async-limiter": {
@@ -1972,14 +1972,14 @@
       }
     },
     "es5-ext": {
-      "version": "0.10.48",
-      "resolved": "https://registry.npmjs.org/es5-ext/-/es5-ext-0.10.48.tgz",
-      "integrity": "sha512-CdRvPlX/24Mj5L4NVxTs4804sxiS2CjVprgCmrgoDkdmjdY4D+ySHa7K3jJf8R40dFg0tIm3z/dk326LrnuSGw==",
+      "version": "0.10.49",
+      "resolved": "https://registry.npmjs.org/es5-ext/-/es5-ext-0.10.49.tgz",
+      "integrity": "sha512-3NMEhi57E31qdzmYp2jwRArIUsj1HI/RxbQ4bgnSB+AIKIxsAmTiK83bYMifIcpWvEc3P1X30DhUKOqEtF/kvg==",
       "dev": true,
       "requires": {
         "es6-iterator": "~2.0.3",
         "es6-symbol": "~3.1.1",
-        "next-tick": "1"
+        "next-tick": "^1.0.0"
       }
     },
     "es6-iterator": {
@@ -3018,8 +3018,8 @@
       "integrity": "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
     },
     "fxa-auth-db-mysql": {
-      "version": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#6b91ed2b973b81cedcee6dca3375e39c5ef4d706",
-      "from": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#master",
+      "version": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#1123e32805d4efbdc773eb73776b2e11cd97885d",
+      "from": "git+https://github.com/mozilla/fxa-auth-db-mysql.git#feature.devices2",
       "dev": true,
       "requires": {
         "base64url": "3.0.0",
@@ -10332,11 +10332,11 @@
       },
       "dependencies": {
         "jws": {
-          "version": "3.2.1",
-          "resolved": "https://registry.npmjs.org/jws/-/jws-3.2.1.tgz",
-          "integrity": "sha512-bGA2omSrFUkd72dhh05bIAN832znP4wOU3lfuXtRBuGTbsmNmDXMQg28f0Vsxaxgk4myF5YkKQpz6qeRpMgX9g==",
+          "version": "3.2.2",
+          "resolved": "https://registry.npmjs.org/jws/-/jws-3.2.2.tgz",
+          "integrity": "sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==",
           "requires": {
-            "jwa": "^1.2.0",
+            "jwa": "^1.4.1",
             "safe-buffer": "^5.0.1"
           }
         },
@@ -10389,9 +10389,9 @@
       "dev": true
     },
     "jwa": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/jwa/-/jwa-1.4.0.tgz",
-      "integrity": "sha512-mt6IHaq0ZZWDBspg0Pheu3r9sVNMEZn+GJe1zcdYyhFcDSclp3J8xEdO4PjZolZ2i8xlaVU1LetHM0nJejYsEw==",
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/jwa/-/jwa-1.4.1.tgz",
+      "integrity": "sha512-qiLX/xhEEFKUAJ6FiBMbes3w9ATzyk5W7Hvzpa/SLYdxNtng+gcurvrI7TbACjIXlsJyr05/S1oUhZrc63evQA==",
       "requires": {
         "buffer-equal-constant-time": "1.0.1",
         "ecdsa-sig-formatter": "1.0.11",
@@ -11224,9 +11224,9 @@
       }
     },
     "nan": {
-      "version": "2.12.1",
-      "resolved": "https://registry.npmjs.org/nan/-/nan-2.12.1.tgz",
-      "integrity": "sha512-JY7V6lRkStKcKTvHO5NVSQRv+RV+FIL5pvDoLiAtSL9pKlC5x9PKQcZDsq7m4FO4d57mkhC6Z+QhAh3Jdk5JFw==",
+      "version": "2.13.1",
+      "resolved": "https://registry.npmjs.org/nan/-/nan-2.13.1.tgz",
+      "integrity": "sha512-I6YB/YEuDeUZMmhscXKxGgZlFnhsn5y0hgOZBadkzfTRrZBtJDZeg6eQf7PYMIEclwmorTKK8GztsyOUSVBREA==",
       "optional": true
     },
     "nanomatch": {
@@ -12872,9 +12872,9 @@
       "dev": true
     },
     "pngjs": {
-      "version": "3.3.3",
-      "resolved": "https://registry.npmjs.org/pngjs/-/pngjs-3.3.3.tgz",
-      "integrity": "sha512-1n3Z4p3IOxArEs1VRXnZ/RXdfEniAUS9jb68g58FIXMNkPJeZd+Qh4Uq7/e0LVxAQGos1eIUrqrt4FpjdnEd+Q=="
+      "version": "3.4.0",
+      "resolved": "https://registry.npmjs.org/pngjs/-/pngjs-3.4.0.tgz",
+      "integrity": "sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w=="
     },
     "po2json": {
       "version": "0.4.5",
@@ -14027,9 +14027,9 @@
       }
     },
     "teamwork": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/teamwork/-/teamwork-3.0.3.tgz",
-      "integrity": "sha512-OCB56z+G70iA1A1OFoT+51TPzfcgN0ks75uN3yhxA+EU66WTz2BevNDK4YzMqfaL5tuAvxy4iFUn35/u8pxMaQ=="
+      "version": "3.1.0",
+      "resolved": "https://registry.npmjs.org/teamwork/-/teamwork-3.1.0.tgz",
+      "integrity": "sha512-h5d6RTsMmFzcuYnCP33rep1VxG5T7Izd6b1MDMTHrVoXYhJbeFwByNEXGthce7wmCKZluuFWbCKPamXKviRQpQ=="
     },
     "text-extensions": {
       "version": "1.9.0",
@@ -14214,7 +14214,7 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uap-core": {
-      "version": "git://github.com/ua-parser/uap-core.git#add7bafbb3ba57256d1b919103add1b2cab97aa7",
+      "version": "git://github.com/ua-parser/uap-core.git#b4a50d040ad03b163b675d468d7ee011e9ad5436",
       "from": "git://github.com/ua-parser/uap-core.git"
     },
     "uap-ref-impl": {
@@ -14226,19 +14226,19 @@
       }
     },
     "uglify-js": {
-      "version": "3.4.9",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.4.9.tgz",
-      "integrity": "sha512-8CJsbKOtEbnJsTyv6LE6m6ZKniqMiFWmm9sRbopbkGs3gMPPfd3Fh8iIA4Ykv5MgaTbqHr4BaoGLJLZNhsrW1Q==",
+      "version": "3.4.10",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.4.10.tgz",
+      "integrity": "sha512-Y2VsbPVs0FIshJztycsO2SfPk7/KAF/T72qzv9u5EpQ4kB2hQoHlhNQTsNyy6ul7lQtqJN/AoWeS23OzEiEFxw==",
       "optional": true,
       "requires": {
-        "commander": "~2.17.1",
+        "commander": "~2.19.0",
         "source-map": "~0.6.1"
       },
       "dependencies": {
         "commander": {
-          "version": "2.17.1",
-          "resolved": "https://registry.npmjs.org/commander/-/commander-2.17.1.tgz",
-          "integrity": "sha512-wPMUt6FnH2yzG95SA6mzjQOEKUU3aLaDEmzs1ti+1E9h+CsrZghRlqEM/EJ4KscsQVG8uNN4uVreUeT8+drlgg==",
+          "version": "2.19.0",
+          "resolved": "https://registry.npmjs.org/commander/-/commander-2.19.0.tgz",
+          "integrity": "sha512-6tvAOO+D6OENvRAh524Dh9jcfKTYDQAqvqezbCW82xj5X0pSrcpxtvRKHLG0yBY6SD7PSDrJaj+0AiOcKVd1Xg==",
           "optional": true
         },
         "source-map": {
@@ -14340,9 +14340,9 @@
       }
     },
     "upath": {
-      "version": "1.1.1",
-      "resolved": "https://registry.npmjs.org/upath/-/upath-1.1.1.tgz",
-      "integrity": "sha512-D0yetkpIOKiZQquxjM2Syvy48Y1DbZ0SWxgsZiwd9GCWRpc75vN8ytzem14WDSg+oiX6+Qt31FpiS/ExODCrLg==",
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/upath/-/upath-1.1.2.tgz",
+      "integrity": "sha512-kXpym8nmDmlCBr7nKdIx8P2jNBa+pBpIUFRnKJ4dr8htyYGJFokkr2ZvERRtUN+9SY+JqXouNgUPtv6JQva/2Q==",
       "optional": true
     },
     "uri-js": {
@@ -14486,11 +14486,11 @@
           "integrity": "sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA=="
         },
         "jws": {
-          "version": "3.2.1",
-          "resolved": "https://registry.npmjs.org/jws/-/jws-3.2.1.tgz",
-          "integrity": "sha512-bGA2omSrFUkd72dhh05bIAN832znP4wOU3lfuXtRBuGTbsmNmDXMQg28f0Vsxaxgk4myF5YkKQpz6qeRpMgX9g==",
+          "version": "3.2.2",
+          "resolved": "https://registry.npmjs.org/jws/-/jws-3.2.2.tgz",
+          "integrity": "sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==",
           "requires": {
-            "jwa": "^1.2.0",
+            "jwa": "^1.4.1",
             "safe-buffer": "^5.0.1"
           }
         }

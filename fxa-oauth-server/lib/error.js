@@ -285,4 +285,14 @@ AppError.mismatchAcr = function mismatchAcr(foundValue) {
   }, {foundValue});
 };
 
+
+AppError.unsupportedClientType = function unsupportedClientType() {
+  return new AppError({
+    code: 400,
+    error: 'Bad Request',
+    errno: 120,
+    message: 'Unsupported client type'
+  });
+};
+
 module.exports = AppError;

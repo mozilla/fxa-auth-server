@@ -33,13 +33,13 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/reset (:lock: accountResetToken)](#post-accountreset)
     * [POST /account/destroy (:lock::unlock: sessionToken)](#post-accountdestroy)
   * [Devices and sessions](#devices-and-sessions)
-    * [POST /account/device (:lock: sessionToken)](#post-accountdevice)
-    * [GET /account/device/commands (:lock: sessionToken)](#get-accountdevicecommands)
-    * [POST /account/devices/invoke_command (:lock: sessionToken)](#post-accountdevicesinvoke_command)
-    * [POST /account/devices/notify (:lock: sessionToken)](#post-accountdevicesnotify)
-    * [GET /account/devices (:lock: sessionToken)](#get-accountdevices)
-    * [GET /account/sessions (:lock: sessionToken)](#get-accountsessions)
-    * [POST /account/device/destroy (:lock: sessionToken)](#post-accountdevicedestroy)
+    * [POST /account/device (:lock: sessionToken, refreshToken)](#post-accountdevice)
+    * [GET /account/device/commands (:lock: sessionToken, refreshToken)](#get-accountdevicecommands)
+    * [POST /account/devices/invoke_command (:lock: sessionToken, refreshToken)](#post-accountdevicesinvoke_command)
+    * [POST /account/devices/notify (:lock: sessionToken, refreshToken)](#post-accountdevicesnotify)
+    * [GET /account/devices (:lock: sessionToken, refreshToken)](#get-accountdevices)
+    * [GET /account/sessions (:lock: sessionToken, refreshToken)](#get-accountsessions)
+    * [POST /account/device/destroy (:lock: sessionToken, refreshToken)](#post-accountdevicedestroy)
   * [Emails](#emails)
     * [GET /recovery_email/status (:lock: sessionToken)](#get-recovery_emailstatus)
     * [POST /recovery_email/resend_code (:lock: sessionToken)](#post-recovery_emailresend_code)
@@ -375,11 +375,12 @@ those common validations are defined here.
 * `URL_SAFE_BASE_64`: `/^[A-Za-z0-9_-]+$/`
 * `DISPLAY_SAFE_UNICODE`: `/^(?:[^\u0000-\u001F\u007F\u0080-\u009F\u2028-\u2029\uD800-\uDFFF\uE000-\uF8FF\uFFF9-\uFFFF])*$/`
 * `DISPLAY_SAFE_UNICODE_WITH_NON_BMP`: `/^(?:[^\u0000-\u001F\u007F\u0080-\u009F\u2028-\u2029\uE000-\uF8FF\uFFF9-\uFFFF])*$/`
+* `BEARER_AUTH_REGEX`: `/^Bearer\s+([a-z0-9+\/]+)$/i`
 * `service`: `string, max(16), regex(/^[a-zA-Z0-9\-]*$/)`
 * `hexString`: `string, regex(/^(?:[a-fA-F0-9]{2})+$/)`
 * `clientId`: `module.exports.hexString.length(16)`
-* `accessToken`: `module.exports.hexString.length(32)`
-* `refreshToken`: `module.exports.hexString.length(32)`
+* `accessToken`: `module.exports.hexString.length(64)`
+* `refreshToken`: `module.exports.hexString.length(64)`
 * `scope`: `string, max(256), regex(/^[a-zA-Z0-9 _\/.:-]+$/)`
 * `assertion`: `string, min(50), max(10240), regex(/^[a-zA-Z0-9_\-\.~=]+$/)`
 * `jwe`: `string, max(1024), regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/)`
@@ -425,7 +426,7 @@ those common validations are defined here.
       * `stateCode`: isA.string.optional.allow(null)
       * })
     * `name`: isA.string.max(255).regex(DISPLAY_SAFE_UNICODE_WITH_NON_BMP)
-    * `nameResponse`: isA.string.max(255)
+    * `nameResponse`: isA.string.max(255).allow('')
     * `type`: isA.string.max(16)
     * `pushCallback`: validators.pushCallbackUrl({ scheme: 'https' }).regex(PUSH_SERVER_REGEX).max(255).allow('')
     * `pushPublicKey`: isA.string.max(88).regex(URL_SAFE_BASE_64).allow('')
@@ -1016,7 +1017,7 @@ by the following errors
 
 #### POST /account/device
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-post-accountdevice-->
 Either:
 
@@ -1055,13 +1056,13 @@ can be made available to other connected devices.
   
   <!--end-request-body-post-accountdevice-id-->
 
-* `name`: *DEVICES_SCHEMA.name.optional*;<br />or *DEVICES_SCHEMA.name.required*
+* `name`: *DEVICES_SCHEMA.name.optional*
 
   <!--begin-request-body-post-accountdevice-name-->
   
   <!--end-request-body-post-accountdevice-name-->
 
-* `type`: *DEVICES_SCHEMA.type.optional*;<br />or *DEVICES_SCHEMA.type.required*
+* `type`: *DEVICES_SCHEMA.type.optional*
 
   <!--begin-request-body-post-accountdevice-type-->
   
@@ -1168,7 +1169,7 @@ by the following errors
 
 #### GET /account/device/commands
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-get-accountdevicecommands-->
 Fetches commands enqueued for the current device
 by prior calls to `/account/devices/invoke_command`.
@@ -1221,7 +1222,7 @@ see the [device registration](device_registration.md) docs.
 
 #### POST /account/devices/invoke_command
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-post-accountdevicesinvoke_command-->
 Enqueues a command to be invoked on a target device.
 
@@ -1269,7 +1270,7 @@ by the following errors
 
 #### POST /account/devices/notify
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-post-accountdevicesnotify-->
 Notifies a set of devices associated with the user's account
 of an event by sending a browser push notification.
@@ -1334,7 +1335,7 @@ by the following errors
 
 #### GET /account/devices
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-get-accountdevices-->
 Returns an array
 of registered device objects
@@ -1430,7 +1431,7 @@ for the authenticated user.
 
 #### GET /account/sessions
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-get-accountsessions-->
 Returns an array
 of session objects
@@ -1562,7 +1563,7 @@ for the authenticated user.
 
 #### POST /account/device/destroy
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-post-accountdevicedestroy-->
 Destroys a device record
 and the associated `sessionToken`
