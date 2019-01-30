@@ -40,14 +40,6 @@ jobs:
           command: docker pull redis && docker run -d --name redis-server -p 6379:6379 redis
 
       - run:
-          name: Build test container image
-          command: docker build -f Dockerfile-test -t fxa-auth-server:test .
-
-      - run:
-          name: Run Tests
-          command: docker run --net=host -p 6379:6379 fxa-auth-server:test npm run test-ci
-
-      - run:
           name: Push to Dockerhub
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then

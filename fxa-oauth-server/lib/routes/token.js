@@ -391,6 +391,7 @@ function generateTokens (options) {
         json.expires_in = options.ttl;
         if (refresh) {
           json.refresh_token = refresh.token.toString('hex');
+          console.log('refresh token is ', json.refresh_token);
         }
         if (idToken) {
           json.id_token = idToken;

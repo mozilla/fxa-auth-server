@@ -175,7 +175,7 @@ const conf = convict({
       env: 'LOG_APP'
     },
     level: {
-      default: 'info',
+      default: 'debug',
       env: 'LOG_LEVEL'
     },
     fmt: {
