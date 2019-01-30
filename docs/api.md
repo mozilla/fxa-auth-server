@@ -33,13 +33,13 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
     * [POST /account/reset (:lock: accountResetToken)](#post-accountreset)
     * [POST /account/destroy (:lock::unlock: sessionToken)](#post-accountdestroy)
   * [Devices and sessions](#devices-and-sessions)
-    * [POST /account/device (:lock: sessionToken)](#post-accountdevice)
-    * [GET /account/device/commands (:lock: sessionToken)](#get-accountdevicecommands)
+    * [POST /account/device (:lock: sessionToken, refreshToken)](#post-accountdevice)
+    * [GET /account/device/commands (:lock: sessionToken, refreshToken)](#get-accountdevicecommands)
     * [POST /account/devices/invoke_command (:lock: sessionToken)](#post-accountdevicesinvoke_command)
-    * [POST /account/devices/notify (:lock: sessionToken)](#post-accountdevicesnotify)
-    * [GET /account/devices (:lock: sessionToken)](#get-accountdevices)
-    * [GET /account/sessions (:lock: sessionToken)](#get-accountsessions)
-    * [POST /account/device/destroy (:lock: sessionToken)](#post-accountdevicedestroy)
+    * [POST /account/devices/notify (:lock: sessionToken, refreshToken)](#post-accountdevicesnotify)
+    * [GET /account/devices (:lock: sessionToken, refreshToken)](#get-accountdevices)
+    * [GET /account/sessions (:lock: sessionToken, refreshToken)](#get-accountsessions)
+    * [POST /account/device/destroy (:lock: sessionToken, refreshToken)](#post-accountdevicedestroy)
   * [Emails](#emails)
     * [GET /recovery_email/status (:lock: sessionToken)](#get-recovery_emailstatus)
     * [POST /recovery_email/resend_code (:lock: sessionToken)](#post-recovery_emailresend_code)
@@ -1016,7 +1016,7 @@ by the following errors
 
 #### POST /account/device
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-post-accountdevice-->
 Either:
 
@@ -1168,7 +1168,7 @@ by the following errors
 
 #### GET /account/device/commands
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-get-accountdevicecommands-->
 Fetches commands enqueued for the current device
 by prior calls to `/account/devices/invoke_command`.
@@ -1269,7 +1269,7 @@ by the following errors
 
 #### POST /account/devices/notify
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-post-accountdevicesnotify-->
 Notifies a set of devices associated with the user's account
 of an event by sending a browser push notification.
@@ -1334,7 +1334,7 @@ by the following errors
 
 #### GET /account/devices
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-get-accountdevices-->
 Returns an array
 of registered device objects
@@ -1430,7 +1430,7 @@ for the authenticated user.
 
 #### GET /account/sessions
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-get-accountsessions-->
 Returns an array
 of session objects
@@ -1562,7 +1562,7 @@ for the authenticated user.
 
 #### POST /account/device/destroy
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-post-accountdevicedestroy-->
 Destroys a device record
 and the associated `sessionToken`

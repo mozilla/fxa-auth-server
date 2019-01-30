@@ -301,4 +301,24 @@ describe('oauthdb', () => {
 
   })
 
+  describe('checkRefreshToken', () => {
+    it('can do the thing', async () => {
+      mockOAuthServer.post('/v1/refresh-token', body => true)
+        .reply(200, {
+          clientId: MOCK_CLIENT_ID,
+          createdAt: Date.now(),
+          email: 'testuser@testuser.com',
+          lastUsedAt: Date.now(),
+          profileChangedAt: Date.now(),
+          scope: 'profile',
+          token: 'DEADBEEFDEADBEEFDEADBEEFDEADBEEF',
+          userId: MOCK_UID,
+       })
+      oauthdb = oauthdbModule(mockLog(), mockConfig)
+      const accessToken = await oauthdb.checkRefreshToken('DEADBEEFDEADBEEFDEADBEEFDEADBEEF')
+
+      assert.ok(accessToken)
+    });
+  })
+
 })
