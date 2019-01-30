@@ -43,6 +43,11 @@ exports.routes = [
     config: require('./routes/client/get')
   },
   {
+    method: 'GET',
+    path: v('/refreshToken/{refreshToken}'),
+    config: require('./routes/refreshToken')
+  },
+  {
     method: 'POST',
     path: v('/key-data'),
     config: require('./routes/key_data')
