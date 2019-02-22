@@ -51,6 +51,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
   * [Oauth](#oauth)
     * [GET /oauth/client/{client_id}](#get-oauthclientclient_id)
     * [POST /account/scoped-key-data (:lock: sessionToken)](#post-accountscoped-key-data)
+    * [POST /oauth/token](#post-oauthtoken)
   * [Password](#password)
     * [POST /password/change/start](#post-passwordchangestart)
     * [POST /password/change/finish (:lock: passwordChangeToken)](#post-passwordchangefinish)
@@ -371,6 +372,7 @@ those common validations are defined here.
 #### lib/routes/validators
 
 * `HEX_STRING`: `/^(?:[a-fA-F0-9]{2})+$/`
+* `B64URL_STRING`: `/^[A-Za-z0-9-_]+$/`
 * `BASE_36`: `/^[a-zA-Z0-9]*$/`
 * `URL_SAFE_BASE_64`: `/^[A-Za-z0-9_-]+$/`
 * `DISPLAY_SAFE_UNICODE`: `/^(?:[^\u0000-\u001F\u007F\u0080-\u009F\u2028-\u2029\uD800-\uDFFF\uE000-\uF8FF\uFFF9-\uFFFF])*$/`
@@ -378,6 +380,7 @@ those common validations are defined here.
 * `service`: `string, max(16), regex(/^[a-zA-Z0-9\-]*$/)`
 * `hexString`: `string, regex(/^(?:[a-fA-F0-9]{2})+$/)`
 * `clientId`: `module.exports.hexString.length(16)`
+* `clientSecret`: `string, length(), regex(/^(?:[a-fA-F0-9]{2})+$/)`
 * `accessToken`: `module.exports.hexString.length(32)`
 * `refreshToken`: `module.exports.hexString.length(32)`
 * `scope`: `string, max(256), regex(/^[a-zA-Z0-9 _\/.:-]+$/)`
@@ -392,6 +395,9 @@ those common validations are defined here.
 * `DIGITS`: `/^[0-9]+$/`
 * `DEVICE_COMMAND_NAME`: `/^[a-zA-Z0-9._\/\-:]{1,100}$/`
 * `IP_ADDRESS`: `string, ip`
+* `codeVerifier`: `string, min(43), max(128), regex(/^[A-Za-z0-9-_]+$/)`
+* `token`: `string, length(), regex(/^(?:[a-fA-F0-9]{2})+$/)`
+* `redirectUri`: `string, max(256), regex(/^[a-zA-Z0-9\-_\/.:?=&]+$/)`
 
 #### lib/metrics/context
 
@@ -2018,6 +2024,12 @@ requested by the specified OAuth client.
   <!--begin-request-body-post-accountscoped-key-data-scope-->
   
   <!--end-request-body-post-accountscoped-key-data-scope-->
+
+
+#### POST /oauth/token
+<!--begin-route-post-oauthtoken-->
+
+<!--end-route-post-oauthtoken-->
 
 
 ### Password
