@@ -69,11 +69,12 @@ describe('/account/device', function () {
   var mockDeviceName = 'my awesome device 🍓🔥'
   var mockRequest = mocks.mockRequest({
     credentials: {
-      deviceCallbackPublicKey: '',
-      deviceCallbackURL: '',
-      deviceCallbackIsExpired: false,
+      callbackPublicKey: '',
+      callbackURL: '',
+      callbackIsExpired: false,
       deviceId: deviceId,
       deviceName: mockDeviceName,
+      deviceAvailableCommands: {'foo': 'bar'},
       deviceType: 'desktop',
       id: crypto.randomBytes(16).toString('hex'),
       uid: uid
@@ -110,10 +111,10 @@ describe('/account/device', function () {
         availableCommands: creds.deviceAvailableCommands,
         id: creds.deviceId,
         name: creds.deviceName,
-        pushAuthKey: creds.deviceCallbackAuthKey,
-        pushCallback: creds.deviceCallbackURL,
-        pushEndpointExpired: creds.deviceCallbackIsExpired,
-        pushPublicKey: creds.deviceCallbackPublicKey,
+        pushAuthKey: creds.callbackAuthKey,
+        pushCallback: creds.callbackURL,
+        pushEndpointExpired: creds.callbackIsExpired,
+        pushPublicKey: creds.callbackPublicKey,
         type: creds.deviceType,
       })
     })
