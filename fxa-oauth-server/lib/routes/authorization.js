@@ -201,6 +201,8 @@ module.exports = {
       code: Joi.string(),
       state: Joi.string(),
       access_token: validators.token,
+      refresh_token: validators.token.optional(),
+      id_token: validators.assertion.optional(),
       token_type: Joi.string().valid('bearer'),
       scope: Joi.string().allow(''),
       auth_at: Joi.number(),
@@ -214,7 +216,9 @@ module.exports = {
       'state',
       'redirect',
     ]).without('code', [
-      'access_token'
+      'access_token',
+      'refresh_token',
+      'id_token'
     ])
   },
   handler: async function authorizationEndpoint(req) {

@@ -51,6 +51,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
   * [Oauth](#oauth)
     * [GET /oauth/client/{client_id}](#get-oauthclientclient_id)
     * [POST /account/scoped-key-data (:lock: sessionToken)](#post-accountscoped-key-data)
+    * [POST /oauth/authorization (:lock: sessionToken)](#post-oauthauthorization)
   * [Password](#password)
     * [POST /password/change/start](#post-passwordchangestart)
     * [POST /password/change/finish (:lock: passwordChangeToken)](#post-passwordchangefinish)
@@ -304,6 +305,18 @@ for `code` and `errno` are:
   Unknown client_id
 * `code: 400, errno: 164`:
   Stale auth timestamp
+* `code: 400, errno: 165`:
+  Stale auth timestamp
+* `code: 400, errno: 166`:
+  Invalid response_type
+* `code: 400, errno: 167`:
+  Requested scopes are not allowed
+* `code: 400, errno: 168`:
+  Not a public client
+* `code: 400, errno: 169`:
+  Public clients require PKCE OAuth parameters
+* `code: 400, errno: 170`:
+  Required Authentication Context Reference values could not be satisfied
 * `code: 503, errno: 201`:
   Service unavailable
 * `code: 503, errno: 202`:
@@ -338,6 +351,10 @@ include additional response properties:
 * `errno: 153`
 * `errno: 162`: clientId
 * `errno: 164`: authAt
+* `errno: 165`: redirectUri
+* `errno: 167`: invalidScopes
+* `errno: 168`: clientId
+* `errno: 170`: foundValue
 * `errno: 201`: retryAfter
 * `errno: 202`: retryAfter
 * `errno: 203`: service, operation
@@ -2018,6 +2035,82 @@ requested by the specified OAuth client.
   <!--begin-request-body-post-accountscoped-key-data-scope-->
   
   <!--end-request-body-post-accountscoped-key-data-scope-->
+
+
+#### POST /oauth/authorization
+
+:lock: HAWK-authenticated with session token
+<!--begin-route-post-oauthauthorization-->
+
+<!--end-route-post-oauthauthorization-->
+
+##### Request body
+
+* `client_id`: *validators.clientId.required*
+
+  <!--begin-request-body-post-oauthauthorization-client_id-->
+  
+  <!--end-request-body-post-oauthauthorization-client_id-->
+
+* `redirect_uri`: *Joi.string.max(256).uri({ scheme: undefined }).required*
+
+  <!--begin-request-body-post-oauthauthorization-redirect_uri-->
+  
+  <!--end-request-body-post-oauthauthorization-redirect_uri-->
+
+* `scope`: *validators.scope.required*
+
+  <!--begin-request-body-post-oauthauthorization-scope-->
+  
+  <!--end-request-body-post-oauthauthorization-scope-->
+
+* `response_type`: *Joi.string.valid('code', 'token').default('code').required*
+
+  <!--begin-request-body-post-oauthauthorization-response_type-->
+  
+  <!--end-request-body-post-oauthauthorization-response_type-->
+
+* `state`: *Joi.string.max(256).when('response_type', { is: 'token', then: Joi.optional, otherwise: Joi.required })*
+
+  <!--begin-request-body-post-oauthauthorization-state-->
+  
+  <!--end-request-body-post-oauthauthorization-state-->
+
+* `ttl`: *Joi.number.positive.when('response_type', { is: 'token', then: Joi.optional, otherwise: Joi.forbidden })*
+
+  <!--begin-request-body-post-oauthauthorization-ttl-->
+  
+  <!--end-request-body-post-oauthauthorization-ttl-->
+
+* `access_type`: *Joi.string.valid('offline', 'online').default('online').optional*
+
+  <!--begin-request-body-post-oauthauthorization-access_type-->
+  
+  <!--end-request-body-post-oauthauthorization-access_type-->
+
+* `code_challenge_method`: *Joi.string.valid('S256').when('response_type', { is: 'code', then: Joi.optional, otherwise: Joi.forbidden })*
+
+  <!--begin-request-body-post-oauthauthorization-code_challenge_method-->
+  
+  <!--end-request-body-post-oauthauthorization-code_challenge_method-->
+
+* `code_challenge`: *Joi.string.length(43).when('response_type', { is: 'code', then: Joi.optional, otherwise: Joi.forbidden })*
+
+  <!--begin-request-body-post-oauthauthorization-code_challenge-->
+  
+  <!--end-request-body-post-oauthauthorization-code_challenge-->
+
+* `keys_jwe`: *validators.jwe.when('response_type', { is: 'code', then: Joi.optional, otherwise: Joi.forbidden })*
+
+  <!--begin-request-body-post-oauthauthorization-keys_jwe-->
+  
+  <!--end-request-body-post-oauthauthorization-keys_jwe-->
+
+* `acr_values`: *Joi.string.max(256).optional.allow(null)*
+
+  <!--begin-request-body-post-oauthauthorization-acr_values-->
+  
+  <!--end-request-body-post-oauthauthorization-acr_values-->
 
 
 ### Password
