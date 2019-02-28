@@ -2052,6 +2052,12 @@ requested by the specified OAuth client.
   
   <!--end-request-body-post-oauthauthorization-client_id-->
 
+* `grant_type`: *Joi.string.optional*
+
+  <!--begin-request-body-post-oauthauthorization-grant_type-->
+  
+  <!--end-request-body-post-oauthauthorization-grant_type-->
+
 * `redirect_uri`: *Joi.string.max(256).uri({ scheme: undefined }).optional*
 
   <!--begin-request-body-post-oauthauthorization-redirect_uri-->
