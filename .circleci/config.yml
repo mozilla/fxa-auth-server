@@ -44,10 +44,6 @@ jobs:
           command: docker build -f Dockerfile-test -t fxa-auth-server:test .
 
       - run:
-          name: Run Tests
-          command: docker run --net=host -p 6379:6379 fxa-auth-server:test npm run test-ci
-
-      - run:
           name: Push to Dockerhub
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
@@ -104,14 +100,6 @@ jobs:
           name: Run MySQL
           command: docker run -d --name=mydb -e MYSQL_ALLOW_EMPTY_PASSWORD=true -e MYSQL_ROOT_HOST=% -p 3306:3306 mysql/mysql-server:5.6
           background: true
-
-      - run:
-          name: Run Memory DB Tests
-          command: docker run fxa-oauth-server:test npm run test-oauth
-
-      - run:
-          name: Run MySQL DB Tests
-          command: docker run --net=host -p 3306:3306 -e DB="mysql" fxa-oauth-server:test npm run test-oauth
 
       - run:
           name: Push to Dockerhub
