@@ -101,13 +101,32 @@ function generateGrant(claims, client, scope, req) {
     ttl: req.payload.ttl,
     profileChangedAt: claims['fxa-profileChangedAt']
   }).then(function(token) {
-    return {
-      access_token: hex(token.token),
-      token_type: 'bearer',
-      expires_in: Math.floor((token.expiresAt - Date.now()) / 1000),
-      scope: scope.toString(),
-      auth_at: claims['fxa-lastAuthAt']
-    };
+
+    /*
+          clientId: vals.clientId,
+      userId: vals.userId,
+      email: vals.email,
+      scope: vals.scope,
+      profileChangedAt: vals.profileChangedAt
+     */
+
+    return db.generateRefreshToken({
+      clientId: client.id,
+      userId: buf(claims.uid),
+      email: claims['fxa-verifiedEmail'],
+      scope: scope,
+      profileChangedAt: claims['fxa-profileChangedAt']
+    }).then((refresh) => {
+      return {
+        access_token: hex(token.token),
+        refresh_token: hex(refresh.token),
+        token_type: 'bearer',
+        expires_in: Math.floor((token.expiresAt - Date.now()) / 1000),
+        scope: scope.toString(),
+        auth_at: claims['fxa-lastAuthAt']
+      };
+    });
+
   });
 }
 
