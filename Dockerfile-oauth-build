@@ -19,7 +19,7 @@ USER app
 COPY npm-shrinkwrap.json npm-shrinkwrap.json
 COPY package.json package.json
 COPY scripts/download_l10n.sh scripts/download_l10n.sh
-COPY fxa-oauth-server/scripts/gen_keys.js fxa-oauth-server/scripts/gen_keys.js
+COPY scripts/gen_keys.js scripts/gen_keys.js
 
 RUN npm install --production && rm -rf ~app/.npm /tmp/*
 
@@ -46,4 +46,4 @@ USER app
 
 COPY --from=builder --chown=app /app/ /app/
 
-RUN node fxa-oauth-server/scripts/gen_keys.js
+RUN node scripts/gen_keys.js

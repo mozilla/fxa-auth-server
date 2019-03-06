@@ -6,7 +6,7 @@ if [ -z "$NODE_ENV" ]; then export NODE_ENV=test; fi;
 
 set -u
 
-node ./fxa-oauth-server/scripts/gen_keys.js
+node ../../scripts/gen_keys.js
 
 GLOB=$*
 if [ -z "$GLOB" ]; then
