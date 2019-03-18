@@ -1019,18 +1019,9 @@ by the following errors
 
 :lock: HAWK-authenticated with session token or authenticated with OAuth refresh token
 <!--begin-route-post-accountdevice-->
-Either:
-
-* Registers a new device for this session
-  if no device id is specified, or;
-
-* Updates existing device details for this session
-  if a device id is specified.
-
-If no device id is specified,
-both `name` and `type` must be provided.
-If a device id is specified,
-at least one of `name`, `type`, `pushCallback`
+Creates or updates the [device registration](device_registration.md) record.
+associated with the auth token used for this request.
+At least one of `name`, `type`, `pushCallback`
 or the tuple `{ pushCallback, pushPublicKey, pushAuthKey }`
 must be present.
 Beware that if you provide `pushCallback`
@@ -1042,8 +1033,7 @@ to the empty string.
 `{ pushCallback, pushPublicKey, pushAuthKey }` is specified.
 
 Devices should register with this endpoint
-before attempting to obtain a signed certificate
-and perform their first sync,
+before attempting to access the user's sync data,
 so that an appropriate device name
 can be made available to other connected devices.
 <!--end-route-post-accountdevice-->
