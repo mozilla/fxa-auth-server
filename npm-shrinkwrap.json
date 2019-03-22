@@ -8956,6 +8956,16 @@
             "once": "^1.3.0",
             "path-is-absolute": "^1.0.0"
           }
+        },
+        "js-yaml": {
+          "version": "3.5.5",
+          "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.5.5.tgz",
+          "integrity": "sha1-A3fDgBfKvHMisNH7zSWkkWQfL74=",
+          "dev": true,
+          "requires": {
+            "argparse": "^1.0.2",
+            "esprima": "^2.6.0"
+          }
         }
       }
     },
@@ -10225,13 +10235,21 @@
       "dev": true
     },
     "js-yaml": {
-      "version": "3.5.5",
-      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.5.5.tgz",
-      "integrity": "sha1-A3fDgBfKvHMisNH7zSWkkWQfL74=",
+      "version": "3.13.0",
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.13.0.tgz",
+      "integrity": "sha512-pZZoSxcCYco+DIKBTimr67J6Hy+EYGZDY/HCWC+iAEA9h1ByhMXAIVUXMcMFpOCxQ/xjXmPI2MkDL5HRm5eFrQ==",
       "dev": true,
       "requires": {
-        "argparse": "^1.0.2",
-        "esprima": "^2.6.0"
+        "argparse": "^1.0.7",
+        "esprima": "^4.0.0"
+      },
+      "dependencies": {
+        "esprima": {
+          "version": "4.0.1",
+          "resolved": "https://registry.npmjs.org/esprima/-/esprima-4.0.1.tgz",
+          "integrity": "sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==",
+          "dev": true
+        }
       }
     },
     "jsbn": {
