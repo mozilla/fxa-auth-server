@@ -111,6 +111,7 @@ module.exports = {
       code: Joi.string(),
       state: Joi.string(),
       access_token: validators.token,
+      user: validators.uid,
       token_type: Joi.string().valid('bearer'),
       scope: Joi.string().allow(''),
       auth_at: Joi.number(),

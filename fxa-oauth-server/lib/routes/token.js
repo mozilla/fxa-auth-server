@@ -166,6 +166,7 @@ module.exports = {
       access_token: validators.token.required(),
       refresh_token: validators.token,
       id_token: validators.assertion,
+      user: validators.uid.required(),
       scope: validators.scope.required(),
       token_type: Joi.string().valid('bearer').required(),
       expires_in: Joi.number().max(MAX_TTL_S).required(),

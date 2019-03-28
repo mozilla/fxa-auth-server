@@ -119,6 +119,7 @@ module.exports.generateTokens = async function generateTokens(grant) {
   const access = await db.generateAccessToken(grant);
   const result = {
     access_token: access.token.toString('hex'),
+    user: access.userId.toString('hex'),
     token_type: access.type,
     scope: access.scope.toString()
   };

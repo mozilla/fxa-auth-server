@@ -814,6 +814,7 @@ describe('/v1', function() {
             assert.equal(res.statusCode, 200);
             assertSecurityHeaders(res);
             assert(res.result.access_token);
+            assert(res.result.user);
             assert.equal(res.result.token_type, 'bearer');
             assert(res.result.scope);
             assert(res.result.expires_in <= defaultExpiresIn);
@@ -1096,6 +1097,7 @@ describe('/v1', function() {
             assert.equal(res.statusCode, 200);
             assertSecurityHeaders(res);
             assert.ok(res.result.access_token);
+            assert.ok(res.result.user);
             assert.equal(res.result.token_type, 'bearer');
             assert.ok(res.result.auth_at);
             assert.ok(res.result.expires_in);
