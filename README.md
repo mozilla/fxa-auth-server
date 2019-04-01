@@ -1,6 +1,9 @@
 Firefox Accounts Server
 =======================
 
+**This project has moved to https://github.com/mozilla/fxa/tree/master/packages/fxa-auth-server**
+
+
 [![Build Status](https://travis-ci.org/mozilla/fxa-auth-server.svg?branch=master)](https://travis-ci.org/mozilla/fxa-auth-server)
 [![Coverage Status](https://coveralls.io/repos/github/mozilla/fxa-auth-server/badge.svg?branch=master)](https://coveralls.io/github/mozilla/fxa-auth-server?branch=master)
 [![CircleCI](https://circleci.com/gh/mozilla/fxa-auth-server.svg?style=svg)](https://circleci.com/gh/mozilla/fxa-auth-server)
