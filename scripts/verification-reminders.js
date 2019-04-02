@@ -79,12 +79,19 @@ async function run () {
         });
         sent[uid] = true;
       } catch (err) {
-        if (err.errno === error.ERRNO.ACCOUNT_UNKNOWN) {
-          console.log(`  * ignoring deleted account ${uid}`);
-        } else {
-          console.log(`  * failed ${uid}`);
-          console.error(err.stack);
-          failed.push({ timestamp, uid });
+        const { errno } = err;
+        switch (errno) {
+          case error.ERRNO.ACCOUNT_UNKNOWN:
+          case error.ERRNO.BOUNCE_COMPLAINT:
+          case error.ERRNO.BOUNCE_HARD:
+          case error.ERRNO.BOUNCE_SOFT:
+            console.log(`  * ignoring deleted/bouncing account ${uid}, errno: ${errno}`);
+            await verificationReminders.delete(uid);
+            break;
+          default:
+            console.log(`  * failed ${uid}, errno: ${errno}`);
+            console.error(err.stack);
+            failed.push({ timestamp, uid });
         }
       }
 
