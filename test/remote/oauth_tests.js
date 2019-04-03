@@ -102,6 +102,7 @@ describe('/oauth/ routes', function () {
 
     assert.ok(res.access_token);
     assert.ok(res.refresh_token);
+    assert.ok(res.user);
     assert.equal(res.scope, SCOPE);
     assert.ok(res.auth_at);
     assert.ok(res.expires_in);
@@ -146,6 +147,7 @@ describe('/oauth/ routes', function () {
     assert.ok(res.access_token);
     assert.ok(res.refresh_token);
     assert.ok(res.id_token);
+    assert.ok(res.user);
     assert.equal(res.scope, SCOPE);
     assert.ok(res.auth_at);
     assert.ok(res.expires_in);
@@ -160,6 +162,7 @@ describe('/oauth/ routes', function () {
       grant_type: 'refresh_token',
     });
     assert.ok(res.access_token);
+    assert.ok(res.user);
     assert.equal(res.scope, SCOPE);
     assert.ok(res.expires_in);
     assert.ok(res.token_type);

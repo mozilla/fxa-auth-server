@@ -10,6 +10,7 @@ const oauthdbModule = require('../../../lib/oauthdb');
 const error = require('../../../lib/error');
 const { mockLog } = require('../../mocks');
 
+const MOCK_USER_ID = '5A6773A8D23E49FDAFCC976882E0B57E';
 const MOCK_CLIENT_ID = '0123456789ABCDEF';
 const MOCK_ACCESS_TOKEN = 'aaaaaa2222223333334444445555556611111122222233333344444455555566';
 const MOCK_REFRESH_TOKEN = 'bbbbbb2222223333334444445555556611111122222233333344444455555566';
@@ -39,6 +40,7 @@ describe('oauthdb/grantTokensFromRefreshToken', () => {
     mockOAuthServer.post('/v1/token', body => true)
       .reply(200, {
         access_token: MOCK_ACCESS_TOKEN,
+        user: MOCK_USER_ID,
         scope: '',
         token_type: 'bearer',
         expires_in: 123,
@@ -52,6 +54,7 @@ describe('oauthdb/grantTokensFromRefreshToken', () => {
     });
     assert.deepEqual(res, {
       access_token: MOCK_ACCESS_TOKEN,
+      user: MOCK_USER_ID,
       scope: '',
       token_type: 'bearer',
       expires_in: 123,
@@ -62,6 +65,7 @@ describe('oauthdb/grantTokensFromRefreshToken', () => {
     mockOAuthServer.post('/v1/token', body => true)
       .reply(200, {
         access_token: MOCK_ACCESS_TOKEN,
+        user: MOCK_USER_ID,
         scope: '',
         token_type: 'bearer',
         expires_in: 123,
@@ -76,6 +80,7 @@ describe('oauthdb/grantTokensFromRefreshToken', () => {
     });
     assert.deepEqual(res, {
       access_token: MOCK_ACCESS_TOKEN,
+      user: MOCK_USER_ID,
       scope: '',
       token_type: 'bearer',
       expires_in: 123,
